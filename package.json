@@ -23,6 +23,7 @@
     "next-rest-framework": "^0.6.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "sharp": "^0.32.0",
     "swagger-ui-react": "^4.18.2",
     "typescript": "5.0.4",
     "zod": "^3.21.4"
