@@ -12,7 +12,11 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": ["esbenp.prettier-vscode"]
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "csstools.postcss",
+        "bradlc.vscode-tailwindcss"
+      ]
     }
   }
 
