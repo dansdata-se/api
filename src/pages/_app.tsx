@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import { Analytics } from "@vercel/analytics/react";
 import type { AppProps } from "next/app";
 import { Norican, Roboto_Flex } from "next/font/google";
 
@@ -21,6 +22,7 @@ export default function App({ Component, pageProps }: AppProps) {
       className={`${norican.variable} ${robotoFlex.variable} h-full font-sans`}
     >
       <Component {...pageProps} />
+      <Analytics />
     </div>
   );
 }
