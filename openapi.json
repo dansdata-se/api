@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "Dansdata API",
-    "description": "\n**PRE-ALPHA - NOT READY FOR PRODUCTION USE**\n\nThe Dansdata API provides information about social dancing in Sweden.\n\n## Using the API\n\nTo use the API you need to register for an API account.\nThis can be done via the Dansdata Portal at <a href=\"https://portal.dansdata.se\">portal.dansdata.se</a>.\n\n## About Dansdata\n\nDansdata is an open source project aiming to provide Swedish social dancing information as freely as possible.\n",
+    "description": "\n**PRE-ALPHA - NOT READY FOR PRODUCTION USE**\n\nThe Dansdata API provides information about social dancing in Sweden.\n\n## Using the API\n\nThe API is available to everyone, for free. If you are using our data, we want you to add a user-visible link back to\n[https://dansdata.se](https://dansdata.se) similar to \"Using data from Dansdata\" or \"Dansinformation från Dansdata\".\n\nData retrieved from the Dansdata API is licensed under\n[CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1)\n\n## About Dansdata\n\nDansdata is an open source project aiming to provide Swedish social dancing information as freely as possible.\n",
     "version": "v0",
     "termsOfService": "https://dansdata.se/TODO",
     "contact": {
@@ -40,14 +40,7 @@
         "required": ["cover", "poster", "square"]
       }
     },
-    "parameters": {},
-    "securitySchemes": {
-      "apikey": {
-        "type": "apiKey",
-        "name": "apikey",
-        "in": "header"
-      }
-    }
+    "parameters": {}
   },
   "servers": [
     {
@@ -59,9 +52,6 @@
       "description": "Production Environment"
     }
   ],
-  "security": {
-    "apikey": []
-  },
   "paths": {
     "/api/v1/test/": {
       "get": {

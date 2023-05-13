@@ -38,8 +38,11 @@ The Dansdata API provides information about social dancing in Sweden.
 
 ## Using the API
 
-To use the API you need to register for an API account.
-This can be done via the Dansdata Portal at <a href="https://portal.dansdata.se">portal.dansdata.se</a>.
+The API is available to everyone, for free. If you are using our data, we want you to add a user-visible link back to
+[https://dansdata.se](https://dansdata.se) similar to "Using data from Dansdata" or "Dansinformation från Dansdata".
+
+Data retrieved from the Dansdata API is licensed under
+[CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1)
 
 ## About Dansdata
 
@@ -56,16 +59,6 @@ Dansdata is an open source project aiming to provide Swedish social dancing info
     servers,
     components: {
       ...components,
-      securitySchemes: {
-        apikey: {
-          type: "apiKey",
-          name: "apikey",
-          in: "header",
-        },
-      },
-    },
-    security: {
-      apikey: [],
     },
   },
 });
