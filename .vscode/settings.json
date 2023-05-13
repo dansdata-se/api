@@ -1,4 +1,16 @@
 {
   "javascript.preferences.importModuleSpecifier": "non-relative",
-  "typescript.preferences.importModuleSpecifier": "non-relative"
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "db",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "Dansdata API Database",
+      "database": "verceldb",
+      "username": "default",
+      "password": "postgres"
+    }
+  ]
 }

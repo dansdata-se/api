@@ -39,6 +39,12 @@ side of verbosity. Please try to include the following information in your commi
 - Known issues with the solution
 - Other relevant information
 
+## Database migrations
+
+Database migrations are generally created and applied manually by project maintainers before new
+deployments. Modifying [`schema.prisma`](./prisma/schema.prisma) is enough to get your PR accepted
+in most cases. Please do not add migrations unless discussed with a maintainer beforehand.
+
 ## Pull Requests
 
 To make review work easier, pull requests are requested to use [`fixup` commits](https://fle.github.io/git-tip-keep-your-branch-clean-with-fixup-and-autosquash.html)
