@@ -1,5 +1,5 @@
+import z from "@/api/zod";
 import { defineEndpoints } from "@/next_rest_framework/v1/client";
-import { z } from "zod";
 
 const todoSchema = z.object({
   id: z.string(),

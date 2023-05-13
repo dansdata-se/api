@@ -62,3 +62,20 @@ model VerificationToken {
   @@unique([identifier, token])
   @@schema("auth")
 }
+
+enum ImageVariant {
+  cover
+  poster
+  square
+
+  @@schema("storage")
+}
+
+model Image {
+  id           String       @id @default(uuid()) @db.Uuid
+  cloudflareId String       @unique
+  variant      ImageVariant
+
+  @@index([cloudflareId])
+  @@schema("storage")
+}

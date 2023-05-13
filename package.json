@@ -15,6 +15,7 @@
     "dev:vercel:pull": "vercel env pull .env.development.local"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^4.7.0",
     "@prisma/client": "^4.14.0",
     "@tailwindcss/typography": "^0.5.9",
     "@types/node": "20.1.4",

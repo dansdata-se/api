@@ -7,6 +7,13 @@
       {
         "patterns": [
           { "group": ["/.*"], "message": "Use `@/` for local imports." }
+        ],
+        "paths": [
+          {
+            "name": "zod",
+            "importNames": ["default", "z"],
+            "message": "Use `import z from \"@/api/zod\"` instead for consistent extensions."
+          }
         ]
       }
     ]

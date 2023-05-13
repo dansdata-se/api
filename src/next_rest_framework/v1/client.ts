@@ -1,3 +1,8 @@
+import { ImageDTOSchema } from "@/api/dto/storage/image";
+import {
+  OpenAPIGenerator,
+  OpenAPIRegistry,
+} from "@asteasolutions/zod-to-openapi";
 import { NextRestFramework } from "next-rest-framework";
 
 const servers: { url: string; description?: string }[] = [
@@ -7,6 +12,15 @@ const servers: { url: string; description?: string }[] = [
   },
   { url: "https://api.dansdata.se", description: "Production Environment" },
 ];
+
+// Register DTOs to make them show up in swagger
+const registry = new OpenAPIRegistry();
+registry.register("ImageDTO", ImageDTOSchema);
+
+const components = new OpenAPIGenerator(
+  registry.definitions,
+  "3.0.3"
+).generateComponents().components;
 
 export const { defineCatchAllHandler, defineEndpoints } = NextRestFramework({
   apiRoutesPath: "src/pages/api",
@@ -41,6 +55,7 @@ Dansdata is an open source project aiming to provide Swedish social dancing info
     },
     servers,
     components: {
+      ...components,
       securitySchemes: {
         apikey: {
           type: "apiKey",

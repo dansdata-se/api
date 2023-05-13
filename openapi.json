@@ -11,6 +11,36 @@
     }
   },
   "components": {
+    "schemas": {
+      "ImageDTO": {
+        "type": "object",
+        "properties": {
+          "cover": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "description": "Base URL for a landscape oriented image.\n\nAppend one of these postfixes to complete the url:\n\n| Postfix | Image dimensions |\n|--|--|\n| `/coverxl` | 1800x945 |\n| `/coverlg` | 1200x630 |\n| `/covermd` | 600x315 |\n| `/coversm` | 360x189 |\n",
+            "example": "https://imagedelivery.net/G8sMfYZUPWZLbBSEOOpxuw/9f67602f-43ba-4cee-7bd8-768b0c000f00"
+          },
+          "poster": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "description": "Base URL for a portrait oriented image.\n\nAppend one of these postfixes to complete the url:\n\n| Postfix | Image dimensions |\n|--|--|\n| `/posterxl` | 1400x1960 |\n| `/posterlg` | 1000x1400 |\n| `/postermd` | 600x840 |\n| `/postersm` | 320x448 |\n",
+            "example": "https://imagedelivery.net/G8sMfYZUPWZLbBSEOOpxuw/5fe2e728-7683-4dda-85ae-1672d4690400"
+          },
+          "square": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri",
+            "description": "Base URL for a square image.\n\nAppend one of these postfixes to complete the url:\n\n| Postfix | Image dimensions |\n|--|--|\n| `/squarexl` | 1500x1500 |\n| `/squarelg` | 900x900 |\n| `/squaremd` | 600x600 |\n| `/squaresm` | 320x320 |\n",
+            "example": "https://imagedelivery.net/G8sMfYZUPWZLbBSEOOpxuw/c261d5e6-7121-4589-6a0e-c54778609c00"
+          }
+        },
+        "required": ["cover", "poster", "square"]
+      }
+    },
+    "parameters": {},
     "securitySchemes": {
       "apikey": {
         "type": "apiKey",
