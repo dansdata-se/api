@@ -51,6 +51,12 @@ To run the API locally
 $ npm run dev
 ```
 
+To use [prisma studio](https://www.prisma.io/studio)
+
+```
+$ npm run dev:db:studio
+```
+
 ### Resetting the development database
 
 Ususally `npm run dev:db:push` should be enough to apply your prisma changes to the database.

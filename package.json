@@ -12,6 +12,7 @@
     "format": "prettier --write . && prisma format ./prisma",
     "dev:db:generate": "prisma generate",
     "dev:db:push": "dotenv -e .env.development.local prisma db push",
+    "dev:db:studio": "dotenv -e .env.development.local prisma studio",
     "dev:vercel:pull": "vercel env pull .env.development.local"
   },
   "dependencies": {
