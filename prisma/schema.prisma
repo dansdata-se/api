@@ -77,5 +77,6 @@ model Image {
   variant      ImageVariant
 
   @@index([cloudflareId])
+  @@map("images")
   @@schema("storage")
 }
