@@ -1,4 +1,4 @@
-import { ImageEntity } from "@prisma/client";
+import { ImageModel } from "@/model/storage/image";
 
 // Placeholder images for use e.g. in local development
 export const placeholderImage = {
@@ -27,7 +27,7 @@ if (cloudflareAccountHash === undefined) {
   }
 }
 
-export function imageToUrl(image: ImageEntity): string {
+export function imageToUrl(image: ImageModel): string {
   if (
     process.env.NODE_ENV === "development" &&
     cloudflareAccountHash === undefined
