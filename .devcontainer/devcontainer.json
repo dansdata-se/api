@@ -18,7 +18,8 @@
         "Prisma.prisma",
         "ms-azuretools.vscode-docker",
         "mtxr.sqltools-driver-pg",
-        "mtxr.sqltools"
+        "mtxr.sqltools",
+        "firsttris.vscode-jest-runner"
       ]
     }
   },

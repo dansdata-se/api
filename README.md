@@ -57,6 +57,37 @@ To use [prisma studio](https://www.prisma.io/studio)
 $ npm run dev:db:studio
 ```
 
+### Testing
+
+Unit tests can be run using
+
+```
+$ npm run test:unit
+```
+
+To run integration tests, you need to create a `.env.test.local` file at the project root (using
+the same variables as `.env.development.local`). These tests can then be executing using
+
+```
+$ npm run test:integration
+```
+
+To run all tests, simply use
+
+```
+$ npm run test:all
+```
+
+The group a test is in is determined by an initial documentation comment, e.g.:
+
+```typescript
+/**
+ * @group unit
+ */
+```
+
+See also [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups).
+
 ### Resetting the development database
 
 Ususally `npm run dev:db:push` should be enough to apply your prisma changes to the database.
