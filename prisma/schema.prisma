@@ -71,18 +71,18 @@ enum ProfileType {
   @@schema("profiles")
 }
 
-model Profile {
-  id           String         @id @default(cuid())
+model ProfileEntity {
+  id           String               @id @default(cuid())
   type         ProfileType
   name         String
   description  String
-  createdAt    DateTime       @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
+  createdAt    DateTime             @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
   tags         Tag[]
-  images       ProfileImage[]
-  links        ProfileLink[]
-  organization Organization?
-  individual   Individual?
-  venue        Venue?
+  images       ProfileImageEntity[]
+  links        ProfileLinkEntity[]
+  organization OrganizationEntity?
+  individual   IndividualEntity?
+  venue        VenueEntity?
 
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
   @@index([tags], type: Gin)
@@ -90,12 +90,12 @@ model Profile {
   @@schema("profiles")
 }
 
-model ProfileImage {
-  id        String  @id @default(cuid())
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Restrict)
-  profileId String  @map("profile_id")
-  image     Image   @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  imageId   String  @map("image_id")
+model ProfileImageEntity {
+  id        String        @id @default(cuid())
+  profile   ProfileEntity @relation(fields: [profileId], references: [id], onDelete: Restrict)
+  profileId String        @map("profile_id")
+  image     ImageEntity   @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId   String        @map("image_id")
 
   @@index([profileId])
   @@index([imageId])
@@ -103,40 +103,40 @@ model ProfileImage {
   @@schema("profiles")
 }
 
-model ProfileLink {
-  id        Int     @id @default(autoincrement())
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  profileId String  @map("profile_id")
+model ProfileLinkEntity {
+  id        Int           @id @default(autoincrement())
+  profile   ProfileEntity @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String        @map("profile_id")
   url       String
 
   @@map("profile_links")
   @@schema("profiles")
 }
 
-model Organization {
-  profile   Profile              @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  profileId String               @id @map("profile_id")
-  members   OrganizationMember[]
+model OrganizationEntity {
+  profile   ProfileEntity              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String                     @id @map("profile_id")
+  members   OrganizationMemberEntity[]
 
   @@map("organizations")
   @@schema("profiles")
 }
 
-model Individual {
-  profile       Profile              @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  profileId     String               @id @map("profile_id")
-  organizations OrganizationMember[]
+model IndividualEntity {
+  profile       ProfileEntity              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId     String                     @id @map("profile_id")
+  organizations OrganizationMemberEntity[]
 
   @@map("individuals")
   @@schema("profiles")
 }
 
-model Venue {
-  profile     Profile                               @relation(fields: [profileId], references: [id], onDelete: Cascade)
+model VenueEntity {
+  profile     ProfileEntity                         @relation(fields: [profileId], references: [id], onDelete: Cascade)
   profileId   String                                @id @map("profile_id")
-  parent      Venue?                                @relation("ChildVenues", fields: [parentId], references: [profileId], onDelete: SetNull)
+  parent      VenueEntity?                          @relation("ChildVenues", fields: [parentId], references: [profileId], onDelete: SetNull)
   parentId    String?                               @map("parent_id")
-  childVenues Venue[]                               @relation("ChildVenues")
+  childVenues VenueEntity[]                         @relation("ChildVenues")
   coords      Unsupported("geography(Point, 4326)")
 
   @@index([coords], type: Gist)
@@ -144,12 +144,12 @@ model Venue {
   @@schema("profiles")
 }
 
-model OrganizationMember {
-  id             Int          @id @default(autoincrement())
-  organization   Organization @relation(fields: [organizationId], references: [profileId], onDelete: Cascade)
-  organizationId String       @map("organization_id")
-  individual     Individual   @relation(fields: [individualId], references: [profileId], onDelete: Cascade)
-  individualId   String       @map("individual_id")
+model OrganizationMemberEntity {
+  id             Int                @id @default(autoincrement())
+  organization   OrganizationEntity @relation(fields: [organizationId], references: [profileId], onDelete: Cascade)
+  organizationId String             @map("organization_id")
+  individual     IndividualEntity   @relation(fields: [individualId], references: [profileId], onDelete: Cascade)
+  individualId   String             @map("individual_id")
   title          String
 
   @@map("organization_members")
@@ -168,7 +168,7 @@ enum Tag {
   @@schema("profiles")
 }
 
-model TagDetails {
+model TagDetailEntity {
   tag                    Tag     @id
   label                  String
   description            String
@@ -188,11 +188,11 @@ enum ImageVariant {
   @@schema("storage")
 }
 
-model Image {
-  id           String         @id @default(cuid())
-  cloudflareId String         @unique @map("cloudflare_id")
+model ImageEntity {
+  id           String               @id @default(cuid())
+  cloudflareId String               @unique @map("cloudflare_id")
   variant      ImageVariant
-  profileImage ProfileImage[]
+  profileImage ProfileImageEntity[]
 
   @@index([cloudflareId])
   @@map("images")
