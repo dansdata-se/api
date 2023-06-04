@@ -42,3 +42,6 @@ next-env.d.ts
 
 # SQLTools VSCode plugin
 *.session.sql
+
+# Generated openapi spec
+public/api/v1/dansdata.api.json

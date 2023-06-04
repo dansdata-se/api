@@ -37,6 +37,7 @@ POSTGRES_USER="default"
 POSTGRES_HOST="db"
 POSTGRES_PASSWORD="postgres"
 POSTGRES_DATABASE="verceldb"
+PLACEHOLDER_AUTH_KEY="mysuperstrongauthkey"
 ```
 
 To initialize/update your development database to match your current state:

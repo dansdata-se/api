@@ -18,6 +18,13 @@
       "@/*": ["./src/*"]
     }
   },
+  "ts-node": {
+    "esm": true,
+    "compilerOptions": {
+      "module": "nodenext"
+    },
+    "require": ["tsconfig-paths/register"]
+  },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
