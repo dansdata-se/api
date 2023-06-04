@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky install",
+    "postinstall": "prisma generate",
     "dev": "dotenv -e .env.development.local nodemon -- --watch 'src/**/*' --ignore '**/*.test.ts' --ignore '**/*.test.tsx' --exec \"ts-node\" src/__build__/api_docs.ts & next dev",
     "build": "ts-node src/__build__/api_docs.ts && next build",
     "start": "next start",
