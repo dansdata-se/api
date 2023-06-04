@@ -27,3 +27,9 @@ https://stackoverflow.com/a/17555766/1137077
     @apply h-full;
   }
 }
+
+@layer components {
+  a {
+    @apply text-primary underline;
+  }
+}
