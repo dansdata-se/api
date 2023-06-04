@@ -6,6 +6,7 @@ const createJestConfig = nextJest({
 
 /** @type {import('jest').Config} */
 const config = {
+  setupFilesAfterEnv: ["<rootDir>/src/__test__/jest.setup.ts"],
   testEnvironment: "jest-environment-jsdom",
   runner: "groups",
   moduleNameMapper: {

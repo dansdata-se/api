@@ -1,5 +1,23 @@
+import { registry } from "@/api/registry";
 import z from "@/api/zod";
 import { imageToUrl, placeholderImage } from "@/cloudflare";
+
+export type CreateImageUploadUrlDTO = z.infer<
+  typeof CreateImageUploadUrlDTOSchema
+>;
+export const CreateImageUploadUrlDTOSchema = registry.register(
+  "CreateImageUploadUrlDTO",
+  z.object({
+    id: z.string().openapi({
+      description:
+        "An id for this image upload.\n\nThis id can be used to refer to the uploaded image e.g. when adding images to a profile.",
+    }),
+    uploadURL: z.string().url().openapi({
+      description:
+        "A url to which an image can be uploaded.\n\nPlease see [Cloudflare's documentation](https://developers.cloudflare.com/images/cloudflare-images/upload-images/direct-creator-upload/) for details on how to use this url to upload an image.",
+    }),
+  })
+);
 
 export type ImageDTO = z.infer<typeof ImageDTOSchema>;
 export const ImageDTOSchema = registry.register(

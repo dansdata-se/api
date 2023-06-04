@@ -23,13 +23,20 @@ async function loadAllProjectModules() {
   const excludedDirs = [
     // Exclude build directory to avoid executing build-scripts.
     __dirname,
+    "**/__test__",
   ];
 
   function walkDir(dir: string, callback: (filePath: string) => void) {
     readdirSync(dir).forEach((fileName) => {
       const filePath = path.join(dir, fileName);
       if (statSync(filePath).isDirectory()) {
-        if (excludedDirs.every((path) => !pathEqual(filePath, path))) {
+        if (
+          excludedDirs.every((dirPath) =>
+            dirPath.startsWith("**/")
+              ? path.basename(filePath) !== dirPath.substring(3)
+              : !pathEqual(filePath, dirPath)
+          )
+        ) {
           walkDir(filePath, callback);
         }
       } else if (filePath.endsWith(".ts") && !filePath.endsWith(".test.ts")) {
@@ -76,6 +83,12 @@ Dansdata is an open source project aiming to provide Swedish social dancing info
         email: "dansdata@googlegroups.com",
       },
     },
+    tags: [
+      {
+        name: "Storage",
+        description: "Images and other file-related endpoints.",
+      },
+    ],
     servers: [
       {
         url: "/",
