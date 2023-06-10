@@ -13,7 +13,10 @@ jest.mock("@/db", () => ({
 // prettier-ignore
 import { prisma } from "@/db";
 
-import { ImageDAO, ImageNotUploadedToCloudflareError } from "@/db/dao/image";
+import {
+  ImageDAO,
+  ImageNotUploadedToCloudflareError,
+} from "@/db/dao/storage/image";
 import fetch from "jest-fetch-mock";
 
 describe("ImageDAO unit tests", () => {

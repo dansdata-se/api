@@ -5,7 +5,7 @@ import {
   CreateImageUploadUrlDTO,
   CreateImageUploadUrlDTOSchema,
 } from "@/api/dto/storage/image";
-import { ImageDAO } from "@/db/dao/image";
+import { ImageDAO } from "@/db/dao/storage/image";
 import { NextApiResponse } from "next";
 
 export default defineEndpoints({
