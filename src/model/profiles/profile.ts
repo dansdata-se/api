@@ -1,14 +1,18 @@
 import { CoordsModel } from "@/model/profiles/coords";
 import { ImagesModel } from "@/model/profiles/images";
 import { LinkModel } from "@/model/profiles/link";
-import { ProfileEntity, ProfileType } from "@prisma/client";
+import {
+  IndividualTag,
+  OrganizationTag,
+  ProfileEntity,
+  ProfileType,
+} from "@prisma/client";
 
 type BaseProfileModel = {
   id: ProfileEntity["id"];
   type: ProfileType;
   name: string;
   description: string;
-  tags: ProfileEntity["tags"];
   links: LinkModel[];
   images: ImagesModel;
 };
@@ -17,9 +21,17 @@ type ProfileReferenceModel = {
   id: BaseProfileModel["id"];
   type: ProfileType;
   name: BaseProfileModel["name"];
-  tags: BaseProfileModel["tags"];
   images: BaseProfileModel["images"];
-};
+} & (
+  | {
+      type: typeof ProfileType.organization;
+      tags: Array<OrganizationTag>;
+    }
+  | {
+      type: typeof ProfileType.individual;
+      tags: Array<IndividualTag>;
+    }
+);
 
 export type OrganizationProfileModel = BaseProfileModel & {
   type: typeof ProfileType.organization;

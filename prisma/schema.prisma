@@ -77,7 +77,6 @@ model ProfileEntity {
   name         String
   description  String
   createdAt    DateTime             @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
-  tags         Tag[]
   images       ProfileImageEntity[]
   links        ProfileLinkEntity[]
   organization OrganizationEntity?
@@ -85,7 +84,6 @@ model ProfileEntity {
   venue        VenueEntity?
 
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
-  @@index([tags], type: Gin)
   @@map("profiles")
   @@schema("profiles")
 }
@@ -117,8 +115,29 @@ model OrganizationEntity {
   profile   ProfileEntity              @relation(fields: [profileId], references: [id], onDelete: Cascade)
   profileId String                     @id @map("profile_id")
   members   OrganizationMemberEntity[]
+  tags      OrganizationTag[]
 
+  @@index([tags], type: Gin)
   @@map("organizations")
+  @@schema("profiles")
+}
+
+enum OrganizationTag {
+  performer // A band or an artist who may be booked for a performance
+  educator // A company or association offering dance classes
+  organizer // A company or association that organizes events
+  photographer // A company or association that captures photos at dance events
+  booking_agent // A company or association that handles band and artist bookings
+
+  @@schema("profiles")
+}
+
+model OrganizationTagDetail {
+  tag         OrganizationTag @id
+  label       String
+  description String
+
+  @@map("organization_tags")
   @@schema("profiles")
 }
 
@@ -126,8 +145,29 @@ model IndividualEntity {
   profile       ProfileEntity              @relation(fields: [profileId], references: [id], onDelete: Cascade)
   profileId     String                     @id @map("profile_id")
   organizations OrganizationMemberEntity[]
+  tags          IndividualTag[]
 
+  @@index([tags], type: Gin)
   @@map("individuals")
+  @@schema("profiles")
+}
+
+enum IndividualTag {
+  musician // A person who performs music, with or without an instruments
+  songwriter // A person who writes music
+  instructor // A person who teaches dance
+  organizer // A person who organizes events
+  photographer // A person who captures photos at dance events
+
+  @@schema("profiles")
+}
+
+model IndividualTagDetail {
+  tag         IndividualTag @id
+  label       String
+  description String
+
+  @@map("individual_tags")
   @@schema("profiles")
 }
 
@@ -153,30 +193,6 @@ model OrganizationMemberEntity {
   title          String
 
   @@map("organization_members")
-  @@schema("profiles")
-}
-
-enum Tag {
-  performer // An entity which may be booked for a performance
-  musician // An individual who performs music but may not be booked for a performance by themselves
-  educator // An entity offering dance classes
-  instructor // An individual who teaches dance
-  organizer // An entity that organizes events
-  photographer // An entity that captures photos at dance events
-  booking_agent // An entity that handles bookings
-
-  @@schema("profiles")
-}
-
-model TagDetailEntity {
-  tag                    Tag     @id
-  label                  String
-  description            String
-  appliesToOrganizations Boolean @map("applies_to_organizations")
-  appliesToIndividuals   Boolean @map("applies_to_individuals")
-  appliesToVenues        Boolean @map("applies_to_venues")
-
-  @@map("tags")
   @@schema("profiles")
 }
 
