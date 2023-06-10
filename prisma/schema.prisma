@@ -107,6 +107,8 @@ model ProfileLinkEntity {
   profileId String        @map("profile_id")
   url       String
 
+  @@unique([profileId, url])
+  @@index([profileId])
   @@map("profile_links")
   @@schema("profiles")
 }
