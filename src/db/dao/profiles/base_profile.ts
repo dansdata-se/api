@@ -3,6 +3,7 @@ import { imageEntitiesToImagesModel } from "@/db/dao/storage/image";
 import { BaseProfileModel } from "@/model/profiles/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
 
+export type BaseProfileDAOType = typeof BaseProfileDAO;
 /**
  * DAO for working with profiles based on their common fields
  */
