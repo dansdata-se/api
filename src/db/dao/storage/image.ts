@@ -1,7 +1,8 @@
 import { cloudflareApi } from "@/cloudflare/api";
 import { prisma } from "@/db";
+import { ImagesModel } from "@/model/profiles/images";
 import { ImageModel, ImageUploadUrlModel } from "@/model/storage/image";
-import { ImageEntity } from "@prisma/client";
+import { ImageEntity, ImageVariant } from "@prisma/client";
 
 export class ImageNotUploadedToCloudflareError extends Error {}
 export class ImageInUseError extends Error {}
@@ -12,6 +13,16 @@ function imageEntityToImageModel(entity: ImageEntity): ImageModel {
     cloudflareId: entity.cloudflareId,
     variant: entity.variant,
   };
+}
+
+export function imageEntitiesToImagesModel(images: ImageEntity[]): ImagesModel {
+  return Object.fromEntries(
+    Object.values(ImageVariant).map((variant) => {
+      const image = images.find((it) => it.variant === variant);
+      if (image === undefined) return [variant, null] as const;
+      return [variant, imageEntityToImageModel(image)];
+    })
+  ) as ImagesModel;
 }
 
 export const ImageDAO = {
