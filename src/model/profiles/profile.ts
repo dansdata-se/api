@@ -2,13 +2,21 @@ import { CoordsModel } from "@/model/profiles/coords";
 import { ImagesModel } from "@/model/profiles/images";
 import { LinkModel } from "@/model/profiles/link";
 import {
+  IndividualReferenceModel,
+  OrganizationReferenceModel,
+  VenueReferenceModel,
+} from "@/model/profiles/profile_reference";
+import {
   IndividualTag,
   OrganizationTag,
   ProfileEntity,
   ProfileType,
 } from "@prisma/client";
 
-type BaseProfileModel = {
+/**
+ * Represents the common properties for full profiles.
+ */
+export type BaseProfileModel = {
   id: ProfileEntity["id"];
   type: ProfileType;
   name: string;
@@ -17,58 +25,49 @@ type BaseProfileModel = {
   images: ImagesModel;
 };
 
-type ProfileReferenceModel = {
-  id: BaseProfileModel["id"];
-  type: ProfileType;
-  name: BaseProfileModel["name"];
-  images: BaseProfileModel["images"];
-} & (
-  | {
-      type: typeof ProfileType.organization;
-      tags: Array<OrganizationTag>;
-    }
-  | {
-      type: typeof ProfileType.individual;
-      tags: Array<IndividualTag>;
-    }
-);
-
-export type OrganizationProfileModel = BaseProfileModel & {
+/**
+ * Represents the full profile of an organization.
+ */
+export type OrganizationModel = BaseProfileModel & {
   type: typeof ProfileType.organization;
-  members: Array<
-    ProfileReferenceModel & { type: typeof ProfileType.individual }
-  >;
+  tags: Array<OrganizationTag>;
+  members: Array<IndividualReferenceModel>;
 };
-export type IndividualProfileModel = BaseProfileModel & {
+
+/**
+ * Represents the full profile of an individual.
+ */
+export type IndividualModel = BaseProfileModel & {
   type: typeof ProfileType.individual;
-  organizations: Array<
-    ProfileReferenceModel & { type: typeof ProfileType.organization }
-  >;
+  tags: Array<IndividualTag>;
+  organizations: Array<OrganizationReferenceModel>;
 };
-export type VenueProfileModel = BaseProfileModel & {
+
+/**
+ * Represents the full profile of a venue.
+ */
+export type VenueModel = BaseProfileModel & {
   type: typeof ProfileType.venue;
   coords: CoordsModel;
-  parent: (ProfileReferenceModel & { type: typeof ProfileType.venue }) | null;
-  children: Array<ProfileReferenceModel & { type: typeof ProfileType.venue }>;
+  parent: VenueReferenceModel | null;
+  children: Array<VenueReferenceModel>;
 };
 
-export type ProfileModel =
-  | IndividualProfileModel
-  | OrganizationProfileModel
-  | VenueProfileModel;
+/**
+ * Represents a full profile.
+ */
+export type ProfileModel = IndividualModel | OrganizationModel | VenueModel;
 
 export function isOrganizationModel(
   profile: ProfileModel
-): profile is OrganizationProfileModel {
+): profile is OrganizationModel {
   return profile.type === "organization";
 }
 export function isIndividualModel(
   profile: ProfileModel
-): profile is IndividualProfileModel {
+): profile is IndividualModel {
   return profile.type === "individual";
 }
-export function isVenueModel(
-  profile: ProfileModel
-): profile is VenueProfileModel {
+export function isVenueModel(profile: ProfileModel): profile is VenueModel {
   return profile.type === "venue";
 }
