@@ -110,12 +110,16 @@ export default function DocumentationPage() {
           </div>
           <div className="md:place-self-center md:justify-self-end">
             <a
-              href={`https://github.com/dansdata-se/api/tree/${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA}`}
+              href={`https://github.com/dansdata-se/api/tree/${
+                process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? "main"
+              }`}
               target="_blank"
               className="link link-hover text-xs"
             >
-              {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF}:
-              {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 7)}
+              {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF ?? "{unknown ref}"}
+              :
+              {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 7) ??
+                "{unknown sha}"}
             </a>
           </div>
         </footer>

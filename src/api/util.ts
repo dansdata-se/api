@@ -12,14 +12,14 @@ import { fromZodError } from "zod-validation-error";
  */
 export async function withParsedObject<T extends z.ZodSchema>(
   schema: T,
-  obj: any,
+  obj: unknown,
   res: NextApiResponse,
   errorCode: ErrorCode,
   callback: (obj: z.infer<T>) => Promise<void>
 ): Promise<void> {
   const parseResult = schema.safeParse(obj);
-  if (parseResult.success === true) {
-    return callback(parseResult.data);
+  if (parseResult.success) {
+    return callback(parseResult.data as z.infer<T>);
   } else {
     const validationError = fromZodError(parseResult.error);
     res.setHeader("content-type", "application/json");

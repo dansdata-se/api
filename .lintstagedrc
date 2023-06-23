@@ -1,5 +1,0 @@
-{
-  "*.ts|*.js|*.tsx|*.jsx": ["eslint --fix", "prettier --write"],
-  "!(*.ts|*.js|*.tsx|*.jsx|*.prisma)": "prettier --write --ignore-unknown",
-  "*.prisma": "prisma format"
-}

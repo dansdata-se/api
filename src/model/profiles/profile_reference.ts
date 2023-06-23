@@ -16,12 +16,12 @@ import {
  *
  * @see {@link ProfileReferenceModel}
  */
-export type BaseProfileReferenceModel = {
+export interface BaseProfileReferenceModel {
   id: ProfileEntity["id"];
   type: ProfileType;
   name: string;
   images: ImagesModel;
-};
+}
 
 /**
  * Represents a reference to an Organization.
@@ -34,7 +34,7 @@ export type BaseProfileReferenceModel = {
  */
 export type OrganizationReferenceModel = BaseProfileReferenceModel & {
   type: typeof ProfileType.organization;
-  tags: Array<OrganizationTag>;
+  tags: OrganizationTag[];
 };
 
 /**
@@ -48,7 +48,7 @@ export type OrganizationReferenceModel = BaseProfileReferenceModel & {
  */
 export type IndividualReferenceModel = BaseProfileReferenceModel & {
   type: typeof ProfileType.individual;
-  tags: Array<IndividualTag>;
+  tags: IndividualTag[];
 };
 /**
  * Represents a reference to a Venue.

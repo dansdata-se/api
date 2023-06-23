@@ -1,7 +1,7 @@
 import { ImageModel } from "@/model/storage/image";
 
-export type ImagesModel = {
+export interface ImagesModel {
   cover: ImageModel | null;
   poster: ImageModel | null;
   square: ImageModel | null;
-};
+}

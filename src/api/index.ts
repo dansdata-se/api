@@ -6,25 +6,23 @@ import z from "@/api/zod";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export type Endpoint = {
+export interface Endpoint {
   authenticated: boolean;
   docs: RouteConfig;
-  handler(
+  handler<T>(
     req: NextApiRequest,
     res: NextApiResponse,
-    params: {
-      [x: string]: any;
-    }
+    params: Record<string, T>
   ): Promise<void>;
-};
-export type Endpoints = {
+}
+export interface Endpoints {
   HEAD: Endpoint;
   GET: Endpoint;
   POST: Endpoint;
   PUT: Endpoint;
   DELETE: Endpoint;
   PATCH: Endpoint;
-};
+}
 
 export function defineEndpoints(
   endpoints: Partial<Endpoints>

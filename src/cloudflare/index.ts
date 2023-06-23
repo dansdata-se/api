@@ -28,10 +28,7 @@ if (cloudflareAccountHash === undefined) {
 }
 
 export function imageToUrl(image: ImageModel): string {
-  if (
-    process.env.NODE_ENV === "development" &&
-    cloudflareAccountHash === undefined
-  ) {
+  if (cloudflareAccountHash === undefined) {
     switch (image.variant) {
       case "cover":
         return `https://imagedelivery.net/${placeholderImage.accountHash}/${placeholderImage.cover.cloudflareId}`;

@@ -22,6 +22,9 @@ export function isAuthenticated(req: NextApiRequest) {
  * Whether an authenticated (see {@link isAuthenticated}) user has enough
  * permissions to access the requested resource.
  */
-export function isAuthorized(_: NextApiRequest) {
+export function isAuthorized(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _: NextApiRequest
+) {
   return true;
 }

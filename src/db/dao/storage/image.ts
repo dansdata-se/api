@@ -22,7 +22,7 @@ export function imageEntitiesToImagesModel(images: ImageEntity[]): ImagesModel {
       if (image === undefined) return [variant, null] as const;
       return [variant, imageEntityToImageModel(image)];
     })
-  ) as ImagesModel;
+  ) as unknown as ImagesModel;
 }
 
 export const ImageDAO = {
@@ -123,7 +123,7 @@ export const ImageDAO = {
    */
   async deleteById(
     id: ImageModel["id"],
-    force: boolean = false
+    force = false
   ): Promise<ImageModel | null> {
     const image = await prisma.imageEntity.findUnique({
       where: {
@@ -180,7 +180,7 @@ export const ImageDAO = {
    */
   async deleteByCloudflareId(
     cloudflareId: ImageModel["cloudflareId"],
-    force: boolean = false
+    force = false
   ) {
     const image = await this.getByCloudflareId(cloudflareId);
     if (image === null) return null;

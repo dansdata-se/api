@@ -1,3 +1,3 @@
-export type LinkModel = {
+export interface LinkModel {
   url: string;
-};
+}

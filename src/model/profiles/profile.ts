@@ -16,42 +16,42 @@ import {
 /**
  * Represents the common properties for full profiles.
  */
-export type BaseProfileModel = {
+export interface BaseProfileModel {
   id: ProfileEntity["id"];
   type: ProfileType;
   name: string;
   description: string;
   links: LinkModel[];
   images: ImagesModel;
-};
+}
 
 /**
  * Represents the full profile of an organization.
  */
-export type OrganizationModel = BaseProfileModel & {
+export interface OrganizationModel extends BaseProfileModel {
   type: typeof ProfileType.organization;
-  tags: Array<OrganizationTag>;
-  members: Array<IndividualReferenceModel>;
-};
+  tags: OrganizationTag[];
+  members: IndividualReferenceModel[];
+}
 
 /**
  * Represents the full profile of an individual.
  */
-export type IndividualModel = BaseProfileModel & {
+export interface IndividualModel extends BaseProfileModel {
   type: typeof ProfileType.individual;
-  tags: Array<IndividualTag>;
-  organizations: Array<OrganizationReferenceModel>;
-};
+  tags: IndividualTag[];
+  organizations: OrganizationReferenceModel[];
+}
 
 /**
  * Represents the full profile of a venue.
  */
-export type VenueModel = BaseProfileModel & {
+export interface VenueModel extends BaseProfileModel {
   type: typeof ProfileType.venue;
   coords: CoordsModel;
   parent: VenueReferenceModel | null;
-  children: Array<VenueReferenceModel>;
-};
+  children: VenueReferenceModel[];
+}
 
 /**
  * Represents a full profile.

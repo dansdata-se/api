@@ -1,4 +1,4 @@
-export type CoordsModel = {
+export interface CoordsModel {
   lat: number;
   lng: number;
-};
+}

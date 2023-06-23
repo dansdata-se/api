@@ -45,7 +45,7 @@ async function loadAllProjectModules() {
     });
   }
 
-  const imports: Array<Promise<any>> = [];
+  const imports: Promise<unknown>[] = [];
   walkDir(srcDir, (filePath) => {
     imports.push(import(filePath));
   });
@@ -114,4 +114,4 @@ async function writeDocumentation() {
   });
 }
 
-writeDocumentation();
+void writeDocumentation();

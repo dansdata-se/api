@@ -190,11 +190,11 @@ describe("OrganizationDAO unit tests", () => {
     );
     IndividualDAOMock.getReferenceById.mockImplementation(async (id) => {
       if (id === individual1ReferenceModel.id) {
-        return individual1ReferenceModel;
+        return Promise.resolve(individual1ReferenceModel);
       } else if (id === individual2ReferenceModel.id) {
-        return individual2ReferenceModel;
+        return Promise.resolve(individual2ReferenceModel);
       } else {
-        throw `Unsupported id: ${id}`;
+        throw new Error(`Unsupported id: ${id}`);
       }
     });
 

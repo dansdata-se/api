@@ -51,9 +51,9 @@ describe("API utilities", () => {
       expected,
     }: {
       schema: z.ZodSchema;
-      obj: any;
+      obj: unknown;
       errorCode?: ErrorCode;
-      expected?: any;
+      expected?: unknown;
     }) => {
       const res: MockResponse<NextApiResponse> = createResponse();
 
@@ -62,13 +62,14 @@ describe("API utilities", () => {
         obj,
         res,
         errorCode ?? ErrorCode.invalidBody,
-        async (parsed) => {
+        (parsed) => {
           if (errorCode === undefined) {
             expect(parsed).toEqual(expected);
             res.status(200).end();
           } else {
             fail("Callback should not run if an error is expected");
           }
+          return Promise.resolve();
         }
       );
 

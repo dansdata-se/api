@@ -30,12 +30,17 @@ const api = wretch("https://api.cloudflare.com/client/v4/") //
         return next(url, opts);
       },
   ])
-  .auth(`Bearer ${cloudflareApiToken}`);
+  .auth(cloudflareApiToken ? `Bearer ${cloudflareApiToken}` : "");
 
 export const cloudflareApi = {
   images: {
-    createImageUploadUrl: (params: CloudflareDirectUploadParameters) =>
-      api
+    createImageUploadUrl: (params: CloudflareDirectUploadParameters) => {
+      if (!cloudflareAccountId) {
+        throw new Error(
+          "CLOUDFLARE_ACCOUNT_ID is not set. The cloudflare API cannot be used."
+        );
+      }
+      return api
         .url(`accounts/${cloudflareAccountId}/images/v2/direct_upload`)
         .formData({
           ...params,
@@ -45,10 +50,16 @@ export const cloudflareApi = {
           async (r) =>
             await CloudflareDirectUploadDTOSchema.parseAsync(await r.json())
         )
-        .post(),
+        .post();
+    },
 
-    isUploaded: (cloudflareImageId: string): Promise<boolean> =>
-      api
+    isUploaded: (cloudflareImageId: string): Promise<boolean> => {
+      if (!cloudflareAccountId) {
+        throw new Error(
+          "CLOUDFLARE_ACCOUNT_ID is not set. The cloudflare API cannot be used."
+        );
+      }
+      return api
         .url(`accounts/${cloudflareAccountId}/images/v1/${cloudflareImageId}`)
         .resolve((r) =>
           r
@@ -58,15 +69,22 @@ export const cloudflareApi = {
                 !(await CloudflareImageDTOSchema.parseAsync(r)).result.draft
             )
         )
-        .get(),
+        .get();
+    },
 
-    delete: (cloudflareImageId: string) =>
-      api
+    delete: (cloudflareImageId: string) => {
+      if (!cloudflareAccountId) {
+        throw new Error(
+          "CLOUDFLARE_ACCOUNT_ID is not set. The cloudflare API cannot be used."
+        );
+      }
+      return api
         .url(`accounts/${cloudflareAccountId}/images/v1/${cloudflareImageId}`)
         .resolve(
           async (r) =>
             await CloudflareResultDTOSchema.parseAsync(await r.json())
         )
-        .delete(),
+        .delete();
+    },
   },
 };

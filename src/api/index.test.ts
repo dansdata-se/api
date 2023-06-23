@@ -10,8 +10,10 @@ import { createMocks } from "node-mocks-http";
 const authorizationHeaderValue = "Bearer aBearerToken";
 const xUserRoleHeaderValue = "aRoleWithAccess";
 jest.mock("@/api/auth", () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const original = jest.requireActual("@/api/auth");
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     __esModule: true,
     ...original,
@@ -42,7 +44,9 @@ function makeDummyEndpoint({
         },
       },
     },
-    async handler(_, __, ___) {},
+    async handler() {
+      // dummy - do nothing
+    },
   };
 }
 
@@ -117,7 +121,7 @@ describe("API core", () => {
         }),
       },
     },
-  ] as Array<{ endpoints: Parameters<typeof defineEndpoints>[0]; expected: string }>)(
+  ] as { endpoints: Parameters<typeof defineEndpoints>[0]; expected: string }[])(
     "responds to OPTIONS request %#",
     async ({ endpoints, expected }) => {
       //#region arrange
@@ -295,8 +299,9 @@ describe("API core", () => {
 
   test("executes handler when accessing a protected resource with valid credentials", async () => {
     //#region arrange
-    const mockHandler = jest.fn(async (_, res: NextApiResponse, ___) => {
+    const mockHandler = jest.fn((_, res: NextApiResponse) => {
       res.status(200).end();
+      return Promise.resolve();
     });
     const handler = defineEndpoints({
       GET: {
