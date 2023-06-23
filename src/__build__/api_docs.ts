@@ -1,5 +1,5 @@
 import { registry } from "@/api/registry";
-import { OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
+import { OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
 import {
   accessSync,
   constants,
@@ -53,10 +53,10 @@ async function loadAllProjectModules() {
 }
 
 function getOpenApiDocumentation() {
-  const generator = new OpenApiGeneratorV3(registry.definitions);
+  const generator = new OpenApiGeneratorV31(registry.definitions);
 
   return generator.generateDocument({
-    openapi: "3.0.3",
+    openapi: "3.1.0",
     info: {
       title: "Dansdata API",
       description: `
