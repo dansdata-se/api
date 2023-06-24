@@ -1,7 +1,7 @@
 module.exports = {
   extends: ["next/core-web-vitals", "prettier"],
   parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "@ts-safeql/eslint-plugin"],
   overrides: [
     {
       files: ["*.ts", "*.tsx"],
@@ -29,6 +29,19 @@ module.exports = {
             importNames: ["default", "z"],
             message:
               'Use `import z from "@/api/zod"` instead for consistent extensions.',
+          },
+        ],
+      },
+    ],
+    "@ts-safeql/check-sql": [
+      "error",
+      {
+        connections: [
+          {
+            migrationsDir: "./prisma/migrations",
+            targets: [
+              { tag: "prisma.+($queryRaw|$executeRaw)", transform: "{type}[]" },
+            ],
           },
         ],
       },
