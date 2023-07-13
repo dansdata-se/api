@@ -68,6 +68,7 @@ enum ProfileType {
   individual
   venue
 
+  @@map("profile_type")
   @@schema("profiles")
 }
 
@@ -131,6 +132,7 @@ enum OrganizationTag {
   photographer // A company or association that captures photos at dance events
   booking_agent // A company or association that handles band and artist bookings
 
+  @@map("organization_tag")
   @@schema("profiles")
 }
 
@@ -161,6 +163,7 @@ enum IndividualTag {
   organizer // A person who organizes events
   photographer // A person who captures photos at dance events
 
+  @@map("individual_tag")
   @@schema("profiles")
 }
 
@@ -203,6 +206,7 @@ enum ImageVariant {
   poster
   square
 
+  @@map("image_variant")
   @@schema("storage")
 }
 
