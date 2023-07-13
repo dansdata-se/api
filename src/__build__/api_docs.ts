@@ -39,7 +39,11 @@ async function loadAllProjectModules() {
         ) {
           walkDir(filePath, callback);
         }
-      } else if (filePath.endsWith(".ts") && !filePath.endsWith(".test.ts")) {
+      } else if (
+        filePath.endsWith(".ts") &&
+        !filePath.endsWith(".test.ts") &&
+        !filePath.endsWith(".d.ts")
+      ) {
         callback(filePath);
       }
     });
