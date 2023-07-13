@@ -50,6 +50,7 @@ export interface VenueModel extends BaseProfileModel {
   type: typeof ProfileType.venue;
   coords: CoordsModel;
   parent: VenueReferenceModel | null;
+  rootParent: VenueReferenceModel | null;
   children: VenueReferenceModel[];
 }
 
