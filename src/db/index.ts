@@ -1,3 +1,4 @@
+import { extendWithVenueFeatures } from "@/db/venues";
 import { PrismaClient } from "@prisma/client";
 
-export const prisma = new PrismaClient();
+export const prisma = extendWithVenueFeatures(new PrismaClient());
