@@ -25,6 +25,6 @@
     },
     "require": ["tsconfig-paths/register"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", ".eslintrc.cjs", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
