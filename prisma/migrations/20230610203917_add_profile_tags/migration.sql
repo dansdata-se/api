@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "profiles"."OrganizationTag" AS ENUM (
+CREATE TYPE "profiles"."organization_tag" AS ENUM (
     'performer',
     'educator',
     'organizer',
@@ -8,7 +8,7 @@ CREATE TYPE "profiles"."OrganizationTag" AS ENUM (
 );
 -- CreateTable
 CREATE TABLE "profiles"."organization_tags" (
-    "tag" "profiles"."OrganizationTag" NOT NULL,
+    "tag" "profiles"."organization_tag" NOT NULL,
     "label" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     CONSTRAINT "organization_tags_pkey" PRIMARY KEY ("tag")
@@ -46,7 +46,7 @@ VALUES (
         'Företag eller förening som samordnar bokningar för artister och band',
     );
 -- CreateEnum
-CREATE TYPE "profiles"."IndividualTag" AS ENUM (
+CREATE TYPE "profiles"."individual_tag" AS ENUM (
     'musician',
     'songwriter',
     'instructor',
@@ -55,7 +55,7 @@ CREATE TYPE "profiles"."IndividualTag" AS ENUM (
 );
 -- CreateTable
 CREATE TABLE "profiles"."individual_tags" (
-    "tag" "profiles"."IndividualTag" NOT NULL,
+    "tag" "profiles"."individual_tag" NOT NULL,
     "label" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     CONSTRAINT "individual_tags_pkey" PRIMARY KEY ("tag")
