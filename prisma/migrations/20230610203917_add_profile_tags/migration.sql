@@ -19,31 +19,31 @@ VALUES (
         'performer',
         'Band/Artist',
         -- A band or an artist who may be booked for a performance
-        'Band eller artist som kan bokas för ett uppträdande',
+        'Band eller artist som kan bokas för ett uppträdande'
     ),
     (
         'educator',
         'Utbildare',
         -- A company or association offering dance classes
-        'Företag eller förening som erbjuder dansutbildning',
+        'Företag eller förening som erbjuder dansutbildning'
     ),
     (
         'organizer',
         'Arrangör',
         -- A company or association that organizes events
-        'Företag eller förening som arrangerar dansevenemang',
+        'Företag eller förening som arrangerar dansevenemang'
     ),
     (
         'photographer',
         'Fotograf',
         -- A company or association that captures photos at dance events
-        'Företag eller förening som fotograferar vid dansevenemang',
+        'Företag eller förening som fotograferar vid dansevenemang'
     ),
     (
         'booking_agent',
         'Bokare',
         -- A company or association that handles band and artist bookings
-        'Företag eller förening som samordnar bokningar för artister och band',
+        'Företag eller förening som samordnar bokningar för artister och band'
     );
 -- CreateEnum
 CREATE TYPE "profiles"."individual_tag" AS ENUM (
@@ -51,7 +51,7 @@ CREATE TYPE "profiles"."individual_tag" AS ENUM (
     'songwriter',
     'instructor',
     'organizer',
-    'photographer',
+    'photographer'
 );
 -- CreateTable
 CREATE TABLE "profiles"."individual_tags" (
@@ -66,29 +66,29 @@ VALUES (
         'musician',
         'Musiker',
         -- A person who performs music, with or without an instruments
-        'Någon som utövar musik, med eller utan instrument',
+        'Någon som utövar musik, med eller utan instrument'
     ),
     (
         'songwriter',
         'Låtskrivare',
         -- A person who writes music
-        'Person som skriver musik',
+        'Person som skriver musik'
     ),
     (
         'instructor',
         'Instruktör',
         -- A person who teaches dance
-        'Person som utbildar i dans',
+        'Person som utbildar i dans'
     ),
     (
         'organizer',
         'Arrangör',
         -- A person who organizes events
-        'Enskild person som arrangerar dansevenemang',
+        'Enskild person som arrangerar dansevenemang'
     ),
     (
         'photographer',
         'Fotograf',
         -- A person who captures photos at dance events
-        'Enskild person som fotograferar vid dansevenemang',
+        'Enskild person som fotograferar vid dansevenemang'
     );
