@@ -5,7 +5,7 @@
   "sqltools.connections": [
     {
       "previewLimit": 50,
-      "server": "db",
+      "server": "api-db",
       "port": 5432,
       "driver": "PostgreSQL",
       "name": "Dansdata API Database",

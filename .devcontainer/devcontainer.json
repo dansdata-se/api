@@ -1,7 +1,7 @@
 {
   "name": "Dansdata API",
   "dockerComposeFile": "docker-compose.yml",
-  "service": "devcontainer",
+  "service": "api",
   "workspaceFolder": "/workspaces/dansdata/api",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {

@@ -1,25 +1,30 @@
 version: "3.8"
 services:
-  devcontainer:
+  api:
     build:
       dockerfile: ./.devcontainer/Dockerfile
       context: ..
     volumes:
       - ..:/workspaces/dansdata/api:cached
-    network_mode: service:db
     command: sleep infinity
+    networks:
+      - dansdata-net
 
-  db:
+  api-db:
     image: postgis/postgis:15-master
     restart: unless-stopped
     environment:
       POSTGRES_USER: default
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: verceldb
-    ports:
-      - 5432:5432
+    networks:
+      - dansdata-net
     volumes:
-      - dansdata-db-data:/var/lib/postgresql/data
+      - dansdata-api-db-data:/var/lib/postgresql/data
+
+networks:
+  dansdata-net:
+    driver: bridge
 
 volumes:
-  dansdata-db-data:
+  dansdata-api-db-data:
