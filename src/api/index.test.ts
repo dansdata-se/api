@@ -1,11 +1,11 @@
+/**
+ * @group unit
+ */
+
 import { Endpoint, defineEndpoints } from "@/api";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { NextApiRequest, NextApiResponse } from "next";
 import { createMocks } from "node-mocks-http";
-
-/**
- * @group unit
- */
 
 const authorizationHeaderValue = "Bearer aBearerToken";
 const xUserRoleHeaderValue = "aRoleWithAccess";
