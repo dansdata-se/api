@@ -79,7 +79,7 @@ export function defineEndpoints(
       if (endpoint.authenticated) {
         if (!isAuthenticated(req)) {
           return (res as NextApiResponse<ErrorDTO>).status(401).json({
-            code: ErrorCode.forbidden,
+            code: ErrorCode.unauthorized,
             message: "You must be authenticated to access this resource.",
           });
         }

@@ -4,6 +4,7 @@ import z from "@/api/zod";
 export enum ErrorCode {
   internalServerError = "INTERNAL_SERVER_ERROR",
   httpMethodNotAllowed = "METHOD_NOT_ALLOWED",
+  unauthorized = "UNAUTHORIZED",
   forbidden = "FORBIDDEN",
   invalidParameters = "INVALID_PARAMETERS",
   invalidBody = "INVALID_BODY",
