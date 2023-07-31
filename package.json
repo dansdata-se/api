@@ -9,7 +9,7 @@
     "dev": "dotenv -e .env.development.local nodemon -- --watch 'src/**/*' --ignore '**/*.test.ts' --ignore '**/*.test.tsx' --exec \"ts-node\" src/__build__/api_docs.ts & next dev",
     "build": "ts-node src/__build__/api_docs.ts && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "tsc && next lint",
     "format": "prettier --write . && prisma format ./prisma",
     "test:unit": "jest --group=unit",
     "test:integration": "jest --group=integration",
