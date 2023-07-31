@@ -6,9 +6,9 @@ export const placeholderAuth = registry.registerComponent(
   "securitySchemes",
   "placeholderAuth",
   {
-    type: "apiKey",
+    type: "http",
     in: "header",
-    name: "X-PLACEHOLDER-AUTH",
+    scheme: "bearer",
   }
 );
 
@@ -16,7 +16,7 @@ export const placeholderAuth = registry.registerComponent(
  * Whether or not the given request contains valid authentication information
  */
 export function isAuthenticated(req: NextApiRequest) {
-  return req.headers["x-placeholder-auth"] === env.PLACEHOLDER_AUTH_KEY;
+  return req.headers.authorization === `Bearer ${env.PLACEHOLDER_AUTH_KEY}`;
 }
 
 /**
