@@ -3,6 +3,7 @@ import { ErrorCode, ErrorDTO } from "@/api/dto/error";
 import { registry } from "@/api/registry";
 import { withParsedObject } from "@/api/util";
 import z from "@/api/zod";
+import logger from "@/logger";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -105,11 +106,7 @@ export function defineEndpoints(
         (params) => endpoint.handler(req, res, params)
       );
     } catch (e) {
-      if (e instanceof Error) {
-        console.error(e.stack);
-      } else {
-        console.error(e);
-      }
+      logger.error(e);
 
       (res as NextApiResponse<ErrorDTO>).status(500).json({
         code: ErrorCode.internalServerError,

@@ -4,18 +4,19 @@ import {
 } from "@/cloudflare/dto/direct_upload";
 import { CloudflareImageDTOSchema } from "@/cloudflare/dto/image";
 import { CloudflareResultDTOSchema } from "@/cloudflare/dto/result";
+import logger from "@/logger";
 import wretch, { FetchLike } from "wretch";
 import FormDataAddon from "wretch/addons/formData";
 
 const cloudflareAccountId = process.env.CLOUDFLARE_ACCOUNT_ID;
 const cloudflareApiToken = process.env.CLOUDFLARE_API_TOKEN;
 if (!cloudflareAccountId) {
-  console.warn(
+  logger.warn(
     "CLOUDFLARE_ACCOUNT_ID was not set. The cloudflare API will be unusable."
   );
 }
 if (!cloudflareApiToken) {
-  console.warn(
+  logger.warn(
     "CLOUDFLARE_API_TOKEN was not set. The cloudflare API will be unusable."
   );
 }
@@ -26,7 +27,14 @@ const api = wretch("https://api.cloudflare.com/client/v4/") //
     // Logging middleware for debugging
     (next: FetchLike): FetchLike =>
       async (url, opts) => {
-        console.debug("Calling Cloudflare API:", url);
+        logger.debug(
+          {
+            req: {
+              url,
+            },
+          },
+          "Calling Cloudflare API"
+        );
         return next(url, opts);
       },
   ])

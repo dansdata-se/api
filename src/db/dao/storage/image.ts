@@ -1,5 +1,6 @@
 import { cloudflareApi } from "@/cloudflare/api";
 import { prisma } from "@/db";
+import logger from "@/logger";
 import { ImagesModel } from "@/model/profiles/images";
 import { ImageModel, ImageUploadUrlModel } from "@/model/storage/image";
 import { ImageEntity, ImageVariant } from "@prisma/client";
@@ -73,10 +74,13 @@ export const ImageDAO = {
     });
 
     if (messages.length > 0) {
-      console.warn("Cloudflare API messages:", messages);
+      logger.warn(
+        { cloudflare: { messages } },
+        "Cloudflare API returned messages"
+      );
     }
     if (errors.length > 0) {
-      console.warn("Cloudflare API errors:", errors);
+      logger.warn({ cloudflare: { errors } }, "Cloudflare API returned errors");
     }
     if (!success) {
       throw new Error("Failed to allocate upload url from cloudflare");
@@ -150,10 +154,13 @@ export const ImageDAO = {
     );
 
     if (messages.length > 0) {
-      console.warn("Cloudflare API messages:", messages);
+      logger.warn(
+        { cloudflare: { messages } },
+        "Cloudflare API returned messages"
+      );
     }
     if (errors.length > 0) {
-      console.warn("Cloudflare API errors:", errors);
+      logger.warn({ cloudflare: { errors } }, "Cloudflare API returned errors");
     }
     if (!success) {
       throw new Error("Failed to delete image from cloudflare");

@@ -1,3 +1,4 @@
+import logger from "@/logger";
 import { ImageModel } from "@/model/storage/image";
 
 // Placeholder images for use e.g. in local development
@@ -17,11 +18,11 @@ export const placeholderImage = {
 const cloudflareAccountHash = process.env.CLOUDFLARE_ACCOUNT_HASH;
 if (cloudflareAccountHash === undefined) {
   if (process.env.NODE_ENV === "development") {
-    console.warn(
+    logger.warn(
       "CLOUDFLARE_ACCOUNT_HASH was not set. Using placeholder images for local development."
     );
   } else {
-    console.warn(
+    logger.warn(
       "CLOUDFLARE_ACCOUNT_HASH was not set. It will not be possible to generate valid image URLs."
     );
   }
