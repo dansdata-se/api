@@ -1,3 +1,4 @@
+import env from "@/env";
 import Head from "next/head";
 import Image from "next/image";
 import SwaggerUI from "swagger-ui-react";
@@ -110,16 +111,12 @@ export default function DocumentationPage() {
           </div>
           <div className="md:place-self-center md:justify-self-end">
             <a
-              href={`https://github.com/dansdata-se/api/tree/${
-                process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? "main"
-              }`}
+              href={`https://github.com/dansdata-se/api/tree/${env.VERCEL_GIT_COMMIT_SHA}`}
               target="_blank"
               className="link link-hover text-xs"
             >
-              {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF ?? "{unknown ref}"}
-              :
-              {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 7) ??
-                "{unknown sha}"}
+              {env.VERCEL_GIT_COMMIT_REF}:
+              {env.VERCEL_GIT_COMMIT_SHA.substring(0, 7)}
             </a>
           </div>
         </footer>

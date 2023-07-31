@@ -1,4 +1,5 @@
-import pino, { Logger } from "pino";
+import env from "@/env";
+import pino, { Level, Logger } from "pino";
 import type { PinoPretty, PrettyOptions } from "pino-pretty";
 
 let logger: Logger = pino();
@@ -14,6 +15,7 @@ if (process.env.NODE_ENV !== "production") {
 
   const commonConfig: PrettyOptions = {
     colorize: true,
+    minimumLevel: env.LOG_LEVEL as Level,
     ignore: "pid,hostname,dansdata",
     translateTime: "UTC:yyyy-mm-dd HH:MM:ss.l o",
     messageFormat:
@@ -21,7 +23,9 @@ if (process.env.NODE_ENV !== "production") {
   };
 
   logger = pino(
-    {},
+    {
+      level: env.LOG_LEVEL,
+    },
     process.env.NODE_ENV === "development"
       ? pretty({
           ...commonConfig,
@@ -39,18 +43,8 @@ export default logger.child({
     version: {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires
       package: require("@/../package.json").version as string,
-      ref:
-        // Server side
-        process.env.VERCEL_GIT_COMMIT_REF ??
-        // Client side
-        process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF ??
-        "{unknown ref}",
-      sha:
-        // Server side
-        process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) ??
-        // Client side
-        process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.substring(0, 7) ??
-        "{unknown sha}",
+      ref: env.VERCEL_GIT_COMMIT_REF,
+      sha: env.VERCEL_GIT_COMMIT_SHA.substring(0, 7),
     },
   },
 });

@@ -1,3 +1,4 @@
+import env, { ENVVAR_UNSET } from "@/env";
 import logger from "@/logger";
 import { ImageModel } from "@/model/storage/image";
 
@@ -15,21 +16,15 @@ export const placeholderImage = {
   },
 };
 
-const cloudflareAccountHash = process.env.CLOUDFLARE_ACCOUNT_HASH;
-if (cloudflareAccountHash === undefined) {
-  if (process.env.NODE_ENV === "development") {
-    logger.warn(
-      "CLOUDFLARE_ACCOUNT_HASH was not set. Using placeholder images for local development."
-    );
-  } else {
-    logger.warn(
-      "CLOUDFLARE_ACCOUNT_HASH was not set. It will not be possible to generate valid image URLs."
-    );
-  }
-}
-
 export function imageToUrl(image: ImageModel): string {
-  if (cloudflareAccountHash === undefined) {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    env.CLOUDFLARE_ACCOUNT_HASH === ENVVAR_UNSET
+  ) {
+    logger.warn(
+      "Missing envvars for Cloudflare credentials. " +
+        "Falling back on placeholder image url."
+    );
     switch (image.variant) {
       case "cover":
         return `https://imagedelivery.net/${placeholderImage.accountHash}/${placeholderImage.cover.cloudflareId}`;
@@ -39,6 +34,6 @@ export function imageToUrl(image: ImageModel): string {
         return `https://imagedelivery.net/${placeholderImage.accountHash}/${placeholderImage.square.cloudflareId}`;
     }
   } else {
-    return `https://imagedelivery.net/${cloudflareAccountHash}/${image.cloudflareId}`;
+    return `https://imagedelivery.net/${env.CLOUDFLARE_ACCOUNT_HASH}/${image.cloudflareId}`;
   }
 }

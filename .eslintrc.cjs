@@ -21,6 +21,12 @@ module.exports = {
         patterns: [{ group: ["/.*"], message: "Use `@/` for local imports." }],
         paths: [
           {
+            name: "process",
+            importNames: ["env"],
+            message:
+              'Use `import env from "@/env"` to access environment variables.',
+          },
+          {
             name: "zod",
             importNames: ["default", "z"],
             message:

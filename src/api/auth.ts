@@ -1,4 +1,5 @@
 import { registry } from "@/api/registry";
+import env from "@/env";
 import { NextApiRequest } from "next";
 
 export const placeholderAuth = registry.registerComponent(
@@ -15,7 +16,7 @@ export const placeholderAuth = registry.registerComponent(
  * Whether or not the given request contains valid authentication information
  */
 export function isAuthenticated(req: NextApiRequest) {
-  return req.headers["x-placeholder-auth"] === process.env.PLACEHOLDER_AUTH_KEY;
+  return req.headers["x-placeholder-auth"] === env.PLACEHOLDER_AUTH_KEY;
 }
 
 /**
