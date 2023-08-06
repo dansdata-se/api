@@ -85,7 +85,7 @@ enum OrganizationTag {
   @@schema("profiles")
 }
 
-model OrganizationTagDetail {
+model OrganizationTagDetailEntity {
   tag         OrganizationTag @id
   label       String
   description String
@@ -116,7 +116,7 @@ enum IndividualTag {
   @@schema("profiles")
 }
 
-model IndividualTagDetail {
+model IndividualTagDetailEntity {
   tag         IndividualTag @id
   label       String
   description String
