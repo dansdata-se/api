@@ -1,4 +1,22 @@
-import { extendWithVenueFeatures } from "@/db/venues";
+import {
+  buildVenueEntityModelExtends,
+  buildVenueEntityResultExtends,
+} from "@/db/venues";
+import env from "@/env";
 import { PrismaClient } from "@prisma/client";
 
-export const prisma = extendWithVenueFeatures(new PrismaClient());
+const prismaClient = new PrismaClient({
+  datasources: {
+    db: {
+      url: env.POSTGRES_PRISMA_URL,
+    },
+  },
+});
+export const prisma = prismaClient.$extends({
+  model: {
+    venueEntity: buildVenueEntityModelExtends(prismaClient),
+  },
+  result: {
+    venueEntity: buildVenueEntityResultExtends(prismaClient),
+  },
+});

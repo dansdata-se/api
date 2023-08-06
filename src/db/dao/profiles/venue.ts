@@ -114,11 +114,11 @@ export const VenueDAO = {
     maxDistance: number
   ): Promise<VenueReferenceModel[]> {
     return await prisma.venueEntity
-      .findManyNear(coords, maxDistance)
-      .then((entities) =>
-        entities.map((it) => this.getReferenceById(it.profileId))
+      .findIdsNear(coords, maxDistance)
+      .then((idAndDistance) =>
+        idAndDistance.map((it) => this.getReferenceById(it.profileId))
       )
-      .then((entities) => Promise.all(entities))
+      .then((promises) => Promise.all(promises))
       .then((entities) => entities.filter(isNonNull));
   },
 };

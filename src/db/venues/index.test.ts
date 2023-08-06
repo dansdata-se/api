@@ -268,12 +268,12 @@ describe("Venues manual SQL", () => {
     await expect(prisma.venueEntity.count()).resolves.toEqual(cities.length);
 
     await expect(
-      prisma.venueEntity.findManyNear(origin, 10)
+      prisma.venueEntity.findIdsNear(origin, 10)
     ).resolves.toHaveLength(0);
 
     for (const distance of [1_000, 15_000, 50_000, 100_000]) {
       const actual = await prisma.venueEntity
-        .findManyNear(origin, distance)
+        .findIdsNear(origin, distance)
         .then((ids) =>
           prisma.venueEntity.findMany({
             select: {
@@ -304,7 +304,7 @@ describe("Venues manual SQL", () => {
       });
     }
 
-    const actual = await prisma.venueEntity.findManyNear(origin, Infinity);
+    const actual = await prisma.venueEntity.findIdsNear(origin, Infinity);
     expect(actual.map((it) => it.distance)).toEqual(
       cities.map((it) => it.distanceToOrigin)
     );
