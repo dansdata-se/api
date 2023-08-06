@@ -131,7 +131,6 @@ describe("VenueDAO unit tests", () => {
       }
     });
 
-    // expect(prismaMock.venueEntity.findUnique.mock.calls).toHaveLength(3);
     await expect(VenueDAO.getById(baseProfile.id)).resolves.toEqual<VenueModel>(
       {
         id: baseProfile.id,
