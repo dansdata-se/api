@@ -64,10 +64,14 @@ export function extendWithVenueFeatures<T extends PrismaClient>(prisma: T) {
     },
     result: {
       venueEntity: {
-        rootParentId: {
+        /**
+         * List this venue's ancestors' ids, starting from the root ancestor and
+         * ending with the venue's direct direct parent.
+         */
+        ancestorIds: {
           needs: { profileId: true },
           async compute(data) {
-            const rootParent = await prisma.$queryRaw<{ profileId: string }[]>`
+            const ancestors = await prisma.$queryRaw<{ profileId: string }[]>`
               WITH RECURSIVE parent_query AS (
                 SELECT
                   parent_id,
@@ -85,14 +89,10 @@ export function extendWithVenueFeatures<T extends PrismaClient>(prisma: T) {
               )
               SELECT parent_id as "profileId", depth
               FROM parent_query
-              ORDER BY depth DESC
-              LIMIT 1;
+              ORDER BY depth DESC;
             `;
 
-            return rootParent.length > 0 &&
-              data.profileId !== rootParent[0].profileId
-              ? rootParent[0].profileId
-              : null;
+            return ancestors.map((p) => p.profileId);
           },
         },
         coords: {

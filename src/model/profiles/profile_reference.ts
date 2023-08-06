@@ -62,7 +62,6 @@ export type IndividualReferenceModel = BaseProfileReferenceModel & {
 export type VenueReferenceModel = BaseProfileReferenceModel & {
   type: typeof ProfileType.venue;
   coords: CoordsModel;
-  rootParent: VenueReferenceModel | null;
 };
 
 /**

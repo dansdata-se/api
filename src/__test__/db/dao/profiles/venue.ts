@@ -5,14 +5,14 @@ import { VenueEntity } from "@prisma/client";
 export function generateVenueEntity(
   overrides: Partial<
     VenueEntity & {
-      rootParentId: Promise<VenueEntity["profileId"] | null>;
       coords: Promise<{ lat: number; lng: number }>;
+      ancestorIds: Promise<VenueEntity["profileId"][]>;
       childVenues: { profileId: VenueEntity["profileId"] }[];
     }
   > = {}
 ): VenueEntity & {
-  rootParentId: Promise<VenueEntity["profileId"] | null>;
   coords: Promise<{ lat: number; lng: number }>;
+  ancestorIds: Promise<VenueEntity["profileId"][]>;
   childVenues: { profileId: VenueEntity["profileId"] }[];
 } {
   return {
@@ -22,7 +22,7 @@ export function generateVenueEntity(
       lat: faker.location.latitude(),
     }),
     parentId: null,
-    rootParentId: Promise.resolve(null),
+    ancestorIds: Promise.resolve([]),
     childVenues: [],
     ...overrides,
   };

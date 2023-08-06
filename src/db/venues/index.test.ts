@@ -65,19 +65,16 @@ describe("Venues manual SQL", () => {
     expect(coords?.lng).toBeCloseTo(linkoping.coords.lng, 6);
   });
 
-  test("retrieve the root parent for a venue", async () => {
+  test("retrieve the ancestors for a venue", async () => {
     const root = generateVenueModel();
     const sub1 = generateVenueModel({
-      parent: root,
-      rootParent: root,
+      ancestors: [root],
     });
     const sub2 = generateVenueModel({
-      parent: sub1,
-      rootParent: root,
+      ancestors: [root, sub1],
     });
     const leaf = generateVenueModel({
-      parent: sub2,
-      rootParent: root,
+      ancestors: [root, sub1, sub2],
     });
 
     const tree = [root, sub1, sub2, leaf];
@@ -104,7 +101,7 @@ describe("Venues manual SQL", () => {
           (branch) =>
             Prisma.sql`(${Prisma.join([
               branch.id,
-              branch.parent?.id ?? null,
+              branch.ancestors.at(-1)?.id ?? null,
               Prisma.sql`ST_MakePoint(${branch.coords.lng}, ${branch.coords.lat})`,
             ])})`
         )
@@ -118,14 +115,14 @@ describe("Venues manual SQL", () => {
       .findMany({
         select: {
           profileId: true,
-          rootParentId: true,
+          ancestorIds: true,
         },
       })
       .then((result) =>
         Promise.all(
           result.map(async (it) => ({
             id: it.profileId,
-            rootParentId: await it.rootParentId,
+            ancestorIds: await it.ancestorIds,
           }))
         )
       )
@@ -141,7 +138,7 @@ describe("Venues manual SQL", () => {
     expect(actual).toEqual(
       tree.map((it) => ({
         id: it.id,
-        rootParentId: it.rootParent?.id ?? null,
+        ancestorIds: it.ancestors.map((it) => it.id),
       }))
     );
   });

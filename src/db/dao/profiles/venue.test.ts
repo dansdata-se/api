@@ -66,18 +66,23 @@ describe("VenueDAO unit tests", () => {
       coords: await parentVenue1Entity.coords,
     });
     const parentVenue2Entity = generateVenueEntity({
-      rootParentId: Promise.resolve(parentVenue1Entity.profileId),
+      parentId: parentVenue1Entity.profileId,
+      ancestorIds: Promise.resolve([parentVenue1Entity.profileId]),
     });
     const parentVenue2ReferenceModel = generateVenueReferenceModel({
       id: parentVenue2Entity.profileId,
       coords: await parentVenue2Entity.coords,
-      rootParent: parentVenue1ReferenceModel,
     });
     const childEntities = Array.from({
       length: faker.number.int({ min: 0, max: 3 }),
     }).map(() =>
       generateVenueEntity({
-        rootParentId: Promise.resolve(parentVenue1Entity.profileId),
+        parentId: baseProfile.id,
+        ancestorIds: Promise.resolve([
+          parentVenue1Entity.profileId,
+          parentVenue2Entity.profileId,
+          baseProfile.id,
+        ]),
       })
     );
     const childReferenceModels = await Promise.all(
@@ -85,14 +90,16 @@ describe("VenueDAO unit tests", () => {
         generateVenueReferenceModel({
           id: it.profileId,
           coords: await it.coords,
-          rootParent: parentVenue1ReferenceModel,
         })
       )
     );
     const venueEntity = generateVenueEntity({
       profileId: baseProfile.id,
-      rootParentId: Promise.resolve(parentVenue1ReferenceModel.id),
       parentId: parentVenue2ReferenceModel.id,
+      ancestorIds: Promise.resolve([
+        parentVenue1Entity.profileId,
+        parentVenue2Entity.profileId,
+      ]),
       childVenues: childReferenceModels.map((it) => ({
         profileId: it.id,
       })),
@@ -139,8 +146,7 @@ describe("VenueDAO unit tests", () => {
         description: baseProfile.description,
         links: baseProfile.links,
         coords: await venueEntity.coords,
-        parent: parentVenue2ReferenceModel,
-        rootParent: parentVenue1ReferenceModel,
+        ancestors: [parentVenue1ReferenceModel, parentVenue2ReferenceModel],
         children: childReferenceModels,
         images: baseProfile.images,
       }
@@ -177,18 +183,19 @@ describe("VenueDAO unit tests", () => {
       coords: await parentVenue1Entity.coords,
     });
     const parentVenue2Entity = generateVenueEntity({
-      rootParentId: Promise.resolve(parentVenue1Entity.profileId),
+      parentId: parentVenue1Entity.profileId,
+      ancestorIds: Promise.resolve([parentVenue1Entity.profileId]),
     });
     const parentVenue2ReferenceModel = generateVenueReferenceModel({
       id: parentVenue2Entity.profileId,
       coords: await parentVenue2Entity.coords,
-      rootParent: parentVenue1ReferenceModel,
     });
     const childEntities = Array.from({
       length: faker.number.int({ min: 0, max: 3 }),
     }).map(() =>
       generateVenueEntity({
-        rootParentId: Promise.resolve(parentVenue1Entity.profileId),
+        parentId: baseProfileReference.id,
+        ancestorIds: Promise.resolve([baseProfileReference.id]),
       })
     );
     const childReferenceModels = await Promise.all(
@@ -196,14 +203,13 @@ describe("VenueDAO unit tests", () => {
         generateVenueReferenceModel({
           id: it.profileId,
           coords: await it.coords,
-          rootParent: parentVenue1ReferenceModel,
         })
       )
     );
     const venueEntity = generateVenueEntity({
       profileId: baseProfileReference.id,
-      rootParentId: Promise.resolve(parentVenue1ReferenceModel.id),
       parentId: parentVenue2ReferenceModel.id,
+      ancestorIds: Promise.resolve([parentVenue2ReferenceModel.id]),
       childVenues: childReferenceModels.map((it) => ({
         profileId: it.id,
       })),
@@ -253,7 +259,6 @@ describe("VenueDAO unit tests", () => {
       name: baseProfileReference.name,
       coords: await venueEntity.coords,
       images: baseProfileReference.images,
-      rootParent: parentVenue1ReferenceModel,
     });
   });
 });

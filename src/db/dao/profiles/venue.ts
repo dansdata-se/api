@@ -39,13 +39,13 @@ export const VenueDAO = {
     });
     if (!entity) return null;
 
-    const rootParentId = await entity.rootParentId;
-    const rootParent = rootParentId
-      ? await VenueDAO.getReferenceById(rootParentId)
-      : null;
-    const parent = entity.parentId
-      ? await VenueDAO.getReferenceById(entity.parentId)
-      : null;
+    const ancestorIds = await entity.ancestorIds;
+    const ancestors = (
+      await Promise.all(ancestorIds.map((id) => VenueDAO.getReferenceById(id)))
+    )
+      // If we get null, the profile was likely deleted since our initial query.
+      // Silently ignore this.
+      .filter(isNonNull);
     const children = (
       await Promise.all(
         entity.childVenues.map((m) => VenueDAO.getReferenceById(m.profileId))
@@ -58,8 +58,7 @@ export const VenueDAO = {
     return {
       ...baseModel,
       coords: await entity.coords,
-      rootParent,
-      parent,
+      ancestors,
       children,
     };
   },
@@ -86,20 +85,14 @@ export const VenueDAO = {
       },
       select: {
         coords: true,
-        rootParentId: true,
       },
     });
     if (!entity) return null;
 
     const coords = await entity.coords;
-    const rootParentId = await entity.rootParentId;
-    const rootParent = rootParentId
-      ? await VenueDAO.getReferenceById(rootParentId)
-      : null;
 
     return {
       ...baseModel,
-      rootParent,
       coords,
     };
   },

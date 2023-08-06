@@ -27,7 +27,6 @@ export function generateVenueReferenceModel(
     ...generateBaseProfileReferenceModel(),
     type: ProfileType.venue,
     coords: generateCoordsModel(),
-    rootParent: null,
     ...overrides,
   };
 }
