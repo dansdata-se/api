@@ -2,6 +2,7 @@ import { prisma } from "@/db";
 import { imageEntitiesToImagesModel } from "@/db/dao/storage/image";
 import { BaseProfileModel } from "@/model/profiles/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
+import { isNonNull } from "@/util/is_defined";
 
 export type BaseProfileDAOType = typeof BaseProfileDAO;
 /**
@@ -69,5 +70,29 @@ export const BaseProfileDAO = {
       name: entity.name,
       images: imageEntitiesToImagesModel(entity.images.map((it) => it.image)),
     };
+  },
+  /**
+   * Retrieve profile references matching a given profile name query
+   *
+   * Profile references are used when we need to refer to a profile without this
+   * reference including further references to other profiles and so forth.
+   *
+   * Profile references typically contain just enough data for a client to
+   * render a nice looking link for end users without having to look up the full
+   * profile first.
+   */
+  async getReferencesByNameQuery(
+    nameQuery: string,
+    limit: number,
+    offset: number
+  ): Promise<BaseProfileReferenceModel[]> {
+    const entities = await prisma.profileEntity.findIdsByNameQuery(
+      nameQuery,
+      limit,
+      offset
+    );
+    return await Promise.all(
+      entities.map(({ id }) => this.getReferenceById(id))
+    ).then((it) => it.filter(isNonNull));
   },
 };

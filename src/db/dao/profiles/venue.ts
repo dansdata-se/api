@@ -2,7 +2,10 @@ import { prisma } from "@/db";
 import { BaseProfileDAO } from "@/db/dao/profiles/base_profile";
 import { CoordsModel } from "@/model/profiles/coords";
 import { VenueModel } from "@/model/profiles/profile";
-import { VenueReferenceModel } from "@/model/profiles/profile_reference";
+import {
+  BaseProfileReferenceModel,
+  VenueReferenceModel,
+} from "@/model/profiles/profile_reference";
 import { isNonNull } from "@/util/is_defined";
 import { ProfileType } from "@prisma/client";
 
@@ -79,25 +82,37 @@ export const VenueDAO = {
     const baseModel = await BaseProfileDAO.getReferenceById(id);
     if (baseModel === null) return null;
     if (!hasVenueProfileType(baseModel)) return null;
-
-    const entity = await prisma.venueEntity.findUnique({
-      where: {
-        profileId: id,
-      },
-      select: {
-        coords: true,
-        permanentlyClosed: true,
-      },
-    });
-    if (!entity) return null;
-
-    const coords = await entity.coords;
-
-    return {
-      ...baseModel,
-      permanentlyClosed: entity.permanentlyClosed,
-      coords,
-    };
+    return expandBaseModelToReference(baseModel);
+  },
+  /**
+   * Retrieve an individual reference by its id
+   *
+   * Profile references are used when we need to refer to a profile without this
+   * reference including further references to other profiles and so forth.
+   *
+   * Profile references typically contain just enough data for a client to
+   * render a nice looking link for end users without having to look up the full
+   * profile first.
+   */
+  async getReferenceByNameQuery(
+    nameQuery: string,
+    limit: number,
+    offset: number
+  ): Promise<VenueReferenceModel[]> {
+    return (
+      await Promise.all(
+        (
+          await BaseProfileDAO.getReferencesByNameQuery(
+            nameQuery,
+            limit,
+            offset
+          )
+        )
+          .filter(isNonNull)
+          .filter(hasVenueProfileType)
+          .map(expandBaseModelToReference)
+      )
+    ).filter(isNonNull);
   },
   /**
    * Retrieve a list of venues based on their proximity to given coordinates.
@@ -122,3 +137,26 @@ export const VenueDAO = {
       .then((entities) => entities.filter(isNonNull));
   },
 };
+
+async function expandBaseModelToReference(
+  baseModel: BaseProfileReferenceModel & { type: typeof ProfileType.venue }
+): Promise<VenueReferenceModel | null> {
+  const entity = await prisma.venueEntity.findUnique({
+    where: {
+      profileId: baseModel.id,
+    },
+    select: {
+      coords: true,
+      permanentlyClosed: true,
+    },
+  });
+  if (!entity) return null;
+
+  const coords = await entity.coords;
+
+  return {
+    ...baseModel,
+    permanentlyClosed: entity.permanentlyClosed,
+    coords,
+  };
+}

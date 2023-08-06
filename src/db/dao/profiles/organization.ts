@@ -2,7 +2,10 @@ import { prisma } from "@/db";
 import { BaseProfileDAO } from "@/db/dao/profiles/base_profile";
 import { IndividualDAO } from "@/db/dao/profiles/individual";
 import { OrganizationModel } from "@/model/profiles/profile";
-import { OrganizationReferenceModel } from "@/model/profiles/profile_reference";
+import {
+  BaseProfileReferenceModel,
+  OrganizationReferenceModel,
+} from "@/model/profiles/profile_reference";
 import { isNonNull } from "@/util/is_defined";
 import { ProfileType } from "@prisma/client";
 
@@ -75,22 +78,51 @@ export const OrganizationDAO = {
     const baseModel = await BaseProfileDAO.getReferenceById(id);
     if (baseModel === null) return null;
     if (!hasOrganizationProfileType(baseModel)) return null;
-
-    const tags =
-      (
-        await prisma.organizationEntity.findUnique({
-          where: {
-            profileId: id,
-          },
-          select: {
-            tags: true,
-          },
-        })
-      )?.tags ?? [];
-
-    return {
-      ...baseModel,
-      tags,
-    };
+    return expandBaseModelToReference(baseModel);
+  },
+  /**
+   * Retrieve an individual reference by its id
+   *
+   * Profile references are used when we need to refer to a profile without this
+   * reference including further references to other profiles and so forth.
+   *
+   * Profile references typically contain just enough data for a client to
+   * render a nice looking link for end users without having to look up the full
+   * profile first.
+   */
+  async getReferenceByNameQuery(
+    nameQuery: string,
+    limit: number,
+    offset: number
+  ): Promise<OrganizationReferenceModel[]> {
+    return await Promise.all(
+      (await BaseProfileDAO.getReferencesByNameQuery(nameQuery, limit, offset))
+        .filter(isNonNull)
+        .filter(hasOrganizationProfileType)
+        .map(expandBaseModelToReference)
+    );
   },
 };
+
+async function expandBaseModelToReference(
+  baseModel: BaseProfileReferenceModel & {
+    type: typeof ProfileType.organization;
+  }
+): Promise<OrganizationReferenceModel> {
+  const tags =
+    (
+      await prisma.organizationEntity.findUnique({
+        where: {
+          profileId: baseModel.id,
+        },
+        select: {
+          tags: true,
+        },
+      })
+    )?.tags ?? [];
+
+  return {
+    ...baseModel,
+    tags,
+  };
+}
