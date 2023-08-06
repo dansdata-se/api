@@ -1,5 +1,6 @@
 import { ApiRequestHandler, Endpoint, Endpoints } from "@/api";
 import { authMiddleware } from "@/api/middleware/auth";
+import { cacheMiddleware } from "@/api/middleware/cache";
 import { errorCatchingMiddleware } from "@/api/middleware/errors";
 
 export type ApiMiddleware = (
@@ -12,6 +13,7 @@ export type ApiMiddleware = (
 const apiMiddlewares: ApiMiddleware[] = [
   errorCatchingMiddleware,
   authMiddleware,
+  cacheMiddleware,
 ];
 
 /**
