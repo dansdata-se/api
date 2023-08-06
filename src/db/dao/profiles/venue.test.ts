@@ -142,6 +142,7 @@ describe("VenueDAO unit tests", () => {
       {
         id: baseProfile.id,
         type: ProfileType.venue,
+        permanentlyClosed: false,
         name: baseProfile.name,
         description: baseProfile.description,
         links: baseProfile.links,
@@ -256,6 +257,7 @@ describe("VenueDAO unit tests", () => {
     ).resolves.toEqual<VenueReferenceModel>({
       id: baseProfileReference.id,
       type: ProfileType.venue,
+      permanentlyClosed: false,
       name: baseProfileReference.name,
       coords: await venueEntity.coords,
       images: baseProfileReference.images,

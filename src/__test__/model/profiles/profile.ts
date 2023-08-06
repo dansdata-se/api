@@ -29,6 +29,7 @@ export function generateVenueModel(
     ...generateBaseProfileModel(),
     type: ProfileType.venue,
     coords: generateCoordsModel(),
+    permanentlyClosed: false,
     ancestors: [],
     children: [],
     ...overrides,

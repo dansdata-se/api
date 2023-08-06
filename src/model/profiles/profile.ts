@@ -49,6 +49,7 @@ export interface IndividualModel extends BaseProfileModel {
 export interface VenueModel extends BaseProfileModel {
   type: typeof ProfileType.venue;
   coords: CoordsModel;
+  permanentlyClosed: boolean;
   ancestors: VenueReferenceModel[];
   children: VenueReferenceModel[];
 }

@@ -21,6 +21,7 @@ export function generateVenueEntity(
       lng: faker.location.longitude(),
       lat: faker.location.latitude(),
     }),
+    permanentlyClosed: false,
     parentId: null,
     ancestorIds: Promise.resolve([]),
     childVenues: [],

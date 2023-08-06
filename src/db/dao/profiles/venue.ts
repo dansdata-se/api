@@ -57,6 +57,7 @@ export const VenueDAO = {
 
     return {
       ...baseModel,
+      permanentlyClosed: entity.permanentlyClosed,
       coords: await entity.coords,
       ancestors,
       children,
@@ -85,6 +86,7 @@ export const VenueDAO = {
       },
       select: {
         coords: true,
+        permanentlyClosed: true,
       },
     });
     if (!entity) return null;
@@ -93,6 +95,7 @@ export const VenueDAO = {
 
     return {
       ...baseModel,
+      permanentlyClosed: entity.permanentlyClosed,
       coords,
     };
   },
