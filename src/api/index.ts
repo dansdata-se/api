@@ -1,20 +1,19 @@
-import { isAuthenticated, isAuthorized } from "@/api/auth";
 import { ErrorCode, ErrorDTO } from "@/api/dto/error";
+import { wrapEndpointWithMiddleware } from "@/api/middleware";
 import { registry } from "@/api/registry";
-import { withParsedObject } from "@/api/util";
-import z from "@/api/zod";
 import logger from "@/logger";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { NextApiRequest, NextApiResponse } from "next";
 
+export type ApiRequestHandler = (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => Promise<void>;
+
 export interface Endpoint {
   authenticated: boolean;
   docs: RouteConfig;
-  handler<T>(
-    req: NextApiRequest,
-    res: NextApiResponse,
-    params: Record<string, T>
-  ): Promise<void>;
+  handler: ApiRequestHandler;
 }
 export interface Endpoints {
   HEAD: Endpoint;
@@ -32,88 +31,68 @@ export function defineEndpoints(
     registry.registerPath(endpoint.docs);
   });
 
-  return async function handler(req, res) {
-    try {
-      // Fallback if no endpoints are registered
-      if (Object.keys(endpoints).length === 0) {
-        return res.status(404).json({
-          code: ErrorCode.notFound,
-          message: "The requested resource does not exist.",
-        });
-      }
+  return buildRequestHandler(endpoints);
+}
 
-      const endpoint = endpoints[req.method as keyof typeof endpoints];
+const buildRequestHandler = (endpoints: Partial<Endpoints>) =>
+  withResponseLogger(async (req: NextApiRequest, res: NextApiResponse) => {
+    // Fallback if no endpoints are registered
+    if (Object.keys(endpoints).length === 0) {
+      res.status(404).json({
+        code: ErrorCode.notFound,
+        message: "The requested resource does not exist.",
+      });
+      return;
+    }
 
-      // Respond to OPTIONS request.
-      // This should be allowed whether the endpoint(s) require authentication
-      // or not.
-      if (req.method === "OPTIONS") {
-        res.setHeader(
-          "Allow",
-          Object.entries({
-            OPTIONS: true,
-            HEAD: endpoints.HEAD !== undefined,
-            GET: endpoints.GET !== undefined,
-            POST: endpoints.POST !== undefined,
-            PUT: endpoints.PUT !== undefined,
-            DELETE: endpoints.DELETE !== undefined,
-            PATCH: endpoints.PATCH !== undefined,
-          })
-            .filter(([, isAllowed]) => isAllowed)
-            .map(([header]) => header)
-            .join(", ")
-        );
-        res.status(204).end();
-        return;
-      }
+    const endpoint = endpoints[req.method as keyof typeof endpoints] ?? null;
 
-      // Verify request method
-      if (endpoint === undefined) {
-        return (res as NextApiResponse<ErrorDTO>).status(405).json({
-          code: ErrorCode.httpMethodNotAllowed,
-          message: "HTTP method not allowed.",
-        });
-      }
-
-      // Verify authentication
-      if (endpoint.authenticated) {
-        if (!isAuthenticated(req)) {
-          return (res as NextApiResponse<ErrorDTO>).status(401).json({
-            code: ErrorCode.unauthorized,
-            message: "You must be authenticated to access this resource.",
-          });
-        }
-
-        if (!isAuthorized(req)) {
-          return (res as NextApiResponse<ErrorDTO>).status(403).json({
-            code: ErrorCode.forbidden,
-            message: "You are not allowed to access this resource.",
-          });
-        }
-      }
-
-      // Parse and validate parameters
-      const parameterSchema = (
-        endpoint.docs.request?.params ?? z.object({})
-      ).merge(endpoint.docs.request?.query ?? z.object({}));
-
-      // Execute endpoint handler
-      await withParsedObject(
-        parameterSchema,
-        req.query,
-        res,
-        ErrorCode.invalidParameters,
-        (params) => endpoint.handler(req, res, params)
+    if (endpoint) {
+      const handler = wrapEndpointWithMiddleware(endpoint, endpoints);
+      await handler(req, res);
+    } else if (req.method === "OPTIONS") {
+      res.setHeader(
+        "Allow",
+        Object.entries({
+          OPTIONS: true,
+          HEAD: endpoints.HEAD !== undefined,
+          GET: endpoints.GET !== undefined,
+          POST: endpoints.POST !== undefined,
+          PUT: endpoints.PUT !== undefined,
+          DELETE: endpoints.DELETE !== undefined,
+          PATCH: endpoints.PATCH !== undefined,
+        })
+          .filter(([, isAllowed]) => isAllowed)
+          .map(([header]) => header)
+          .join(", ")
       );
-    } catch (e) {
-      logger.error(e);
-
-      (res as NextApiResponse<ErrorDTO>).status(500).json({
-        code: ErrorCode.internalServerError,
-        message: ["development", "test"].includes(process.env.NODE_ENV)
-          ? String(e)
-          : "Something went wrong on our end.",
+      res.status(204).end();
+    } else {
+      (res as NextApiResponse<ErrorDTO>).status(405).json({
+        code: ErrorCode.httpMethodNotAllowed,
+        message: "HTTP method not allowed.",
       });
     }
+  });
+
+/**
+ * Logs requests and the responses they produce
+ */
+const withResponseLogger =
+  (handler: ApiRequestHandler): ApiRequestHandler =>
+  async (req, res) => {
+    await handler(req, res);
+
+    logger.info({
+      req: {
+        method: req.method,
+        host: req.headers.host,
+        url: req.url,
+        userAgent: req.headers["user-agent"],
+        from: req.headers.from,
+      },
+      res: {
+        status: res.statusCode,
+      },
+    });
   };
-}
