@@ -22,12 +22,12 @@ enum ProfileType {
 }
 
 model ProfileEntity {
-  id           String               @id @default(cuid())
+  id           String                 @id @default(cuid())
   type         ProfileType
   name         String
   description  String
-  createdAt    DateTime             @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
-  images       ProfileImageEntity[]
+  createdAt    DateTime               @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
+  images       ProfileImageJunction[]
   links        ProfileLinkEntity[]
   organization OrganizationEntity?
   individual   IndividualEntity?
@@ -38,13 +38,13 @@ model ProfileEntity {
   @@schema("profiles")
 }
 
-model ProfileImageEntity {
-  id        String        @id @default(cuid())
+model ProfileImageJunction {
   profile   ProfileEntity @relation(fields: [profileId], references: [id], onDelete: Restrict)
   profileId String        @map("profile_id")
   image     ImageEntity   @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId   String        @map("image_id")
 
+  @@id([profileId, imageId])
   @@index([profileId])
   @@index([imageId])
   @@map("profile_images")
@@ -161,10 +161,10 @@ enum ImageVariant {
 }
 
 model ImageEntity {
-  id           String               @id @default(cuid())
-  cloudflareId String               @unique @map("cloudflare_id")
+  id           String                 @id @default(cuid())
+  cloudflareId String                 @unique @map("cloudflare_id")
   variant      ImageVariant
-  profileImage ProfileImageEntity[]
+  profileImage ProfileImageJunction[]
 
   @@index([cloudflareId])
   @@map("images")
