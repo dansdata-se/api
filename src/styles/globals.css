@@ -32,4 +32,12 @@ https://stackoverflow.com/a/17555766/1137077
   a {
     @apply text-primary underline;
   }
+
+  ul {
+    @apply ps-4 list-disc list-inside;
+  }
+
+  ul:not(li > ul) {
+    @apply my-[1em];
+  }
 }

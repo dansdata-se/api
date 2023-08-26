@@ -70,11 +70,47 @@ The Dansdata API provides information about social dancing in Sweden.
 
 ## Using the API
 
-The API is available to everyone, for free. If you are using our data, we want you to add a user-visible link back to
-[https://dansdata.se](https://dansdata.se) similar to "Using data from Dansdata" or "Dansinformation från Dansdata".
+Our goal is to make the API available to everyone, as freely as possible.
+Please keep your usage at a reasonable level to help make this possible!
 
 Data retrieved from the Dansdata API is licensed under
-[CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1)
+[CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1).
+
+### Requirements
+
+All use of the Dansdata API must adhere to the following requirements.
+If your use does not, it will be limited or actively prevented.
+
+* Provide a valid [\`HTTP Referer\`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer) or
+[\`User-Agent\`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent)
+identifying your application.
+* Include a valid [\`From\`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/From) header
+in case we need to contact you about your usage.
+* Clearly display attribution as suitable to your medium.
+    * Example: The text "Using data from Dansdata" or "Dansinformation från Dansdata" and a user-visible link to [https://dansdata.se](https://dansdata.se).
+* Keep your usage at a reasonable level.
+    * Do not send cache-busting headers.
+    * Limit bulk scraping to a single thread with at most one request per second.
+    * Discuss heavy use cases with us beforehand.
+
+### Heavy Use
+
+Request volumes that affect our ability to provide data freely may be limited or actively prevented.
+
+Please contact us if your application(s) needs to/makes heavy use of the API to discuss options and prevent interruptions.
+
+### Privacy
+
+See the Dansdata [Privacy Policy](https://dansdata.se/privacy).
+
+## Where does the Data Come From?
+
+Dansdata collects dance information directly from organizers,
+bands and other people involved in the swedish social dancing scene.
+
+While we try to limit publish access to trusted sources,
+we cannot guarantee 100% accuracy in the information provided. Please consider Dansdata the
+"wikipedia", rather than the "encyclopedia britannica", of dance information. 
 
 ## About Dansdata
 
@@ -83,6 +119,10 @@ Dansdata is an open source project aiming to provide Swedish social dancing info
       version: "v1",
       // TODO(FelixZY): Update with correct url once legal pages are in place.
       termsOfService: "https://dansdata.se/TODO",
+      license: {
+        name: "CC BY-SA 4.0",
+        url: "http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1",
+      },
       contact: {
         name: "Support",
         email: "dansdata@googlegroups.com",
