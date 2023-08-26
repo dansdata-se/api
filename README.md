@@ -18,6 +18,12 @@ To run the API locally
 $ npm run dev
 ```
 
+To create a new database migration:
+
+```
+$ npm run dev:db:migrate -- dev -- --name my_migration_name
+```
+
 To use [prisma studio](https://www.prisma.io/studio)
 
 ```
