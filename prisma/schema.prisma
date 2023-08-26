@@ -161,10 +161,10 @@ enum ImageVariant {
 }
 
 model ImageEntity {
-  id           String                 @id @default(cuid())
-  cloudflareId String                 @unique @map("cloudflare_id")
-  variant      ImageVariant
-  profileImage ProfileImageJunction[]
+  id            String                 @id @default(cuid())
+  cloudflareId  String                 @unique @map("cloudflare_id")
+  variant       ImageVariant
+  profileImages ProfileImageJunction[]
 
   @@index([cloudflareId])
   @@map("images")

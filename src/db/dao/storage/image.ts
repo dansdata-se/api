@@ -124,7 +124,7 @@ export const ImageDAO = {
       include: {
         _count: {
           select: {
-            profileImage: true,
+            profileImages: true,
           },
         },
       },
