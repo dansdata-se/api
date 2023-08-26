@@ -21,16 +21,17 @@ enum ProfileType {
 }
 
 model ProfileEntity {
-  id           String                 @id @default(cuid())
+  id           String                       @id @default(cuid())
   type         ProfileType
   name         String
   description  String
-  createdAt    DateTime               @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
+  createdAt    DateTime                     @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
   images       ProfileImageJunction[]
   links        ProfileLinkEntity[]
   organization OrganizationEntity?
   individual   IndividualEntity?
   venue        VenueEntity?
+  eventSlots   EventSlotParticipantEntity[]
 
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
   @@map("profiles")
@@ -132,6 +133,7 @@ model VenueEntity {
   childVenues       VenueEntity[]                         @relation("ChildVenues")
   coords            Unsupported("geography(Point, 4326)")
   permanentlyClosed Boolean                               @default(false)
+  eventSlots        EventSlotEntity[]
 
   @@index([coords], type: Gist)
   @@map("venues")
@@ -164,6 +166,8 @@ model ImageEntity {
   cloudflareId     String                    @unique @map("cloudflare_id")
   variant          ImageVariant
   profileImages    ProfileImageJunction[]
+  eventImages      EventImageJunction[]
+  eventSlotImages  EventSlotImageJunction[]
   danceStyleImages DanceStyleImageJunction[]
 
   @@index([cloudflareId])
@@ -171,11 +175,197 @@ model ImageEntity {
   @@schema("storage")
 }
 
+model EventEntity {
+  id                  String               @id @default(cuid())
+  name                String
+  description         String
+  cancelled           Boolean              @default(false)
+  mustAttendFullEvent Boolean              @default(false) @map("must_attend_full_event")
+  createdAt           DateTime             @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
+  images              EventImageJunction[]
+  links               EventLinkEntity[]
+  tags                EventTagJunction[]
+  slots               EventSlotEntity[]
+
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@map("events")
+  @@schema("events")
+}
+
+model EventImageJunction {
+  event   EventEntity @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  eventId String      @map("event_id")
+  image   ImageEntity @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId String      @map("image_id")
+
+  @@id([eventId, imageId])
+  @@index([eventId])
+  @@index([imageId])
+  @@map("event_images")
+  @@schema("events")
+}
+
+model EventLinkEntity {
+  id      Int         @id @default(autoincrement())
+  event   EventEntity @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId String      @map("event_id")
+  url     String
+
+  @@unique([eventId, url])
+  @@index([eventId])
+  @@map("event_links")
+  @@schema("events")
+}
+
+// Not an enum as we'll likely need to add new tags over time
+model EventTagJunction {
+  eventId    String               @map("event_id")
+  event      EventEntity          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tag        String
+  tagDetails EventTagDetailEntity @relation(fields: [tag], references: [tag], onDelete: Cascade)
+
+  @@id([eventId, tag])
+  @@index([eventId])
+  @@index([tag])
+  @@map("event_tags")
+  @@schema("events")
+}
+
+model EventTagDetailEntity {
+  tag         String             @id
+  label       String
+  description String
+  events      EventTagJunction[]
+
+  @@map("event_tag_details")
+  @@schema("events")
+}
+
+model EventSlotEntity {
+  id             String                        @id @default(cuid())
+  eventId        String                        @map("event_id")
+  event          EventEntity                   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  start          DateTime                      @db.Timestamptz
+  end            DateTime                      @db.Timestamptz
+  cancelled      Boolean                       @default(false)
+  liveMusic      Boolean                       @map("live_music")
+  venueId        String                        @map("venue_id")
+  venue          VenueEntity                   @relation(fields: [venueId], references: [profileId], onDelete: Restrict)
+  images         EventSlotImageJunction[]
+  links          EventSlotLinkEntity[]
+  paymentOptions PaymentOptionEntity[]
+  profiles       EventSlotParticipantEntity[]
+  danceStyles    EventSlotDanceStyleJunction[]
+
+  @@index([eventId])
+  @@index([venueId])
+  @@index([start])
+  @@index([end])
+  @@map("event_slots")
+  @@schema("events")
+}
+
+model EventSlotImageJunction {
+  slot    EventSlotEntity @relation(fields: [slotId], references: [id], onDelete: Restrict)
+  slotId  String          @map("slot_id")
+  image   ImageEntity     @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId String          @map("image_id")
+
+  @@id([slotId, imageId])
+  @@index([slotId])
+  @@index([imageId])
+  @@map("event_slot_images")
+  @@schema("events")
+}
+
+model EventSlotLinkEntity {
+  id     Int             @id @default(autoincrement())
+  slot   EventSlotEntity @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  slotId String          @map("slot_id")
+  url    String
+
+  @@unique([slotId, url])
+  @@index([slotId])
+  @@map("event_slot_links")
+  @@schema("events")
+}
+
+// ISO 4217 currency codes
+enum CurrencyCode {
+  SEK
+  NOK
+  DKK
+  EUR
+  GBP
+  USD
+
+  @@map("currency_code")
+  @@schema("events")
+}
+
+model PaymentOptionEntity {
+  id          Int             @id @default(autoincrement())
+  slotId      String          @map("slot_id")
+  slot        EventSlotEntity @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  // 199.99 SEK would be stored as 19 999, $24.99 as 2 499 etc.
+  price       Int
+  currency    CurrencyCode
+  description String
+  // Accepted payment methods on-location
+  cash        Boolean
+  card        Boolean
+  swish       Boolean
+  // Link to website where tickets can be bought, or null
+  online      String?
+
+  @@index([slotId])
+  @@map("payment_options")
+  @@schema("events")
+}
+
+enum EventSlotParticipationType {
+  other
+  performer
+  instructor
+  organizer
+  photographer
+
+  @@map("event_slot_participation_type")
+  @@schema("events")
+}
+
+model EventSlotParticipantEntity {
+  slotId    String                     @map("slot_id")
+  slot      EventSlotEntity            @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  profileId String                     @map("profile_id")
+  profile   ProfileEntity              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  type      EventSlotParticipationType
+
+  @@id([slotId, profileId, type])
+  @@index([slotId])
+  @@index([profileId])
+  @@index([type])
+  @@map("event_slot_participants")
+  @@schema("events")
+}
+
+model EventSlotDanceStyleJunction {
+  eventSlot    EventSlotEntity  @relation(fields: [eventSlotId], references: [id], onDelete: Cascade)
+  eventSlotId  String           @map("event_slot_id")
+  danceStyle   DanceStyleEntity @relation(fields: [danceStyleId], references: [id], onDelete: Cascade)
+  danceStyleId String           @map("dance_style_id")
+
+  @@id([eventSlotId, danceStyleId])
+  @@map("event_slot_dance_styles")
+  @@schema("events")
+}
+
 model DanceStyleEntity {
-  id          String                    @id @default(cuid())
+  id          String                        @id @default(cuid())
   name        String
   description String
   images      DanceStyleImageJunction[]
+  eventSlots  EventSlotDanceStyleJunction[]
 
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
   @@map("dance_styles")
