@@ -7,14 +7,14 @@ CREATE TYPE "profiles"."organization_tag" AS ENUM (
     'booking_agent'
 );
 -- CreateTable
-CREATE TABLE "profiles"."organization_tags" (
+CREATE TABLE "profiles"."organization_tag_details" (
     "tag" "profiles"."organization_tag" NOT NULL,
     "label" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    CONSTRAINT "organization_tags_pkey" PRIMARY KEY ("tag")
+    CONSTRAINT "organization_tag_details_pkey" PRIMARY KEY ("tag")
 );
 -- Insert Values
-INSERT INTO "profiles"."organization_tags"
+INSERT INTO "profiles"."organization_tag_details"
 VALUES (
         'performer',
         'Band/Artist',
@@ -54,14 +54,14 @@ CREATE TYPE "profiles"."individual_tag" AS ENUM (
     'photographer'
 );
 -- CreateTable
-CREATE TABLE "profiles"."individual_tags" (
+CREATE TABLE "profiles"."individual_tag_details" (
     "tag" "profiles"."individual_tag" NOT NULL,
     "label" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    CONSTRAINT "individual_tags_pkey" PRIMARY KEY ("tag")
+    CONSTRAINT "individual_tag_details_pkey" PRIMARY KEY ("tag")
 );
 -- Insert Values
-INSERT INTO "profiles"."individual_tags"
+INSERT INTO "profiles"."individual_tag_details"
 VALUES (
         'musician',
         'Musiker',

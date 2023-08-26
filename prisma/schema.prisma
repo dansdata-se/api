@@ -90,7 +90,7 @@ model OrganizationTagDetailEntity {
   label       String
   description String
 
-  @@map("organization_tags")
+  @@map("organization_tag_details")
   @@schema("profiles")
 }
 
@@ -121,7 +121,7 @@ model IndividualTagDetailEntity {
   label       String
   description String
 
-  @@map("individual_tags")
+  @@map("individual_tag_details")
   @@schema("profiles")
 }
 
