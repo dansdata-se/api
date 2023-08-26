@@ -1,6 +1,7 @@
 import { prisma } from "@/db";
 import { BaseProfileDAO } from "@/db/dao/profiles/base_profile";
 import { IndividualDAO } from "@/db/dao/profiles/individual";
+import { OrganizationTagDetailsModel } from "@/model/profiles/organizations/tag_details";
 import { OrganizationModel } from "@/model/profiles/profile";
 import {
   BaseProfileReferenceModel,
@@ -101,6 +102,19 @@ export const OrganizationDAO = {
         .filter(hasOrganizationProfileType)
         .map(expandBaseModelToReference)
     );
+  },
+  /**
+   * Retrieve a list of organization tags with human-readable label and description
+   */
+  async tags(): Promise<OrganizationTagDetailsModel[]> {
+    const tags = await prisma.organizationTagDetailEntity.findMany({
+      select: {
+        tag: true,
+        label: true,
+        description: true,
+      },
+    });
+    return tags;
   },
 };
 
