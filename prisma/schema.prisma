@@ -161,12 +161,37 @@ enum ImageVariant {
 }
 
 model ImageEntity {
-  id            String                 @id @default(cuid())
-  cloudflareId  String                 @unique @map("cloudflare_id")
-  variant       ImageVariant
-  profileImages ProfileImageJunction[]
+  id               String                    @id @default(cuid())
+  cloudflareId     String                    @unique @map("cloudflare_id")
+  variant          ImageVariant
+  profileImages    ProfileImageJunction[]
+  danceStyleImages DanceStyleImageJunction[]
 
   @@index([cloudflareId])
   @@map("images")
   @@schema("storage")
+}
+
+model DanceStyleEntity {
+  id          String                    @id @default(cuid())
+  name        String
+  description String
+  images      DanceStyleImageJunction[]
+
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@map("dance_styles")
+  @@schema("events")
+}
+
+model DanceStyleImageJunction {
+  danceStyle   DanceStyleEntity @relation(fields: [danceStyleId], references: [id], onDelete: Restrict)
+  danceStyleId String           @map("dance_style_id")
+  image        ImageEntity      @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId      String           @map("image_id")
+
+  @@id([danceStyleId, imageId])
+  @@index([danceStyleId])
+  @@index([imageId])
+  @@map("dance_style_images")
+  @@schema("events")
 }
