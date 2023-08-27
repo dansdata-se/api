@@ -19,6 +19,17 @@ export const CreateImageUploadUrlDtoSchema = registry.register(
   })
 );
 
+export const UploadedImageReferenceDtoSchema = z
+  .string()
+  .max(100)
+  .trim()
+  .min(5)
+  .optional()
+  .openapi({
+    // Techincally the cloudflareId
+    description: "The id of a previously uploaded image.",
+  });
+
 export type ImageDto = z.infer<typeof ImageDtoSchema>;
 export const ImageDtoSchema = registry.register(
   "ImageDto",
