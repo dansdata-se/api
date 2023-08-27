@@ -3,7 +3,7 @@ import {
   OrganizationTagDetailsDto,
   OrganizationTagDetailsDtoSchema,
 } from "@/api/dto/profiles/organizations/tag_details";
-import { OrganizationDAO } from "@/db/dao/profiles/organization";
+import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { NextApiResponse } from "next";
 
 export default defineEndpoints({
@@ -26,7 +26,7 @@ export default defineEndpoints({
       },
     },
     async handler(_, res) {
-      const tags = await OrganizationDAO.tags();
+      const tags = await OrganizationDao.tags();
       (res as NextApiResponse<OrganizationTagDetailsDto[]>)
         .status(200)
         .json(tags);

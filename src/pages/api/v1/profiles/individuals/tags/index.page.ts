@@ -3,7 +3,7 @@ import {
   IndividualTagDetailsDto,
   IndividualTagDetailsDtoSchema,
 } from "@/api/dto/profiles/individuals/tag_details";
-import { IndividualDAO } from "@/db/dao/profiles/individual";
+import { IndividualDao } from "@/db/dao/profiles/individual";
 import { NextApiResponse } from "next";
 
 export default defineEndpoints({
@@ -26,7 +26,7 @@ export default defineEndpoints({
       },
     },
     async handler(_, res) {
-      const tags = await IndividualDAO.tags();
+      const tags = await IndividualDao.tags();
       (res as NextApiResponse<IndividualTagDetailsDto[]>)
         .status(200)
         .json(tags);

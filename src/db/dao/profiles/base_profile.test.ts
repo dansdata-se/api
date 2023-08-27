@@ -20,11 +20,11 @@ jest.mock("@/db", () => ({
 // prettier-ignore
 import { prisma } from "@/db";
 
-import { BaseProfileDAO } from "@/db/dao/profiles/base_profile";
+import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 import { BaseProfileModel } from "@/model/profiles/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
 
-describe("BaseProfileDAO unit tests", () => {
+describe("BaseProfileDao unit tests", () => {
   const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 
   beforeEach(() => {
@@ -84,7 +84,7 @@ describe("BaseProfileDAO unit tests", () => {
     );
 
     await expect(
-      BaseProfileDAO.getById("profileId")
+      BaseProfileDao.getById("profileId")
     ).resolves.toEqual<BaseProfileModel>({
       id: expectedProfileEntity.id,
       type: expectedProfileEntity.type,
@@ -151,7 +151,7 @@ describe("BaseProfileDAO unit tests", () => {
     );
 
     await expect(
-      BaseProfileDAO.getReferenceById("profileId")
+      BaseProfileDao.getReferenceById("profileId")
     ).resolves.toEqual<BaseProfileReferenceModel>({
       id: expectedProfileEntity.id,
       type: expectedProfileEntity.type,

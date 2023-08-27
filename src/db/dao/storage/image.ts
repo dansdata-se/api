@@ -25,7 +25,7 @@ export function imageEntitiesToImagesModel(images: ImageEntity[]): ImagesModel {
   ) as unknown as ImagesModel;
 }
 
-export const ImageDAO = {
+export const ImageDao = {
   /**
    * Retrieve an image by its id
    */

@@ -1,6 +1,6 @@
 import { prisma } from "@/db";
-import { BaseProfileDAO } from "@/db/dao/profiles/base_profile";
-import { OrganizationDAO } from "@/db/dao/profiles/organization";
+import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
+import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { IndividualTagDetailsModel } from "@/model/profiles/individuals/tag_details";
 import { IndividualModel } from "@/model/profiles/profile";
 import {
@@ -16,16 +16,16 @@ function hasIndividualProfileType<T extends { type: ProfileType }>(
   return value.type === ProfileType.individual;
 }
 
-export type IndividualDAOType = typeof IndividualDAO;
+export type IndividualDaoType = typeof IndividualDao;
 /**
  * DAO for working with profiles representing individuals
  */
-export const IndividualDAO = {
+export const IndividualDao = {
   /**
    * Retrieve a full individual profile by its id
    */
   async getById(id: IndividualModel["id"]): Promise<IndividualModel | null> {
-    const baseModel = await BaseProfileDAO.getById(id);
+    const baseModel = await BaseProfileDao.getById(id);
     if (baseModel === null) return null;
     if (!hasIndividualProfileType(baseModel)) return null;
 
@@ -47,7 +47,7 @@ export const IndividualDAO = {
     const organizations = (
       await Promise.all(
         entity.organizations.map(
-          async (o) => await OrganizationDAO.getReferenceById(o.organizationId)
+          async (o) => await OrganizationDao.getReferenceById(o.organizationId)
         )
       )
     )
@@ -74,7 +74,7 @@ export const IndividualDAO = {
   async getReferenceById(
     id: IndividualReferenceModel["id"]
   ): Promise<IndividualReferenceModel | null> {
-    const baseModel = await BaseProfileDAO.getReferenceById(id);
+    const baseModel = await BaseProfileDao.getReferenceById(id);
     if (baseModel === null) return null;
     if (!hasIndividualProfileType(baseModel)) return null;
     return expandBaseModelToReference(baseModel);
@@ -95,7 +95,7 @@ export const IndividualDAO = {
     offset: number
   ): Promise<IndividualReferenceModel[]> {
     return await Promise.all(
-      (await BaseProfileDAO.getReferencesByNameQuery(nameQuery, limit, offset))
+      (await BaseProfileDao.getReferencesByNameQuery(nameQuery, limit, offset))
         .filter(isNonNull)
         .filter(hasIndividualProfileType)
         .map(expandBaseModelToReference)

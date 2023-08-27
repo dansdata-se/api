@@ -1,6 +1,6 @@
 import { prisma } from "@/db";
-import { BaseProfileDAO } from "@/db/dao/profiles/base_profile";
-import { IndividualDAO } from "@/db/dao/profiles/individual";
+import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
+import { IndividualDao } from "@/db/dao/profiles/individual";
 import { OrganizationTagDetailsModel } from "@/model/profiles/organizations/tag_details";
 import { OrganizationModel } from "@/model/profiles/profile";
 import {
@@ -16,18 +16,18 @@ function hasOrganizationProfileType<T extends { type: ProfileType }>(
   return value.type === ProfileType.organization;
 }
 
-export type OrganizationDAOType = typeof OrganizationDAO;
+export type OrganizationDaoType = typeof OrganizationDao;
 /**
  * DAO for working with profiles representing organizations
  */
-export const OrganizationDAO = {
+export const OrganizationDao = {
   /**
    * Retrieve a full organization profile by its id
    */
   async getById(
     id: OrganizationModel["id"]
   ): Promise<OrganizationModel | null> {
-    const baseModel = await BaseProfileDAO.getById(id);
+    const baseModel = await BaseProfileDao.getById(id);
     if (baseModel === null) return null;
     if (!hasOrganizationProfileType(baseModel)) return null;
 
@@ -49,7 +49,7 @@ export const OrganizationDAO = {
     const members = (
       await Promise.all(
         entity.members.map((m) =>
-          IndividualDAO.getReferenceById(m.individualId)
+          IndividualDao.getReferenceById(m.individualId)
         )
       )
     )
@@ -76,7 +76,7 @@ export const OrganizationDAO = {
   async getReferenceById(
     id: OrganizationReferenceModel["id"]
   ): Promise<OrganizationReferenceModel | null> {
-    const baseModel = await BaseProfileDAO.getReferenceById(id);
+    const baseModel = await BaseProfileDao.getReferenceById(id);
     if (baseModel === null) return null;
     if (!hasOrganizationProfileType(baseModel)) return null;
     return expandBaseModelToReference(baseModel);
@@ -97,7 +97,7 @@ export const OrganizationDAO = {
     offset: number
   ): Promise<OrganizationReferenceModel[]> {
     return await Promise.all(
-      (await BaseProfileDAO.getReferencesByNameQuery(nameQuery, limit, offset))
+      (await BaseProfileDao.getReferencesByNameQuery(nameQuery, limit, offset))
         .filter(isNonNull)
         .filter(hasOrganizationProfileType)
         .map(expandBaseModelToReference)

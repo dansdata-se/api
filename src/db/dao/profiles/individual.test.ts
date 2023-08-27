@@ -18,25 +18,25 @@ jest.mock("@/db", () => ({
 // prettier-ignore
 import { prisma } from "@/db";
 
-import type { BaseProfileDAOType } from "@/db/dao/profiles/base_profile";
+import type { BaseProfileDaoType } from "@/db/dao/profiles/base_profile";
 jest.mock("@/db/dao/profiles/base_profile", () => ({
   __esModule: true,
-  BaseProfileDAO: mockDeep<BaseProfileDAOType>(),
+  BaseProfileDao: mockDeep<BaseProfileDaoType>(),
 }));
 // prevent prettier from moving this import around
 // prettier-ignore
-import { BaseProfileDAO } from "@/db/dao/profiles/base_profile";
+import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 
-import type { OrganizationDAOType } from "@/db/dao/profiles/organization";
+import type { OrganizationDaoType } from "@/db/dao/profiles/organization";
 jest.mock("@/db/dao/profiles/organization", () => ({
   __esModule: true,
-  OrganizationDAO: mockDeep<OrganizationDAOType>(),
+  OrganizationDao: mockDeep<OrganizationDaoType>(),
 }));
 // prevent prettier from moving this import around
 // prettier-ignore
-import { OrganizationDAO } from "@/db/dao/profiles/organization";
+import { OrganizationDao } from "@/db/dao/profiles/organization";
 
-import { IndividualDAO } from "@/db/dao/profiles/individual";
+import { IndividualDao } from "@/db/dao/profiles/individual";
 import { BaseProfileModel, IndividualModel } from "@/model/profiles/profile";
 import {
   BaseProfileReferenceModel,
@@ -44,22 +44,22 @@ import {
   OrganizationReferenceModel,
 } from "@/model/profiles/profile_reference";
 
-describe("IndividualDAO unit tests", () => {
+describe("IndividualDao unit tests", () => {
   const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
-  const BaseProfileDAOMock =
-    BaseProfileDAO as unknown as DeepMockProxy<BaseProfileDAOType>;
-  const OrganizationDAOMock =
-    OrganizationDAO as unknown as DeepMockProxy<OrganizationDAOType>;
+  const BaseProfileDaoMock =
+    BaseProfileDao as unknown as DeepMockProxy<BaseProfileDaoType>;
+  const OrganizationDaoMock =
+    OrganizationDao as unknown as DeepMockProxy<OrganizationDaoType>;
 
   beforeEach(() => {
     mockReset(prismaMock);
-    mockReset(BaseProfileDAOMock);
-    mockReset(OrganizationDAOMock);
+    mockReset(BaseProfileDaoMock);
+    mockReset(OrganizationDaoMock);
   });
 
   test("getById handles base profile not found", async () => {
-    BaseProfileDAOMock.getById.mockResolvedValueOnce(null);
-    await expect(IndividualDAO.getById("profileId")).resolves.toBeNull();
+    BaseProfileDaoMock.getById.mockResolvedValueOnce(null);
+    await expect(IndividualDao.getById("profileId")).resolves.toBeNull();
   });
 
   test("getById ignores profile where type != individual", async () => {
@@ -94,9 +94,9 @@ describe("IndividualDAO unit tests", () => {
         },
       },
     };
-    BaseProfileDAOMock.getById.mockResolvedValueOnce(baseProfile);
+    BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
 
-    await expect(IndividualDAO.getById("profileId")).resolves.toBeNull();
+    await expect(IndividualDao.getById("profileId")).resolves.toBeNull();
   });
 
   test("getById resolves profile", async () => {
@@ -184,11 +184,11 @@ describe("IndividualDAO unit tests", () => {
         },
       ],
     };
-    BaseProfileDAOMock.getById.mockResolvedValueOnce(baseProfile);
+    BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
     prismaMock.individualEntity.findUnique.mockResolvedValueOnce(
       individualEntity
     );
-    OrganizationDAOMock.getReferenceById.mockImplementation(async (id) => {
+    OrganizationDaoMock.getReferenceById.mockImplementation(async (id) => {
       if (id === org1ReferenceModel.id) {
         return Promise.resolve(org1ReferenceModel);
       } else if (id === org2ReferenceModel.id) {
@@ -199,7 +199,7 @@ describe("IndividualDAO unit tests", () => {
     });
 
     await expect(
-      IndividualDAO.getById("profileId")
+      IndividualDao.getById("profileId")
     ).resolves.toEqual<IndividualModel>({
       id: baseProfile.id,
       type: ProfileType.individual,
@@ -229,9 +229,9 @@ describe("IndividualDAO unit tests", () => {
   });
 
   test("getReferenceById handles base profile not found", async () => {
-    BaseProfileDAOMock.getReferenceById.mockResolvedValueOnce(null);
+    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(null);
     await expect(
-      IndividualDAO.getReferenceById("profileId")
+      IndividualDao.getReferenceById("profileId")
     ).resolves.toBeNull();
   });
 
@@ -258,10 +258,10 @@ describe("IndividualDAO unit tests", () => {
         },
       },
     };
-    BaseProfileDAOMock.getReferenceById.mockResolvedValueOnce(baseProfile);
+    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(baseProfile);
 
     await expect(
-      IndividualDAO.getReferenceById("profileId")
+      IndividualDao.getReferenceById("profileId")
     ).resolves.toBeNull();
   });
 
@@ -292,7 +292,7 @@ describe("IndividualDAO unit tests", () => {
       profileId: baseProfileReference.id,
       tags: ["musician", "instructor"],
     };
-    BaseProfileDAOMock.getReferenceById.mockResolvedValueOnce(
+    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(
       baseProfileReference
     );
     prismaMock.individualEntity.findUnique.mockResolvedValueOnce(
@@ -300,7 +300,7 @@ describe("IndividualDAO unit tests", () => {
     );
 
     await expect(
-      IndividualDAO.getReferenceById("profileId")
+      IndividualDao.getReferenceById("profileId")
     ).resolves.toEqual<IndividualReferenceModel>({
       id: baseProfileReference.id,
       type: ProfileType.individual,

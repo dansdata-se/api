@@ -13,14 +13,14 @@ jest.mock("@/db", () => ({
 // prettier-ignore
 import { prisma } from "@/db";
 
-import type { BaseProfileDAOType } from "@/db/dao/profiles/base_profile";
+import type { BaseProfileDaoType } from "@/db/dao/profiles/base_profile";
 jest.mock("@/db/dao/profiles/base_profile", () => ({
   __esModule: true,
-  BaseProfileDAO: mockDeep<BaseProfileDAOType>(),
+  BaseProfileDao: mockDeep<BaseProfileDaoType>(),
 }));
 // prevent prettier from moving this import around
 // prettier-ignore
-import { BaseProfileDAO } from "@/db/dao/profiles/base_profile";
+import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 
 import { generateVenueEntity } from "@/__test__/db/dao/profiles/venue";
 import { generateBaseProfileModel } from "@/__test__/model/profiles/profile";
@@ -28,34 +28,34 @@ import {
   generateBaseProfileReferenceModel,
   generateVenueReferenceModel,
 } from "@/__test__/model/profiles/profile_reference";
-import { VenueDAO } from "@/db/dao/profiles/venue";
+import { VenueDao } from "@/db/dao/profiles/venue";
 import { VenueModel } from "@/model/profiles/profile";
 import { VenueReferenceModel } from "@/model/profiles/profile_reference";
 import { faker } from "@faker-js/faker";
 import cuid2 from "@paralleldrive/cuid2";
 
-describe("VenueDAO unit tests", () => {
+describe("VenueDao unit tests", () => {
   const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
-  const BaseProfileDAOMock =
-    BaseProfileDAO as unknown as DeepMockProxy<BaseProfileDAOType>;
+  const BaseProfileDaoMock =
+    BaseProfileDao as unknown as DeepMockProxy<BaseProfileDaoType>;
 
   beforeEach(() => {
     mockReset(prismaMock);
-    mockReset(BaseProfileDAOMock);
+    mockReset(BaseProfileDaoMock);
   });
 
   test("getById handles base profile not found", async () => {
-    BaseProfileDAOMock.getById.mockResolvedValueOnce(null);
-    await expect(VenueDAO.getById(cuid2.createId())).resolves.toBeNull();
+    BaseProfileDaoMock.getById.mockResolvedValueOnce(null);
+    await expect(VenueDao.getById(cuid2.createId())).resolves.toBeNull();
   });
 
   test("getById ignores profile where type != venue", async () => {
     const baseProfile = generateBaseProfileModel({
       type: ProfileType.individual,
     });
-    BaseProfileDAOMock.getById.mockResolvedValueOnce(baseProfile);
+    BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
 
-    await expect(VenueDAO.getById(baseProfile.id)).resolves.toBeNull();
+    await expect(VenueDao.getById(baseProfile.id)).resolves.toBeNull();
   });
 
   test("getById resolves profile", async () => {
@@ -104,7 +104,7 @@ describe("VenueDAO unit tests", () => {
         profileId: it.id,
       })),
     });
-    BaseProfileDAOMock.getById.mockResolvedValueOnce(baseProfile);
+    BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
     prismaMock.venueEntity.findUnique.mockImplementation(
       // @ts-expect-error <- typescript is concerned that we do
       // not support _all_ possible variations of findUnique.
@@ -125,7 +125,7 @@ describe("VenueDAO unit tests", () => {
         }
       }
     );
-    BaseProfileDAOMock.getReferenceById.mockImplementation(async (id) => {
+    BaseProfileDaoMock.getReferenceById.mockImplementation(async (id) => {
       const child = childReferenceModels.find((it) => it.id === id);
       if (child) return Promise.resolve(child);
       switch (id) {
@@ -138,7 +138,7 @@ describe("VenueDAO unit tests", () => {
       }
     });
 
-    await expect(VenueDAO.getById(baseProfile.id)).resolves.toEqual<VenueModel>(
+    await expect(VenueDao.getById(baseProfile.id)).resolves.toEqual<VenueModel>(
       {
         id: baseProfile.id,
         type: ProfileType.venue,
@@ -155,9 +155,9 @@ describe("VenueDAO unit tests", () => {
   });
 
   test("getReferenceById handles base profile not found", async () => {
-    BaseProfileDAOMock.getReferenceById.mockResolvedValueOnce(null);
+    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(null);
     await expect(
-      VenueDAO.getReferenceById(cuid2.createId())
+      VenueDao.getReferenceById(cuid2.createId())
     ).resolves.toBeNull();
   });
 
@@ -165,12 +165,12 @@ describe("VenueDAO unit tests", () => {
     const baseProfileReference = generateBaseProfileReferenceModel({
       type: ProfileType.individual,
     });
-    BaseProfileDAOMock.getReferenceById.mockResolvedValueOnce(
+    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(
       baseProfileReference
     );
 
     await expect(
-      VenueDAO.getReferenceById(baseProfileReference.id)
+      VenueDao.getReferenceById(baseProfileReference.id)
     ).resolves.toBeNull();
   });
 
@@ -215,7 +215,7 @@ describe("VenueDAO unit tests", () => {
         profileId: it.id,
       })),
     });
-    BaseProfileDAOMock.getReferenceById.mockResolvedValueOnce(
+    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(
       baseProfileReference
     );
     prismaMock.venueEntity.findUnique.mockResolvedValueOnce(venueEntity);
@@ -239,7 +239,7 @@ describe("VenueDAO unit tests", () => {
         }
       }
     );
-    BaseProfileDAOMock.getReferenceById.mockImplementation(async (id) => {
+    BaseProfileDaoMock.getReferenceById.mockImplementation(async (id) => {
       const child = childReferenceModels.find((it) => it.id === id);
       if (child) return Promise.resolve(child);
       switch (id) {
@@ -253,7 +253,7 @@ describe("VenueDAO unit tests", () => {
     });
 
     await expect(
-      VenueDAO.getReferenceById(baseProfileReference.id)
+      VenueDao.getReferenceById(baseProfileReference.id)
     ).resolves.toEqual<VenueReferenceModel>({
       id: baseProfileReference.id,
       type: ProfileType.venue,

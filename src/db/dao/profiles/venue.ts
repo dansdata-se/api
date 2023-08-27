@@ -1,5 +1,5 @@
 import { prisma } from "@/db";
-import { BaseProfileDAO } from "@/db/dao/profiles/base_profile";
+import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 import { CoordsModel } from "@/model/profiles/coords";
 import { VenueModel } from "@/model/profiles/profile";
 import {
@@ -15,16 +15,16 @@ function hasVenueProfileType<T extends { type: ProfileType }>(
   return value.type === ProfileType.venue;
 }
 
-export type VenueDAOType = typeof VenueDAO;
+export type VenueDaoType = typeof VenueDao;
 /**
  * DAO for working with profiles representing venues
  */
-export const VenueDAO = {
+export const VenueDao = {
   /**
    * Retrieve a full venue profile by its id
    */
   async getById(id: VenueModel["id"]): Promise<VenueModel | null> {
-    const baseModel = await BaseProfileDAO.getById(id);
+    const baseModel = await BaseProfileDao.getById(id);
     if (baseModel === null) return null;
     if (!hasVenueProfileType(baseModel)) return null;
 
@@ -44,14 +44,14 @@ export const VenueDAO = {
 
     const ancestorIds = await entity.ancestorIds;
     const ancestors = (
-      await Promise.all(ancestorIds.map((id) => VenueDAO.getReferenceById(id)))
+      await Promise.all(ancestorIds.map((id) => VenueDao.getReferenceById(id)))
     )
       // If we get null, the profile was likely deleted since our initial query.
       // Silently ignore this.
       .filter(isNonNull);
     const children = (
       await Promise.all(
-        entity.childVenues.map((m) => VenueDAO.getReferenceById(m.profileId))
+        entity.childVenues.map((m) => VenueDao.getReferenceById(m.profileId))
       )
     )
       // If we get null, the profile was likely deleted since our initial query.
@@ -79,7 +79,7 @@ export const VenueDAO = {
   async getReferenceById(
     id: VenueReferenceModel["id"]
   ): Promise<VenueReferenceModel | null> {
-    const baseModel = await BaseProfileDAO.getReferenceById(id);
+    const baseModel = await BaseProfileDao.getReferenceById(id);
     if (baseModel === null) return null;
     if (!hasVenueProfileType(baseModel)) return null;
     return expandBaseModelToReference(baseModel);
@@ -102,7 +102,7 @@ export const VenueDAO = {
     return (
       await Promise.all(
         (
-          await BaseProfileDAO.getReferencesByNameQuery(
+          await BaseProfileDao.getReferencesByNameQuery(
             nameQuery,
             limit,
             offset

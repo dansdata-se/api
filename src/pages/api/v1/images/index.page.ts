@@ -5,7 +5,7 @@ import {
   CreateImageUploadUrlDto,
   CreateImageUploadUrlDtoSchema,
 } from "@/api/dto/storage/image";
-import { ImageDAO } from "@/db/dao/storage/image";
+import { ImageDao } from "@/db/dao/storage/image";
 import { NextApiResponse } from "next";
 
 export default defineEndpoints({
@@ -31,7 +31,7 @@ export default defineEndpoints({
     },
     async handler(_, res) {
       try {
-        const { id, uploadURL } = await ImageDAO.createImageUploadUrl(
+        const { id, uploadURL } = await ImageDao.createImageUploadUrl(
           // TODO(FelixZY): replace with proper userId once auth is in place.
           ""
         );

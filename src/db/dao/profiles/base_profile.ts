@@ -4,11 +4,11 @@ import { BaseProfileModel } from "@/model/profiles/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
 import { isNonNull } from "@/util/is_defined";
 
-export type BaseProfileDAOType = typeof BaseProfileDAO;
+export type BaseProfileDaoType = typeof BaseProfileDao;
 /**
  * DAO for working with profiles based on their common fields
  */
-export const BaseProfileDAO = {
+export const BaseProfileDao = {
   /**
    * Retrieve a full profile by its id
    */

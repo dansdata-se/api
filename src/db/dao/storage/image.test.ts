@@ -14,14 +14,14 @@ jest.mock("@/db", () => ({
 import { prisma } from "@/db";
 
 import {
-  ImageDAO,
+  ImageDao,
   ImageNotUploadedToCloudflareError,
   imageEntitiesToImagesModel,
 } from "@/db/dao/storage/image";
 import { ImagesModel } from "@/model/profiles/images";
 import fetch from "jest-fetch-mock";
 
-describe("ImageDAO unit tests", () => {
+describe("ImageDao unit tests", () => {
   const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe("ImageDAO unit tests", () => {
         messages: [],
       })
     );
-    const { id, uploadURL } = await ImageDAO.createImageUploadUrl("testUserId");
+    const { id, uploadURL } = await ImageDao.createImageUploadUrl("testUserId");
 
     expect(id).toEqual("610a686f-3fa7-46ca-e36d-3c00bd791b00");
     expect(uploadURL).toEqual(
@@ -55,7 +55,7 @@ describe("ImageDAO unit tests", () => {
     fetch.mockResponseOnce("ERROR 5404: Image not found", { status: 404 });
 
     await expect(
-      ImageDAO.create({
+      ImageDao.create({
         cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
         variant: ImageVariant.cover,
       })
@@ -96,7 +96,7 @@ describe("ImageDAO unit tests", () => {
     );
 
     await expect(
-      ImageDAO.create({
+      ImageDao.create({
         cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
         variant: ImageVariant.cover,
       })
@@ -142,7 +142,7 @@ describe("ImageDAO unit tests", () => {
     });
 
     await expect(
-      ImageDAO.create({
+      ImageDao.create({
         cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
         variant: ImageVariant.cover,
       })
