@@ -46,9 +46,18 @@ export const IndividualDao = {
 
     const organizations = (
       await Promise.all(
-        entity.organizations.map(
-          async (o) => await OrganizationDao.getReferenceById(o.organizationId)
-        )
+        entity.organizations.map(async (o) => {
+          const profileReference = await OrganizationDao.getReferenceById(
+            o.organizationId
+          );
+          if (profileReference === null) {
+            return null;
+          }
+          return {
+            title: o.title,
+            profileReference,
+          };
+        })
       )
     )
       // If we get null, the profile was likely deleted since our initial query.

@@ -206,7 +206,17 @@ describe("IndividualDao unit tests", () => {
       name: baseProfile.name,
       description: baseProfile.description,
       links: baseProfile.links.map((l) => ({ url: l.url })),
-      organizations: [org1ReferenceModel, org2ReferenceModel],
+      organizations: [
+        {
+          title: "org1Title",
+          profileReference: org1ReferenceModel,
+        },
+
+        {
+          title: "org2Title",
+          profileReference: org2ReferenceModel,
+        },
+      ],
       tags: individualEntity.tags,
       images: {
         cover: {

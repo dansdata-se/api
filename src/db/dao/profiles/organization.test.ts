@@ -176,11 +176,11 @@ describe("OrganizationDao unit tests", () => {
       members: [
         {
           individualId: individual1ReferenceModel.id,
-          title: "org1Title",
+          title: "individual1Title",
         },
         {
           individualId: individual2ReferenceModel.id,
-          title: "org2Title",
+          title: "individual2Title",
         },
       ],
     };
@@ -206,7 +206,16 @@ describe("OrganizationDao unit tests", () => {
       name: baseProfile.name,
       description: baseProfile.description,
       links: baseProfile.links.map((l) => ({ url: l.url })),
-      members: [individual1ReferenceModel, individual2ReferenceModel],
+      members: [
+        {
+          title: "individual1Title",
+          profileReference: individual1ReferenceModel,
+        },
+        {
+          title: "individual2Title",
+          profileReference: individual2ReferenceModel,
+        },
+      ],
       tags: organizationEntity.tags,
       images: {
         cover: {

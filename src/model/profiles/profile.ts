@@ -31,7 +31,10 @@ export interface BaseProfileModel {
 export interface OrganizationModel extends BaseProfileModel {
   type: typeof ProfileType.organization;
   tags: OrganizationTag[];
-  members: IndividualReferenceModel[];
+  members: {
+    title: string;
+    profileReference: IndividualReferenceModel;
+  }[];
 }
 
 /**
@@ -40,7 +43,10 @@ export interface OrganizationModel extends BaseProfileModel {
 export interface IndividualModel extends BaseProfileModel {
   type: typeof ProfileType.individual;
   tags: IndividualTag[];
-  organizations: OrganizationReferenceModel[];
+  organizations: {
+    title: string;
+    profileReference: OrganizationReferenceModel;
+  }[];
 }
 
 /**
