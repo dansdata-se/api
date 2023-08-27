@@ -1,9 +1,9 @@
 import z from "@/api/zod";
-import { CloudflareResultDTOSchema } from "@/cloudflare/dto/result";
+import { CloudflareResultDtoSchema } from "@/cloudflare/dto/result";
 
 // Partial schema - covers the parts we are interested in.
-export type CloudflareImageDTO = z.infer<typeof CloudflareImageDTOSchema>;
-export const CloudflareImageDTOSchema = CloudflareResultDTOSchema.merge(
+export type CloudflareImageDto = z.infer<typeof CloudflareImageDtoSchema>;
+export const CloudflareImageDtoSchema = CloudflareResultDtoSchema.merge(
   z.object({
     result: z.object({
       id: z.string(),

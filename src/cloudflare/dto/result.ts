@@ -1,7 +1,7 @@
 import z from "@/api/zod";
 
-export type CloudflareResultDTO = z.infer<typeof CloudflareResultDTOSchema>;
-export const CloudflareResultDTOSchema = z.object({
+export type CloudflareResultDto = z.infer<typeof CloudflareResultDtoSchema>;
+export const CloudflareResultDtoSchema = z.object({
   errors: z.array(
     z.object({
       code: z.number(),

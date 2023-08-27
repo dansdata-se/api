@@ -1,9 +1,9 @@
-import { ErrorCode, ErrorDTO } from "@/api/dto/error";
+import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default function handler(
   _: NextApiRequest,
-  res: NextApiResponse<ErrorDTO>
+  res: NextApiResponse<ErrorDto>
 ) {
   res.status(404).json({
     code: ErrorCode.notFound,

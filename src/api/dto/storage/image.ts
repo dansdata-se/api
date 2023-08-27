@@ -2,11 +2,11 @@ import { registry } from "@/api/registry";
 import z from "@/api/zod";
 import { imageToUrl, placeholderImage } from "@/cloudflare";
 
-export type CreateImageUploadUrlDTO = z.infer<
-  typeof CreateImageUploadUrlDTOSchema
+export type CreateImageUploadUrlDto = z.infer<
+  typeof CreateImageUploadUrlDtoSchema
 >;
-export const CreateImageUploadUrlDTOSchema = registry.register(
-  "CreateImageUploadUrlDTO",
+export const CreateImageUploadUrlDtoSchema = registry.register(
+  "CreateImageUploadUrlDto",
   z.object({
     id: z.string().openapi({
       description:
@@ -19,9 +19,9 @@ export const CreateImageUploadUrlDTOSchema = registry.register(
   })
 );
 
-export type ImageDTO = z.infer<typeof ImageDTOSchema>;
-export const ImageDTOSchema = registry.register(
-  "ImageDTO",
+export type ImageDto = z.infer<typeof ImageDtoSchema>;
+export const ImageDtoSchema = registry.register(
+  "ImageDto",
   z.object({
     cover: z
       .string()

@@ -11,9 +11,9 @@ export enum ErrorCode {
   notFound = "NOT_FOUND",
 }
 
-export type ErrorDTO = z.infer<typeof ErrorDTOSchema>;
-export const ErrorDTOSchema = registry.register(
-  "ErrorDTO",
+export type ErrorDto = z.infer<typeof ErrorDtoSchema>;
+export const ErrorDtoSchema = registry.register(
+  "ErrorDto",
   z
     .object({
       code: z.nativeEnum(ErrorCode).openapi({

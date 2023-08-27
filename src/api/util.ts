@@ -1,4 +1,4 @@
-import { ErrorCode, ErrorDTO } from "@/api/dto/error";
+import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import z from "@/api/zod";
 import { NextApiResponse } from "next";
 import { fromZodError } from "zod-validation-error";
@@ -7,7 +7,7 @@ import { fromZodError } from "zod-validation-error";
  * Calls the given callback with the parsed `obj` or responds with status 400 if
  * the given object is not valid under the given schema.
  *
- * @param errorCode The error code to use in the returned {@link ErrorDTO} if
+ * @param errorCode The error code to use in the returned {@link ErrorDto} if
  * parsing fails.
  */
 export async function withParsedObject<T extends z.ZodSchema>(
@@ -23,7 +23,7 @@ export async function withParsedObject<T extends z.ZodSchema>(
   } else {
     const validationError = fromZodError(parseResult.error);
     res.setHeader("content-type", "application/json");
-    (res as NextApiResponse<ErrorDTO>).status(400).json({
+    (res as NextApiResponse<ErrorDto>).status(400).json({
       code: errorCode,
       message: validationError.message,
     });

@@ -1,5 +1,5 @@
-import { CreateImageUploadUrlDTO } from "@/api/dto/storage/image";
+import { CreateImageUploadUrlDto } from "@/api/dto/storage/image";
 import { ImageEntity } from "@prisma/client";
 
-export type ImageUploadUrlModel = CreateImageUploadUrlDTO;
+export type ImageUploadUrlModel = CreateImageUploadUrlDto;
 export type ImageModel = ImageEntity;

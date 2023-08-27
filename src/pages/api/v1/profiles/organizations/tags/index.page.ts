@@ -1,7 +1,7 @@
 import { defineEndpoints } from "@/api";
 import {
-  OrganizationTagDetailsDTO,
-  OrganizationTagDetailsDTOSchema,
+  OrganizationTagDetailsDto,
+  OrganizationTagDetailsDtoSchema,
 } from "@/api/dto/profiles/organizations/tag_details";
 import { OrganizationDAO } from "@/db/dao/profiles/organization";
 import { NextApiResponse } from "next";
@@ -19,7 +19,7 @@ export default defineEndpoints({
           description: "Ok\n\nA list of all supported organization tags.",
           content: {
             "application/json": {
-              schema: OrganizationTagDetailsDTOSchema.array(),
+              schema: OrganizationTagDetailsDtoSchema.array(),
             },
           },
         },
@@ -27,7 +27,7 @@ export default defineEndpoints({
     },
     async handler(_, res) {
       const tags = await OrganizationDAO.tags();
-      (res as NextApiResponse<OrganizationTagDetailsDTO[]>)
+      (res as NextApiResponse<OrganizationTagDetailsDto[]>)
         .status(200)
         .json(tags);
     },

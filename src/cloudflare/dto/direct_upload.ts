@@ -1,5 +1,5 @@
 import z from "@/api/zod";
-import { CloudflareResultDTOSchema } from "@/cloudflare/dto/result";
+import { CloudflareResultDtoSchema } from "@/cloudflare/dto/result";
 
 export type CloudflareDirectUploadParameters = z.infer<
   typeof CloudflareDirectUploadParametersSchema
@@ -12,10 +12,10 @@ export const CloudflareDirectUploadParametersSchema = z.object({
   requireSignedURLs: z.optional(z.boolean()),
 });
 
-export type CloudflareDirectUploadDTO = z.infer<
-  typeof CloudflareDirectUploadDTOSchema
+export type CloudflareDirectUploadDto = z.infer<
+  typeof CloudflareDirectUploadDtoSchema
 >;
-export const CloudflareDirectUploadDTOSchema = CloudflareResultDTOSchema.merge(
+export const CloudflareDirectUploadDtoSchema = CloudflareResultDtoSchema.merge(
   z.object({
     result: z.object({
       id: z.string(),

@@ -1,4 +1,4 @@
-import { ErrorCode, ErrorDTO } from "@/api/dto/error";
+import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { ApiMiddleware } from "@/api/middleware";
 import logger from "@/logger";
 import { NextApiResponse } from "next";
@@ -10,7 +10,7 @@ export const errorCatchingMiddleware: ApiMiddleware =
     } catch (e) {
       logger.error(e);
 
-      (res as NextApiResponse<ErrorDTO>).status(500).json({
+      (res as NextApiResponse<ErrorDto>).status(500).json({
         code: ErrorCode.internalServerError,
         message: ["development", "test"].includes(process.env.NODE_ENV)
           ? String(e)

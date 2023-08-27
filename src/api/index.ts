@@ -1,4 +1,4 @@
-import { ErrorCode, ErrorDTO } from "@/api/dto/error";
+import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { wrapEndpointWithMiddleware } from "@/api/middleware";
 import { registry } from "@/api/registry";
 import logger from "@/logger";
@@ -69,7 +69,7 @@ const buildRequestHandler = (endpoints: Partial<Endpoints>) =>
         );
         res.status(204).end();
       } else {
-        (res as NextApiResponse<ErrorDTO>).status(405).json({
+        (res as NextApiResponse<ErrorDto>).status(405).json({
           code: ErrorCode.httpMethodNotAllowed,
           message: "HTTP method not allowed.",
         });

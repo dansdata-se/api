@@ -1,4 +1,4 @@
-import { ErrorCode, ErrorDTO } from "@/api/dto/error";
+import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { commaSeparatedToArray, withParsedObject } from "@/api/util";
 import z from "@/api/zod";
 import { NextApiResponse } from "next";
@@ -77,9 +77,9 @@ describe("API utilities", () => {
         expect(res.statusCode).toBe(200);
       } else {
         expect(res.statusCode).toBe(400);
-        expect(res._getJSONData() as ErrorDTO).toMatchObject({
+        expect(res._getJSONData() as ErrorDto).toMatchObject({
           code: errorCode,
-        } as Partial<ErrorDTO>);
+        } as Partial<ErrorDto>);
       }
     }
   );

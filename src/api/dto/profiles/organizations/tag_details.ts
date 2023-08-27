@@ -2,11 +2,11 @@ import { registry } from "@/api/registry";
 import z from "@/api/zod";
 import { OrganizationTag } from "@prisma/client";
 
-export type OrganizationTagDetailsDTO = z.infer<
-  typeof OrganizationTagDetailsDTOSchema
+export type OrganizationTagDetailsDto = z.infer<
+  typeof OrganizationTagDetailsDtoSchema
 >;
-export const OrganizationTagDetailsDTOSchema = registry.register(
-  "OrganizationTagDetailsDTO",
+export const OrganizationTagDetailsDtoSchema = registry.register(
+  "OrganizationTagDetailsDto",
   z.object({
     tag: z.nativeEnum(OrganizationTag).openapi({
       example: OrganizationTag.educator,

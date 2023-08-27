@@ -1,13 +1,13 @@
 import { placeholderImage } from "@/cloudflare";
 import {
-  CloudflareDirectUploadDTO,
-  CloudflareDirectUploadDTOSchema,
+  CloudflareDirectUploadDto,
+  CloudflareDirectUploadDtoSchema,
   CloudflareDirectUploadParameters,
 } from "@/cloudflare/dto/direct_upload";
-import { CloudflareImageDTOSchema } from "@/cloudflare/dto/image";
+import { CloudflareImageDtoSchema } from "@/cloudflare/dto/image";
 import {
-  CloudflareResultDTO,
-  CloudflareResultDTOSchema,
+  CloudflareResultDto,
+  CloudflareResultDtoSchema,
 } from "@/cloudflare/dto/result";
 import env, { ENVVAR_UNSET } from "@/env";
 import logger from "@/logger";
@@ -52,7 +52,7 @@ const api = wretch("https://api.cloudflare.com/client/v4/") //
   ])
   .auth(`Bearer ${env.CLOUDFLARE_API_TOKEN}`);
 
-function logResultMessagesAndErrors<T extends CloudflareResultDTO>(
+function logResultMessagesAndErrors<T extends CloudflareResultDto>(
   result: T
 ): T {
   const { messages, errors } = result;
@@ -71,7 +71,7 @@ export const cloudflareApi = {
   images: {
     createImageUploadUrl: (
       params: CloudflareDirectUploadParameters
-    ): Promise<CloudflareDirectUploadDTO> => {
+    ): Promise<CloudflareDirectUploadDto> => {
       return (
         api
           .url(`accounts/${env.CLOUDFLARE_ACCOUNT_ID}/images/v2/direct_upload`)
@@ -81,7 +81,7 @@ export const cloudflareApi = {
           })
           .resolve(
             async (r) =>
-              await CloudflareDirectUploadDTOSchema.parseAsync(await r.json())
+              await CloudflareDirectUploadDtoSchema.parseAsync(await r.json())
           )
           .post()
           .then(logResultMessagesAndErrors)
@@ -91,7 +91,7 @@ export const cloudflareApi = {
               process.env.NODE_ENV !== "production" &&
               e instanceof MissingEnvError
             ) {
-              return Promise.resolve<CloudflareDirectUploadDTO>({
+              return Promise.resolve<CloudflareDirectUploadDto>({
                 messages: [
                   {
                     // Hopefully unused. Docs state that the code must be >1000
@@ -121,7 +121,7 @@ export const cloudflareApi = {
           .resolve((r) =>
             r
               .notFound(() => false)
-              .json(async (r) => await CloudflareImageDTOSchema.parseAsync(r))
+              .json(async (r) => await CloudflareImageDtoSchema.parseAsync(r))
           )
           .get()
           .then((r) => {
@@ -150,7 +150,7 @@ export const cloudflareApi = {
           )
           .resolve(
             async (r) =>
-              await CloudflareResultDTOSchema.parseAsync(await r.json())
+              await CloudflareResultDtoSchema.parseAsync(await r.json())
           )
           .delete()
           .then(logResultMessagesAndErrors)
@@ -160,7 +160,7 @@ export const cloudflareApi = {
               process.env.NODE_ENV !== "production" &&
               e instanceof MissingEnvError
             ) {
-              return Promise.resolve<CloudflareResultDTO>({
+              return Promise.resolve<CloudflareResultDto>({
                 messages: [
                   {
                     // Hopefully unused. Docs state that the code must be >1000

@@ -2,11 +2,11 @@ import { registry } from "@/api/registry";
 import z from "@/api/zod";
 import { IndividualTag } from "@prisma/client";
 
-export type IndividualTagDetailsDTO = z.infer<
-  typeof IndividualTagDetailsDTOSchema
+export type IndividualTagDetailsDto = z.infer<
+  typeof IndividualTagDetailsDtoSchema
 >;
-export const IndividualTagDetailsDTOSchema = registry.register(
-  "IndividualTagDetailsDTO",
+export const IndividualTagDetailsDtoSchema = registry.register(
+  "IndividualTagDetailsDto",
   z.object({
     tag: z.nativeEnum(IndividualTag).openapi({
       example: IndividualTag.musician,
