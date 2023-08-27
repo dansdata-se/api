@@ -1,4 +1,5 @@
 import { registry } from "@/api/registry";
+import type { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
 import {
   accessSync,
@@ -56,8 +57,40 @@ async function loadAllProjectModules() {
   await Promise.all(imports);
 }
 
+const methodToSortingIndex: Record<RouteConfig["method"], number> = {
+  options: 0,
+  head: 1,
+  get: 2,
+  post: 3,
+  put: 4,
+  patch: 5,
+  delete: 6,
+  trace: 7,
+};
 function getOpenApiDocumentation() {
-  const generator = new OpenApiGeneratorV31(registry.definitions);
+  const sortedDefinitions = registry.definitions.sort((a, b) => {
+    if (a.type === b.type) {
+      switch (a.type) {
+        case "schema":
+          interface DefType {
+            openapi: { _internal: { refId: string } };
+          }
+          const aDef = a.schema._def as DefType;
+          const bDef = (b as typeof a).schema._def as DefType;
+          return aDef.openapi._internal.refId.localeCompare(
+            bDef.openapi._internal.refId
+          );
+        case "route":
+          return (
+            a.route.path.localeCompare((b as typeof a).route.path) ||
+            methodToSortingIndex[a.route.method] -
+              methodToSortingIndex[(b as typeof a).route.method]
+          );
+      }
+    }
+    return a.type.localeCompare(b.type);
+  });
+  const generator = new OpenApiGeneratorV31(sortedDefinitions);
 
   return generator.generateDocument({
     openapi: "3.1.0",
