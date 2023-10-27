@@ -1,7 +1,14 @@
 import env from "@/env";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import Image from "next/image";
-import SwaggerUI from "swagger-ui-react";
+
+const SwaggerUI = dynamic(() => import("swagger-ui-react"), {
+  ssr: false,
+  loading: () => (
+    <span className="loading loading-spinner loading-md mx-auto block" />
+  ),
+});
 
 export default function DocumentationPage() {
   return (
@@ -25,7 +32,7 @@ export default function DocumentationPage() {
           content="noindex"
         />
       </Head>
-      <div className="min-h-full flex flex-col">
+      <div className="flex min-h-full flex-col">
         <header></header>
         <main className="grow px-4 py-8">
           {/* Swagger does not support dark mode */}
@@ -38,20 +45,20 @@ export default function DocumentationPage() {
             </div>
           </div>
         </main>
-        <footer className="footer bg-neutral text-neutral-content p-10 items-center">
+        <footer className="footer items-center bg-neutral p-10 text-neutral-content">
           <div>
             <span className="footer-title">Dansdata</span>
             <a
               href="https://dansdata.se"
               target="_blank"
-              className="link link-hover"
+              className="link-hover link"
             >
               Homepage
             </a>
             <a
               href="https://portal.dansdata.se"
               target="_blank"
-              className="link link-hover"
+              className="link-hover link"
             >
               Portal
             </a>
@@ -61,14 +68,14 @@ export default function DocumentationPage() {
             <a
               href="https://www.facebook.com/DansdataSE"
               target="_blank"
-              className="link link-hover"
+              className="link-hover link"
             >
               Facebook
             </a>
             <a
               href="https://github.com/dansdata-se"
               target="_blank"
-              className="link link-hover"
+              className="link-hover link"
             >
               GitHub
             </a>
@@ -77,22 +84,22 @@ export default function DocumentationPage() {
             <span className="footer-title">Legal</span>
             {/* TODO(FelixZY): Add hrefs once legal pages are in place. */}
             <a
-              className="link link-hover"
+              className="link-hover link"
               target="_blank"
             >
               Terms of Service
             </a>
             <a
               target="_blank"
-              className="link link-hover"
+              className="link-hover link"
             >
               Privacy Policy
             </a>
           </div>
         </footer>
-        <footer className="footer bg-neutral text-neutral-content px-10 py-4 border-t border-outline">
-          <div className="items-center grid-flow-col">
-            <div className="grid grid-flow-col gap-4 items-center">
+        <footer className="footer border-t border-outline bg-neutral px-10 py-4 text-neutral-content">
+          <div className="grid-flow-col items-center">
+            <div className="grid grid-flow-col items-center gap-4">
               <Image
                 className="rounded-md"
                 src="/images/logo.png"
@@ -101,7 +108,7 @@ export default function DocumentationPage() {
                 width={50}
               />
               <p>
-                <span className="text-xl text-primary font-brand">
+                <span className="font-brand text-xl text-primary">
                   Dansdata
                 </span>
                 <br />
@@ -113,7 +120,7 @@ export default function DocumentationPage() {
             <a
               href={`https://github.com/dansdata-se/api/tree/${env.VERCEL_GIT_COMMIT_SHA}`}
               target="_blank"
-              className="link link-hover text-xs"
+              className="link-hover link text-xs"
             >
               {env.VERCEL_GIT_COMMIT_REF}:
               {env.VERCEL_GIT_COMMIT_SHA.substring(0, 7)}
