@@ -1,12 +1,12 @@
+/**
+ * @group unit
+ */
+
 import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { commaSeparatedToArray, withParsedObject } from "@/api/util";
 import z from "@/api/zod";
 import { NextApiResponse } from "next";
 import { MockResponse, createResponse } from "node-mocks-http";
-
-/**
- * @group unit
- */
 
 describe("API utilities", () => {
   test.each([
