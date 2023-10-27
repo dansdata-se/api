@@ -121,33 +121,33 @@ describe("API core", () => {
         }),
       },
     },
-  ] as { endpoints: Parameters<typeof defineEndpoints>[0]; expected: string }[])(
-    "responds to OPTIONS request %#",
-    async ({ endpoints, expected }) => {
-      //#region arrange
-      const handler = defineEndpoints(endpoints);
-      const {
-        req,
-        res,
-      }: {
-        req: Parameters<typeof handler>[0];
-        res: Parameters<typeof handler>[1];
-      } = createMocks({
-        method: "OPTIONS",
-      });
-      //#endregion
+  ] as {
+    endpoints: Parameters<typeof defineEndpoints>[0];
+    expected: string;
+  }[])("responds to OPTIONS request %#", async ({ endpoints, expected }) => {
+    //#region arrange
+    const handler = defineEndpoints(endpoints);
+    const {
+      req,
+      res,
+    }: {
+      req: Parameters<typeof handler>[0];
+      res: Parameters<typeof handler>[1];
+    } = createMocks({
+      method: "OPTIONS",
+    });
+    //#endregion
 
-      //#region act
-      await handler(req, res);
-      //#endregion
+    //#region act
+    await handler(req, res);
+    //#endregion
 
-      //#region assert
-      expect(res.statusCode).toBe(204);
-      expect(res.hasHeader("allow")).toBe(true);
-      expect(res.getHeader("allow")).toEqual(expected);
-      //#endregion
-    }
-  );
+    //#region assert
+    expect(res.statusCode).toBe(204);
+    expect(res.hasHeader("allow")).toBe(true);
+    expect(res.getHeader("allow")).toEqual(expected);
+    //#endregion
+  });
 
   test("returns status 405 if no endpoint have been defined for the given method", async () => {
     //#region arrange

@@ -4,3 +4,6 @@ semi: true
 singleQuote: false
 endOfLine: lf
 singleAttributePerLine: true
+plugins:
+  - prettier-plugin-organize-imports
+  - prettier-plugin-sh
