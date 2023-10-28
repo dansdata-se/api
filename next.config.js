@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    dirs: ["."],
+  },
   reactStrictMode: true,
   trailingSlash: true,
   pageExtensions: ["page.tsx", "page.ts", "page.jsx", "page.js"],
