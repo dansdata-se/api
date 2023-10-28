@@ -21,7 +21,7 @@ https://stackoverflow.com/a/17555766/1137077
     @apply h-full;
   }
   body {
-    @apply min-h-full h-full;
+    @apply h-full min-h-full;
   }
   #__next {
     @apply h-full;
@@ -34,7 +34,7 @@ https://stackoverflow.com/a/17555766/1137077
   }
 
   ul {
-    @apply ps-4 list-disc list-inside;
+    @apply list-inside list-disc ps-4;
   }
 
   ul:not(li > ul) {
