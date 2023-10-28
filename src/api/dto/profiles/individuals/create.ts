@@ -1,26 +1,26 @@
-import { BaseCreateProfileDtoSchema } from "@/api/dto/profiles/create_profile";
+import { BaseCreateProfileDtoSchema } from "@/api/dto/profiles/create";
 import { registry } from "@/api/registry";
 import z from "@/api/zod";
-import { OrganizationTag } from "@prisma/client";
+import { IndividualTag } from "@prisma/client";
 
-export type CreateOrganizationDto = z.infer<typeof CreateOrganizationDtoSchema>;
-export const CreateOrganizationDtoSchema = registry.register(
-  "CreateOrganizationDto",
+export type CreateIndividualDto = z.infer<typeof CreateIndividualDtoSchema>;
+export const CreateIndividualDtoSchema = registry.register(
+  "CreateIndividualDto",
   BaseCreateProfileDtoSchema.merge(
     z.object({
       tags: z
-        .array(z.nativeEnum(OrganizationTag))
+        .array(z.nativeEnum(IndividualTag))
         .refine((items) => new Set(items).size === items.length, {
           message: "Must be an array of unique tags",
         })
         .openapi({
           description:
-            "A set of tags describing this organization and allowing API users to easier find it using filters.",
+            "A set of tags describing this individual and allowing API users to easier find them using filters.",
         }),
-      members: z
+      organizations: z
         .array(
           z.object({
-            individualId: z.string().cuid(),
+            organizationId: z.string().cuid(),
             title: z
               .string()
               .trim()
@@ -38,17 +38,17 @@ export const CreateOrganizationDtoSchema = registry.register(
         )
         .refine(
           (items) =>
-            new Set(items.map((m) => m.individualId)).size ===
-            items.map((m) => m.individualId).length,
+            new Set(items.map((o) => o.organizationId)).size ===
+            items.map((o) => o.organizationId).length,
           {
-            message: "Each individual may only occur once in this list.",
+            message: "Each organization may only occur once in this list.",
           }
         )
         .optional()
         .default([])
         .openapi({
           description:
-            "A list of individuals that are members of this organization.",
+            "A list of organizations this individual is affiliated with.",
         }),
     })
   )

@@ -1,5 +1,5 @@
-import { CreateIndividualDtoSchema } from "@/api/dto/profiles/individuals/create_individual";
-import { BaseUpdateProfileDtoSchema } from "@/api/dto/profiles/update_profile";
+import { CreateIndividualDtoSchema } from "@/api/dto/profiles/individuals/create";
+import { BaseUpdateProfileDtoSchema } from "@/api/dto/profiles/update";
 import { registry } from "@/api/registry";
 import z from "@/api/zod";
 

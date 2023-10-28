@@ -3,7 +3,7 @@
  */
 
 import { withTestDatabaseForEach } from "@/__test__/db";
-import { generateVenueModel } from "@/__test__/model/profiles/profile";
+import { generateVenueModel } from "@/__test__/model/profiles/venues/profile";
 import { getDbClient } from "@/db";
 import { faker } from "@faker-js/faker";
 import cuid2 from "@paralleldrive/cuid2";

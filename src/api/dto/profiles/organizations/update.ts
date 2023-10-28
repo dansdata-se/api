@@ -1,5 +1,5 @@
-import { CreateOrganizationDtoSchema } from "@/api/dto/profiles/organizations/create_organization";
-import { BaseUpdateProfileDtoSchema } from "@/api/dto/profiles/update_profile";
+import { CreateOrganizationDtoSchema } from "@/api/dto/profiles/organizations/create";
+import { BaseUpdateProfileDtoSchema } from "@/api/dto/profiles/update";
 import { registry } from "@/api/registry";
 import z from "@/api/zod";
 

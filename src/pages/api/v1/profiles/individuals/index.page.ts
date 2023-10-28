@@ -1,7 +1,7 @@
 import { defineEndpoints } from "@/api";
 import { placeholderAuth } from "@/api/auth";
 import { ErrorCode } from "@/api/dto/error";
-import { CreateIndividualDtoSchema } from "@/api/dto/profiles/individuals/create_individual";
+import { CreateIndividualDtoSchema } from "@/api/dto/profiles/individuals/create";
 import { withParsedObject } from "@/api/util";
 import z from "@/api/zod";
 import { NextApiResponse } from "next";

@@ -1,12 +1,10 @@
 import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 import { OrganizationDao } from "@/db/dao/profiles/organization";
+import { IndividualModel } from "@/model/profiles/individuals/profile";
+import { IndividualReferenceModel } from "@/model/profiles/individuals/profile_reference";
 import { IndividualTagDetailsModel } from "@/model/profiles/individuals/tag_details";
-import { IndividualModel } from "@/model/profiles/profile";
-import {
-  BaseProfileReferenceModel,
-  IndividualReferenceModel,
-} from "@/model/profiles/profile_reference";
+import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
 import { isNonNull } from "@/util/is_defined";
 import { ProfileType } from "@prisma/client";
 

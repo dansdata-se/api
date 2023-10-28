@@ -1,7 +1,6 @@
-import { generateCoordsModel } from "@/__test__/model/profiles/coords";
 import { generateImagesModel } from "@/__test__/model/profiles/images";
 import { generateLinkModel } from "@/__test__/model/profiles/link";
-import { BaseProfileModel, VenueModel } from "@/model/profiles/profile";
+import { BaseProfileModel } from "@/model/profiles/profile";
 import { faker } from "@faker-js/faker";
 import cuid2 from "@paralleldrive/cuid2";
 import { ProfileType } from "@prisma/client";
@@ -18,20 +17,6 @@ export function generateBaseProfileModel(
     links: Array.from({ length: faker.number.int({ min: 0, max: 10 }) }).map(
       () => generateLinkModel()
     ),
-    ...overrides,
-  };
-}
-
-export function generateVenueModel(
-  overrides: Partial<VenueModel> = {}
-): VenueModel {
-  return {
-    ...generateBaseProfileModel(),
-    type: ProfileType.venue,
-    coords: generateCoordsModel(),
-    permanentlyClosed: false,
-    ancestors: [],
-    children: [],
     ...overrides,
   };
 }

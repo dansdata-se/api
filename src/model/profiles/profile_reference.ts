@@ -1,11 +1,8 @@
-import { CoordsModel } from "@/model/profiles/coords";
 import { ImagesModel } from "@/model/profiles/images";
-import {
-  IndividualTag,
-  OrganizationTag,
-  ProfileEntity,
-  ProfileType,
-} from "@prisma/client";
+import { IndividualReferenceModel } from "@/model/profiles/individuals/profile_reference";
+import { OrganizationReferenceModel } from "@/model/profiles/organizations/profile_reference";
+import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
+import { ProfileEntity, ProfileType } from "@prisma/client";
 
 /**
  * Represents the common properties for profile references.
@@ -22,48 +19,6 @@ export interface BaseProfileReferenceModel {
   name: string;
   images: ImagesModel;
 }
-
-/**
- * Represents a reference to an Organization.
- *
- * Profile references are used when we need to include references to other
- * profiles (e.g. organization members) without including the full profile or
- * further references from the referenced profile.
- *
- * @see {@link ProfileReferenceModel}
- */
-export type OrganizationReferenceModel = BaseProfileReferenceModel & {
-  type: typeof ProfileType.organization;
-  tags: OrganizationTag[];
-};
-
-/**
- * Represents a reference to an Individual.
- *
- * Profile references are used when we need to include references to other
- * profiles (e.g. organization members) without including the full profile or
- * further references from the referenced profile.
- *
- * @see {@link ProfileReferenceModel}
- */
-export type IndividualReferenceModel = BaseProfileReferenceModel & {
-  type: typeof ProfileType.individual;
-  tags: IndividualTag[];
-};
-/**
- * Represents a reference to a Venue.
- *
- * Profile references are used when we need to include references to other
- * profiles (e.g. organization members) without including the full profile or
- * further references from the referenced profile.
- *
- * @see {@link ProfileReferenceModel}
- */
-export type VenueReferenceModel = BaseProfileReferenceModel & {
-  type: typeof ProfileType.venue;
-  coords: CoordsModel;
-  permanentlyClosed: boolean;
-};
 
 /**
  * Represents a reference to a profile.
@@ -83,19 +38,3 @@ export type ProfileReferenceModel =
   | OrganizationReferenceModel
   | IndividualReferenceModel
   | VenueReferenceModel;
-
-export function isOrganizationReferenceModel(
-  profile: ProfileReferenceModel
-): profile is OrganizationReferenceModel {
-  return profile.type === "organization";
-}
-export function isIndividualReferenceModel(
-  profile: ProfileReferenceModel
-): profile is IndividualReferenceModel {
-  return profile.type === "individual";
-}
-export function isVenueReferenceModel(
-  profile: ProfileReferenceModel
-): profile is VenueReferenceModel {
-  return profile.type === "venue";
-}

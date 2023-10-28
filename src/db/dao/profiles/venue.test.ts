@@ -20,13 +20,11 @@ import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 
 import { generateVenueEntity } from "@/__test__/db/dao/profiles/venue";
 import { generateBaseProfileModel } from "@/__test__/model/profiles/profile";
-import {
-  generateBaseProfileReferenceModel,
-  generateVenueReferenceModel,
-} from "@/__test__/model/profiles/profile_reference";
+import { generateBaseProfileReferenceModel } from "@/__test__/model/profiles/profile_reference";
+import { generateVenueReferenceModel } from "@/__test__/model/profiles/venues/profile_reference";
 import { VenueDao } from "@/db/dao/profiles/venue";
-import { VenueModel } from "@/model/profiles/profile";
-import { VenueReferenceModel } from "@/model/profiles/profile_reference";
+import { VenueModel } from "@/model/profiles/venues/profile";
+import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
 import { faker } from "@faker-js/faker";
 import cuid2 from "@paralleldrive/cuid2";
 
