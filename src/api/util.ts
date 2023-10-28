@@ -19,7 +19,7 @@ export async function withParsedObject<T extends z.ZodSchema>(
 ): Promise<void> {
   const parseResult = schema.safeParse(obj);
   if (parseResult.success) {
-    return callback(parseResult.data as z.infer<T>);
+    return await callback(parseResult.data as z.infer<T>);
   } else {
     const validationError = fromZodError(parseResult.error);
     res.setHeader("content-type", "application/json");
