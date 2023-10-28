@@ -2,16 +2,12 @@
  * @group unit
  */
 
-import { PrismaClient, ProfileType } from "@prisma/client";
+import { DbClient, exportedForTesting as dbTesting } from "@/db";
 import { DeepMockProxy, mockDeep, mockReset } from "jest-mock-extended";
+const dbMock = mockDeep<DbClient>();
+dbTesting.overridePrismaClient(dbMock);
 
-jest.mock("@/db", () => ({
-  __esModule: true,
-  prisma: mockDeep<PrismaClient>(),
-}));
-// prevent prettier from moving this import around
-// prettier-ignore
-import { prisma } from "@/db";
+import { ProfileType } from "@prisma/client";
 
 import type { BaseProfileDaoType } from "@/db/dao/profiles/base_profile";
 jest.mock("@/db/dao/profiles/base_profile", () => ({
@@ -35,12 +31,11 @@ import { faker } from "@faker-js/faker";
 import cuid2 from "@paralleldrive/cuid2";
 
 describe("VenueDao unit tests", () => {
-  const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
   const BaseProfileDaoMock =
     BaseProfileDao as unknown as DeepMockProxy<BaseProfileDaoType>;
 
   beforeEach(() => {
-    mockReset(prismaMock);
+    mockReset(dbMock);
     mockReset(BaseProfileDaoMock);
   });
 
@@ -105,7 +100,7 @@ describe("VenueDao unit tests", () => {
       })),
     });
     BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
-    prismaMock.venueEntity.findUnique.mockImplementation(
+    dbMock.venueEntity.findUnique.mockImplementation(
       // @ts-expect-error <- typescript is concerned that we do
       // not support _all_ possible variations of findUnique.
       (args) => {
@@ -218,8 +213,8 @@ describe("VenueDao unit tests", () => {
     BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(
       baseProfileReference
     );
-    prismaMock.venueEntity.findUnique.mockResolvedValueOnce(venueEntity);
-    prismaMock.venueEntity.findUnique.mockImplementation(
+    dbMock.venueEntity.findUnique.mockResolvedValueOnce(venueEntity);
+    dbMock.venueEntity.findUnique.mockImplementation(
       // @ts-expect-error <- typescript is concerned that we do
       // not support _all_ possible variations of findUnique.
       (args) => {

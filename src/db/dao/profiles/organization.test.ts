@@ -2,21 +2,12 @@
  * @group unit
  */
 
-import {
-  ImageVariant,
-  OrganizationEntity,
-  PrismaClient,
-  ProfileType,
-} from "@prisma/client";
+import { DbClient, exportedForTesting as dbTesting } from "@/db";
 import { DeepMockProxy, mockDeep, mockReset } from "jest-mock-extended";
+const dbMock = mockDeep<DbClient>();
+dbTesting.overridePrismaClient(dbMock);
 
-jest.mock("@/db", () => ({
-  __esModule: true,
-  prisma: mockDeep<PrismaClient>(),
-}));
-// prevent prettier from moving this import around
-// prettier-ignore
-import { prisma } from "@/db";
+import { ImageVariant, OrganizationEntity, ProfileType } from "@prisma/client";
 
 import type { BaseProfileDaoType } from "@/db/dao/profiles/base_profile";
 jest.mock("@/db/dao/profiles/base_profile", () => ({
@@ -45,14 +36,13 @@ import {
 } from "@/model/profiles/profile_reference";
 
 describe("OrganizationDao unit tests", () => {
-  const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
   const BaseProfileDaoMock =
     BaseProfileDao as unknown as DeepMockProxy<BaseProfileDaoType>;
   const IndividualDaoMock =
     IndividualDao as unknown as DeepMockProxy<IndividualDaoType>;
 
   beforeEach(() => {
-    mockReset(prismaMock);
+    mockReset(dbMock);
     mockReset(BaseProfileDaoMock);
     mockReset(IndividualDaoMock);
   });
@@ -185,7 +175,7 @@ describe("OrganizationDao unit tests", () => {
       ],
     };
     BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
-    prismaMock.organizationEntity.findUnique.mockResolvedValueOnce(
+    dbMock.organizationEntity.findUnique.mockResolvedValueOnce(
       organizationEntity
     );
     IndividualDaoMock.getReferenceById.mockImplementation(async (id) => {
@@ -304,7 +294,7 @@ describe("OrganizationDao unit tests", () => {
     BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(
       baseProfileReference
     );
-    prismaMock.organizationEntity.findUnique.mockResolvedValueOnce(
+    dbMock.organizationEntity.findUnique.mockResolvedValueOnce(
       organizationEntity
     );
 

@@ -2,16 +2,13 @@
  * @group unit
  */
 
-import { ImageVariant, PrismaClient } from "@prisma/client";
-import { DeepMockProxy, mockDeep, mockReset } from "jest-mock-extended";
+import { DbClient, exportedForTesting as dbTesting } from "@/db";
+import { mockDeep, mockReset } from "jest-mock-extended";
+const dbMock = mockDeep<DbClient>();
+dbTesting.overridePrismaClient(dbMock);
 
-jest.mock("@/db", () => ({
-  __esModule: true,
-  prisma: mockDeep<PrismaClient>(),
-}));
-// prevent prettier from moving this import around
-// prettier-ignore
-import { prisma } from "@/db";
+import fetch from "jest-fetch-mock";
+fetch.enableMocks();
 
 import {
   ImageDao,
@@ -19,18 +16,16 @@ import {
   imageEntitiesToImagesModel,
 } from "@/db/dao/storage/image";
 import { ImagesModel } from "@/model/profiles/images";
-import fetch from "jest-fetch-mock";
+import { ImageVariant } from "@prisma/client";
 
 describe("ImageDao unit tests", () => {
-  const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
-
   beforeEach(() => {
     fetch.resetMocks();
-    mockReset(prismaMock);
+    mockReset(dbMock);
   });
 
   test("request an image upload url", async () => {
-    fetch.mockResponseOnce(
+    fetch.mockResponse(
       JSON.stringify({
         result: {
           id: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
@@ -52,7 +47,7 @@ describe("ImageDao unit tests", () => {
   });
 
   test("create throws ImageNotUploadedToCloudflareError if the image is not known to cloudflare", async () => {
-    fetch.mockResponseOnce("ERROR 5404: Image not found", { status: 404 });
+    fetch.mockResponse("ERROR 5404: Image not found", { status: 404 });
 
     await expect(
       ImageDao.create({
@@ -63,7 +58,7 @@ describe("ImageDao unit tests", () => {
   });
 
   test("create throws ImageNotUploadedToCloudflareError if the image has not been uploaded yet", async () => {
-    fetch.mockResponseOnce(
+    fetch.mockResponse(
       JSON.stringify({
         result: {
           id: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
@@ -104,7 +99,7 @@ describe("ImageDao unit tests", () => {
   });
 
   test("create inserts image", async () => {
-    fetch.mockResponseOnce(
+    fetch.mockResponse(
       JSON.stringify({
         result: {
           id: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
@@ -135,7 +130,7 @@ describe("ImageDao unit tests", () => {
       })
     );
 
-    prismaMock.imageEntity.create.mockResolvedValueOnce({
+    dbMock.imageEntity.create.mockResolvedValueOnce({
       id: "abc123",
       cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
       variant: ImageVariant.cover,
@@ -151,7 +146,7 @@ describe("ImageDao unit tests", () => {
       cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
       variant: ImageVariant.cover,
     });
-    expect(prismaMock.imageEntity.create.mock.calls).toHaveLength(1);
+    expect(dbMock.imageEntity.create.mock.calls).toHaveLength(1);
     // Ensure cloudflare API was consulted once only
     expect(fetch.mock.calls).toHaveLength(1);
   });

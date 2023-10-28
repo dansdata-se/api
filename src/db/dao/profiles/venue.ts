@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 import { CoordsModel } from "@/model/profiles/coords";
 import { VenueModel } from "@/model/profiles/profile";
@@ -28,7 +28,7 @@ export const VenueDao = {
     if (baseModel === null) return null;
     if (!hasVenueProfileType(baseModel)) return null;
 
-    const entity = await prisma.venueEntity.findUnique({
+    const entity = await getDbClient().venueEntity.findUnique({
       where: {
         profileId: id,
       },
@@ -128,8 +128,8 @@ export const VenueDao = {
     coords: CoordsModel,
     maxDistance: number
   ): Promise<VenueReferenceModel[]> {
-    return await prisma.venueEntity
-      .findIdsNear(coords, maxDistance)
+    return await getDbClient()
+      .venueEntity.findIdsNear(coords, maxDistance)
       .then((idAndDistance) =>
         idAndDistance.map((it) => this.getReferenceById(it.profileId))
       )
@@ -141,7 +141,7 @@ export const VenueDao = {
 async function expandBaseModelToReference(
   baseModel: BaseProfileReferenceModel & { type: typeof ProfileType.venue }
 ): Promise<VenueReferenceModel | null> {
-  const entity = await prisma.venueEntity.findUnique({
+  const entity = await getDbClient().venueEntity.findUnique({
     where: {
       profileId: baseModel.id,
     },

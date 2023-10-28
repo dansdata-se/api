@@ -2,22 +2,18 @@
  * @group integration
  */
 
-import { prisma } from "@/db";
+import { withTestDatabaseForEach } from "@/__test__/db";
+import { getDbClient } from "@/db";
 import { faker } from "@faker-js/faker";
 import cuid2 from "@paralleldrive/cuid2";
 import { Prisma } from "@prisma/client";
 
 describe("Base profiles manual SQL", () => {
-  beforeEach(async () => {
-    await expect(prisma.profileEntity.count()).resolves.toBe(0);
-  });
-
-  afterEach(async () => {
-    await prisma.profileEntity.deleteMany();
-  });
+  withTestDatabaseForEach();
 
   test("find profiles based on their name", async () => {
-    await prisma.$executeRaw`
+    const db = getDbClient();
+    await db.$executeRaw`
       INSERT INTO profiles.profiles(id, type, name, description)
       VALUES ${Prisma.join(
         // Randomize insertion order
@@ -44,9 +40,9 @@ describe("Base profiles manual SQL", () => {
       )};
     `;
 
-    await expect(prisma.profileEntity.count()).resolves.toEqual(3);
+    await expect(db.profileEntity.count()).resolves.toEqual(3);
 
-    const results = await prisma.profileEntity.findIdsByNameQuery(
+    const results = await db.profileEntity.findIdsByNameQuery(
       // Note the use of lower-case to ensure case insensitivity!
       "linköping",
       500,
@@ -54,7 +50,7 @@ describe("Base profiles manual SQL", () => {
     );
     expect(results).toHaveLength(2);
 
-    const profiles = await prisma.profileEntity.findMany({
+    const profiles = await db.profileEntity.findMany({
       where: {
         id: {
           in: results.map((it) => it.id),
@@ -81,6 +77,7 @@ describe("Base profiles manual SQL", () => {
       }))
     )
   )("limit($limit)/offset($offset)", async ({ limit, offset }) => {
+    const db = getDbClient();
     const entries = Array.from({ length: 100 })
       .map(
         () =>
@@ -93,16 +90,16 @@ describe("Base profiles manual SQL", () => {
       )
       // Ids are used as a secondary sort order to ensure consistent results
       .sort(([idA], [idB]) => idA.localeCompare(idB));
-    await prisma.$executeRaw`
+    await db.$executeRaw`
       INSERT INTO profiles.profiles(id, type, name, description)
       VALUES ${Prisma.join(
         entries.map((entry) => Prisma.sql`(${Prisma.join([...entry])})`)
       )};
     `;
 
-    await expect(prisma.profileEntity.count()).resolves.toEqual(entries.length);
+    await expect(db.profileEntity.count()).resolves.toEqual(entries.length);
 
-    const results = await prisma.profileEntity.findIdsByNameQuery(
+    const results = await db.profileEntity.findIdsByNameQuery(
       "Linköping",
       limit,
       offset

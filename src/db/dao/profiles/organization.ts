@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { OrganizationTagDetailsModel } from "@/model/profiles/organizations/tag_details";
@@ -31,7 +31,7 @@ export const OrganizationDao = {
     if (baseModel === null) return null;
     if (!hasOrganizationProfileType(baseModel)) return null;
 
-    const entity = await prisma.organizationEntity.findUnique({
+    const entity = await getDbClient().organizationEntity.findUnique({
       where: {
         profileId: id,
       },
@@ -116,7 +116,7 @@ export const OrganizationDao = {
    * Retrieve a list of organization tags with human-readable label and description
    */
   async tags(): Promise<OrganizationTagDetailsModel[]> {
-    const tags = await prisma.organizationTagDetailEntity.findMany({
+    const tags = await getDbClient().organizationTagDetailEntity.findMany({
       select: {
         tag: true,
         label: true,
@@ -134,7 +134,7 @@ async function expandBaseModelToReference(
 ): Promise<OrganizationReferenceModel> {
   const tags =
     (
-      await prisma.organizationEntity.findUnique({
+      await getDbClient().organizationEntity.findUnique({
         where: {
           profileId: baseModel.id,
         },

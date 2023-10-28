@@ -2,33 +2,25 @@
  * @group unit
  */
 
-import {
-  ImageEntity,
-  ImageVariant,
-  PrismaClient,
-  ProfileEntity,
-  ProfileLinkEntity,
-  ProfileType,
-} from "@prisma/client";
-import { DeepMockProxy, mockDeep, mockReset } from "jest-mock-extended";
-
-jest.mock("@/db", () => ({
-  __esModule: true,
-  prisma: mockDeep<PrismaClient>(),
-}));
-// prevent prettier from moving this import around
-// prettier-ignore
-import { prisma } from "@/db";
+import { DbClient, exportedForTesting as dbTesting } from "@/db";
+import { mockDeep, mockReset } from "jest-mock-extended";
+const dbMock = mockDeep<DbClient>();
+dbTesting.overridePrismaClient(dbMock);
 
 import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 import { BaseProfileModel } from "@/model/profiles/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
+import {
+  ImageEntity,
+  ImageVariant,
+  ProfileEntity,
+  ProfileLinkEntity,
+  ProfileType,
+} from "@prisma/client";
 
 describe("BaseProfileDao unit tests", () => {
-  const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
-
   beforeEach(() => {
-    mockReset(prismaMock);
+    mockReset(dbMock);
   });
 
   test("getById", async () => {
@@ -79,7 +71,7 @@ describe("BaseProfileDao unit tests", () => {
       ],
       createdAt: new Date("2023-06-16T22:26:49"),
     };
-    prismaMock.profileEntity.findUnique.mockResolvedValueOnce(
+    dbMock.profileEntity.findUnique.mockResolvedValueOnce(
       expectedProfileEntity
     );
 
@@ -146,7 +138,7 @@ describe("BaseProfileDao unit tests", () => {
       ],
       createdAt: new Date("2023-06-16T22:26:49"),
     };
-    prismaMock.profileEntity.findUnique.mockResolvedValueOnce(
+    dbMock.profileEntity.findUnique.mockResolvedValueOnce(
       expectedProfileEntity
     );
 

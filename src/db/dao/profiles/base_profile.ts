@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { getDbClient } from "@/db";
 import { imageEntitiesToImagesModel } from "@/db/dao/storage/image";
 import { BaseProfileModel } from "@/model/profiles/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
@@ -13,7 +13,7 @@ export const BaseProfileDao = {
    * Retrieve a full profile by its id
    */
   async getById(id: BaseProfileModel["id"]): Promise<BaseProfileModel | null> {
-    const entity = await prisma.profileEntity.findUnique({
+    const entity = await getDbClient().profileEntity.findUnique({
       where: {
         id,
       },
@@ -50,7 +50,7 @@ export const BaseProfileDao = {
   async getReferenceById(
     id: BaseProfileModel["id"]
   ): Promise<BaseProfileReferenceModel | null> {
-    const entity = await prisma.profileEntity.findUnique({
+    const entity = await getDbClient().profileEntity.findUnique({
       where: {
         id,
       },
@@ -86,7 +86,7 @@ export const BaseProfileDao = {
     limit: number,
     offset: number
   ): Promise<BaseProfileReferenceModel[]> {
-    const entities = await prisma.profileEntity.findIdsByNameQuery(
+    const entities = await getDbClient().profileEntity.findIdsByNameQuery(
       nameQuery,
       limit,
       offset

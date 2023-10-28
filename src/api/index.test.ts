@@ -3,7 +3,9 @@
  */
 
 import { Endpoint, defineEndpoints } from "@/api";
+import { exportedForTesting as dbTesting } from "@/db";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
+import { mockDeep } from "jest-mock-extended";
 import { NextApiRequest, NextApiResponse } from "next";
 import { createMocks } from "node-mocks-http";
 
@@ -51,6 +53,20 @@ function makeDummyEndpoint({
 }
 
 describe("API core", () => {
+  beforeAll(() => {
+    const prisma =
+      mockDeep<Parameters<typeof dbTesting.overridePrismaClient>[0]>();
+    prisma.request.create.mockResolvedValue(
+      // @ts-expect-error this return value is never used
+      Promise.resolve()
+    );
+    prisma.error.create.mockResolvedValue(
+      // @ts-expect-error this return value is never used
+      Promise.resolve()
+    );
+    dbTesting.overridePrismaClient(prisma);
+  });
+
   test("returns status 404 if no endpoints have been defined", async () => {
     //#region arrange
     const handler = defineEndpoints({});

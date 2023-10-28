@@ -13,19 +13,6 @@ jobs:
       VERCEL_GIT_COMMIT_REF: ${{ github.head_ref || github.ref_name }}
       VERCEL_GIT_COMMIT_SHA: ${{ github.sha }}
 
-    services:
-      api-db:
-        image: postgis/postgis:15-master
-        env:
-          POSTGRES_USER: default
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: verceldb
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - uses: actions/checkout@v3
 
@@ -39,9 +26,6 @@ jobs:
 
       - name: Verify Code Formatting
         run: npm run lint
-
-      - name: Push Database Schema to Postgres
-        run: npm run dev:db:push
 
       - name: Test
         run: npm run test:all

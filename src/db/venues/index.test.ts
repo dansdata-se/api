@@ -2,23 +2,19 @@
  * @group integration
  */
 
+import { withTestDatabaseForEach } from "@/__test__/db";
 import { generateVenueModel } from "@/__test__/model/profiles/profile";
-import { prisma } from "@/db";
+import { getDbClient } from "@/db";
 import { faker } from "@faker-js/faker";
 import cuid2 from "@paralleldrive/cuid2";
 import { Prisma } from "@prisma/client";
 
 describe("Venues manual SQL", () => {
-  beforeEach(async () => {
-    await expect(prisma.profileEntity.count()).resolves.toBe(0);
-    await expect(prisma.venueEntity.count()).resolves.toBe(0);
-  });
-
-  afterEach(async () => {
-    await prisma.profileEntity.deleteMany();
-  });
+  withTestDatabaseForEach();
 
   test("retrieve coordinates for a venue", async () => {
+    const db = getDbClient();
+
     const linkoping = {
       id: cuid2.createId(),
       name: "Linköping",
@@ -28,7 +24,7 @@ describe("Venues manual SQL", () => {
       },
     };
 
-    await prisma.$executeRaw`
+    await db.$executeRaw`
       INSERT INTO profiles.profiles(id, type, name, description)
       VALUES (${Prisma.join([
         linkoping.id,
@@ -38,7 +34,7 @@ describe("Venues manual SQL", () => {
       ])});
     `;
 
-    await prisma.$executeRaw`
+    await db.$executeRaw`
       INSERT INTO profiles.venues(profile_id, parent_id, coords)
       VALUES (${Prisma.join([
         linkoping.id,
@@ -47,10 +43,10 @@ describe("Venues manual SQL", () => {
       ])});
     `;
 
-    await expect(prisma.profileEntity.count()).resolves.toEqual(1);
-    await expect(prisma.venueEntity.count()).resolves.toEqual(1);
+    await expect(db.profileEntity.count()).resolves.toEqual(1);
+    await expect(db.venueEntity.count()).resolves.toEqual(1);
 
-    const coords = await prisma.venueEntity
+    const coords = await db.venueEntity
       .findUnique({
         select: {
           coords: true,
@@ -66,6 +62,8 @@ describe("Venues manual SQL", () => {
   });
 
   test("retrieve the ancestors for a venue", async () => {
+    const db = getDbClient();
+
     const root = generateVenueModel();
     const sub1 = generateVenueModel({
       ancestors: [root],
@@ -79,7 +77,7 @@ describe("Venues manual SQL", () => {
 
     const tree = [root, sub1, sub2, leaf];
 
-    await prisma.$executeRaw`
+    await db.$executeRaw`
       INSERT INTO profiles.profiles(id, type, name, description)
       VALUES ${Prisma.join(
         tree.map(
@@ -94,7 +92,7 @@ describe("Venues manual SQL", () => {
       )};
     `;
 
-    await prisma.$executeRaw`
+    await db.$executeRaw`
       INSERT INTO profiles.venues(profile_id, parent_id, coords)
       VALUES ${Prisma.join(
         tree.map(
@@ -108,10 +106,10 @@ describe("Venues manual SQL", () => {
       )};
     `;
 
-    await expect(prisma.profileEntity.count()).resolves.toEqual(tree.length);
-    await expect(prisma.venueEntity.count()).resolves.toEqual(tree.length);
+    await expect(db.profileEntity.count()).resolves.toEqual(tree.length);
+    await expect(db.venueEntity.count()).resolves.toEqual(tree.length);
 
-    const actual = await prisma.venueEntity
+    const actual = await db.venueEntity
       .findMany({
         select: {
           profileId: true,
@@ -144,6 +142,8 @@ describe("Venues manual SQL", () => {
   });
 
   test("find venues near a set of coordinates", async () => {
+    const db = getDbClient();
+
     const origin = {
       lat: 58.41616195587502,
       lng: 15.625933242341707,
@@ -232,7 +232,7 @@ describe("Venues manual SQL", () => {
       },
     ];
 
-    await prisma.$executeRaw`
+    await db.$executeRaw`
       INSERT INTO profiles.profiles(id, type, name, description)
       VALUES ${Prisma.join(
         // Randomize insertion order
@@ -250,7 +250,7 @@ describe("Venues manual SQL", () => {
       )};
     `;
 
-    await prisma.$executeRaw`
+    await db.$executeRaw`
       INSERT INTO profiles.venues(profile_id, parent_id, coords)
       VALUES ${Prisma.join(
         cities.map(
@@ -264,18 +264,18 @@ describe("Venues manual SQL", () => {
       )};
     `;
 
-    await expect(prisma.profileEntity.count()).resolves.toEqual(cities.length);
-    await expect(prisma.venueEntity.count()).resolves.toEqual(cities.length);
+    await expect(db.profileEntity.count()).resolves.toEqual(cities.length);
+    await expect(db.venueEntity.count()).resolves.toEqual(cities.length);
 
-    await expect(
-      prisma.venueEntity.findIdsNear(origin, 10)
-    ).resolves.toHaveLength(0);
+    await expect(db.venueEntity.findIdsNear(origin, 10)).resolves.toHaveLength(
+      0
+    );
 
     for (const distance of [1_000, 15_000, 50_000, 100_000]) {
-      const actual = await prisma.venueEntity
+      const actual = await db.venueEntity
         .findIdsNear(origin, distance)
         .then((ids) =>
-          prisma.venueEntity.findMany({
+          db.venueEntity.findMany({
             select: {
               profileId: true,
               coords: true,
@@ -304,7 +304,7 @@ describe("Venues manual SQL", () => {
       });
     }
 
-    const actual = await prisma.venueEntity.findIdsNear(origin, Infinity);
+    const actual = await db.venueEntity.findIdsNear(origin, Infinity);
     expect(actual.map((it) => it.distance)).toEqual(
       cities.map((it) => it.distanceToOrigin)
     );

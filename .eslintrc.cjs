@@ -35,5 +35,9 @@ module.exports = {
         ],
       },
     ],
+    "@typescript-eslint/no-invalid-void-type": [
+      "error",
+      { allowAsThisParameter: true },
+    ],
   },
 };

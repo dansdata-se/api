@@ -1,5 +1,5 @@
 import { cloudflareApi } from "@/cloudflare/api";
-import { prisma } from "@/db";
+import { getDbClient } from "@/db";
 import { ImagesModel } from "@/model/profiles/images";
 import { ImageModel, ImageUploadUrlModel } from "@/model/storage/image";
 import { ImageEntity, ImageVariant } from "@prisma/client";
@@ -30,7 +30,7 @@ export const ImageDao = {
    * Retrieve an image by its id
    */
   async getById(id: ImageModel["id"]): Promise<ImageModel | null> {
-    const entity = await prisma.imageEntity.findUnique({
+    const entity = await getDbClient().imageEntity.findUnique({
       where: {
         id,
       },
@@ -42,7 +42,7 @@ export const ImageDao = {
    * Retrieve an image by its cloudflare id
    */
   async getByCloudflareId(cloudflareId: ImageModel["cloudflareId"]) {
-    const entity = await prisma.imageEntity.findUnique({
+    const entity = await getDbClient().imageEntity.findUnique({
       where: {
         cloudflareId,
       },
@@ -93,7 +93,7 @@ export const ImageDao = {
       );
     }
 
-    const entity = await prisma.imageEntity.create({
+    const entity = await getDbClient().imageEntity.create({
       data: {
         cloudflareId: image.cloudflareId,
         variant: image.variant,
@@ -117,7 +117,7 @@ export const ImageDao = {
     id: ImageModel["id"],
     force = false
   ): Promise<ImageModel | null> {
-    const image = await prisma.imageEntity.findUnique({
+    const image = await getDbClient().imageEntity.findUnique({
       where: {
         id,
       },
@@ -143,7 +143,7 @@ export const ImageDao = {
       throw new Error("Failed to delete image from cloudflare");
     }
 
-    await prisma.imageEntity.delete({
+    await getDbClient().imageEntity.delete({
       where: {
         id: image.id,
       },

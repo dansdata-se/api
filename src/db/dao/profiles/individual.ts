@@ -1,4 +1,4 @@
-import { prisma } from "@/db";
+import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { IndividualTagDetailsModel } from "@/model/profiles/individuals/tag_details";
@@ -29,7 +29,7 @@ export const IndividualDao = {
     if (baseModel === null) return null;
     if (!hasIndividualProfileType(baseModel)) return null;
 
-    const entity = await prisma.individualEntity.findUnique({
+    const entity = await getDbClient().individualEntity.findUnique({
       where: {
         profileId: id,
       },
@@ -114,7 +114,7 @@ export const IndividualDao = {
    * Retrieve a list of individual tags with human-readable label and description
    */
   async tags(): Promise<IndividualTagDetailsModel[]> {
-    const tags = await prisma.individualTagDetailEntity.findMany({
+    const tags = await getDbClient().individualTagDetailEntity.findMany({
       select: {
         tag: true,
         label: true,
@@ -130,7 +130,7 @@ async function expandBaseModelToReference(
 ): Promise<IndividualReferenceModel> {
   const tags =
     (
-      await prisma.individualEntity.findUnique({
+      await getDbClient().individualEntity.findUnique({
         where: {
           profileId: baseModel.id,
         },

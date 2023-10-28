@@ -2,21 +2,12 @@
  * @group unit
  */
 
-import {
-  ImageVariant,
-  IndividualEntity,
-  PrismaClient,
-  ProfileType,
-} from "@prisma/client";
+import { DbClient, exportedForTesting as dbTesting } from "@/db";
 import { DeepMockProxy, mockDeep, mockReset } from "jest-mock-extended";
+const dbMock = mockDeep<DbClient>();
+dbTesting.overridePrismaClient(dbMock);
 
-jest.mock("@/db", () => ({
-  __esModule: true,
-  prisma: mockDeep<PrismaClient>(),
-}));
-// prevent prettier from moving this import around
-// prettier-ignore
-import { prisma } from "@/db";
+import { ImageVariant, IndividualEntity, ProfileType } from "@prisma/client";
 
 import type { BaseProfileDaoType } from "@/db/dao/profiles/base_profile";
 jest.mock("@/db/dao/profiles/base_profile", () => ({
@@ -45,14 +36,13 @@ import {
 } from "@/model/profiles/profile_reference";
 
 describe("IndividualDao unit tests", () => {
-  const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
   const BaseProfileDaoMock =
     BaseProfileDao as unknown as DeepMockProxy<BaseProfileDaoType>;
   const OrganizationDaoMock =
     OrganizationDao as unknown as DeepMockProxy<OrganizationDaoType>;
 
   beforeEach(() => {
-    mockReset(prismaMock);
+    mockReset(dbMock);
     mockReset(BaseProfileDaoMock);
     mockReset(OrganizationDaoMock);
   });
@@ -185,9 +175,7 @@ describe("IndividualDao unit tests", () => {
       ],
     };
     BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
-    prismaMock.individualEntity.findUnique.mockResolvedValueOnce(
-      individualEntity
-    );
+    dbMock.individualEntity.findUnique.mockResolvedValueOnce(individualEntity);
     OrganizationDaoMock.getReferenceById.mockImplementation(async (id) => {
       if (id === org1ReferenceModel.id) {
         return Promise.resolve(org1ReferenceModel);
@@ -305,9 +293,7 @@ describe("IndividualDao unit tests", () => {
     BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(
       baseProfileReference
     );
-    prismaMock.individualEntity.findUnique.mockResolvedValueOnce(
-      individualEntity
-    );
+    dbMock.individualEntity.findUnique.mockResolvedValueOnce(individualEntity);
 
     await expect(
       IndividualDao.getReferenceById("profileId")
