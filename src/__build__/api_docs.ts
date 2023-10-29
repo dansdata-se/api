@@ -130,7 +130,7 @@ in case we need to contact you about your usage.
 
 Request volumes that affect our ability to provide data freely may be limited or actively prevented.
 
-Please contact us if your application(s) needs to/makes heavy use of the API to discuss options and prevent interruptions.
+Please contact us if your application(s) needs to make heavy use of the API to discuss options and prevent interruptions.
 
 ### Privacy
 
