@@ -338,7 +338,7 @@ model EventSlotParticipantEntity {
   slotId    String                     @map("slot_id")
   slot      EventSlotEntity            @relation(fields: [slotId], references: [id], onDelete: Cascade)
   profileId String                     @map("profile_id")
-  profile   ProfileEntity              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile   ProfileEntity              @relation(fields: [profileId], references: [id], onDelete: Restrict)
   type      EventSlotParticipationType
 
   @@id([slotId, profileId, type])
