@@ -1,4 +1,4 @@
-import { ErrorCode, ErrorDto } from "@/api/dto/error";
+import { ErrorCode, ErrorDto, errorCodeToStatusCode } from "@/api/dto/error";
 import z from "@/api/zod";
 import { NextApiResponse } from "next";
 import { fromZodError } from "zod-validation-error";
@@ -23,10 +23,12 @@ export async function withParsedObject<T extends z.ZodSchema>(
   } else {
     const validationError = fromZodError(parseResult.error);
     res.setHeader("content-type", "application/json");
-    (res as NextApiResponse<ErrorDto>).status(400).json({
-      code: errorCode,
-      message: validationError.message,
-    });
+    (res as NextApiResponse<ErrorDto>)
+      .status(errorCodeToStatusCode(errorCode))
+      .json({
+        code: errorCode,
+        message: validationError.message,
+      });
   }
 }
 

@@ -2,6 +2,7 @@ import { defineEndpoints } from "@/api";
 import { placeholderAuth } from "@/api/auth";
 import { ErrorCode } from "@/api/dto/error";
 import { CreateIndividualDtoSchema } from "@/api/dto/profiles/individuals/create";
+import { StatusCodes } from "@/api/status_codes";
 import { withParsedObject } from "@/api/util";
 import z from "@/api/zod";
 import { NextApiResponse } from "next";
@@ -26,7 +27,7 @@ export default defineEndpoints({
         },
       },
       responses: {
-        "201": {
+        [StatusCodes.success.created]: {
           description: "Created",
           content: {
             "application/json": {
@@ -44,7 +45,9 @@ export default defineEndpoints({
         ErrorCode.invalidBody,
         // TODO(FelixZY): Implement
         () => {
-          (res as NextApiResponse<void>).status(501).end();
+          (res as NextApiResponse<void>)
+            .status(StatusCodes.serverError.notImplemented)
+            .end();
           return Promise.resolve();
         }
       );

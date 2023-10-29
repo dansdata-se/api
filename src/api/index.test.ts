@@ -3,6 +3,7 @@
  */
 
 import { Endpoint, defineEndpoints } from "@/api";
+import { StatusCodes } from "@/api/status_codes";
 import { exportedForTesting as dbTesting } from "@/db";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { mockDeep } from "jest-mock-extended";
@@ -41,7 +42,7 @@ function makeDummyEndpoint({
       method,
       path: "/api/v1/some/path",
       responses: {
-        "200": {
+        [StatusCodes.success.ok]: {
           description: "OK",
         },
       },
@@ -316,7 +317,7 @@ describe("API core", () => {
   test("executes handler when accessing a protected resource with valid credentials", async () => {
     //#region arrange
     const mockHandler = jest.fn((_, res: NextApiResponse) => {
-      res.status(200).end();
+      res.status(StatusCodes.success.ok).end();
       return Promise.resolve();
     });
     const handler = defineEndpoints({
@@ -326,7 +327,7 @@ describe("API core", () => {
           method: "get",
           path: "/api/v1/some/path",
           responses: {
-            "200": {
+            [StatusCodes.success.ok]: {
               description: "OK",
             },
           },

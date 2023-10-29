@@ -1,6 +1,7 @@
 import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { wrapEndpointWithMiddleware } from "@/api/middleware";
 import { registry } from "@/api/registry";
+import { StatusCodes } from "@/api/status_codes";
 import logger from "@/logger";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -39,7 +40,7 @@ const buildRequestHandler = (endpoints: Partial<Endpoints>) =>
     withCorsHeaders(async (req: NextApiRequest, res: NextApiResponse) => {
       // Fallback if no endpoints are registered
       if (Object.keys(endpoints).length === 0) {
-        res.status(404).json({
+        res.status(StatusCodes.clientError.notFound).json({
           code: ErrorCode.notFound,
           message: "The requested resource does not exist.",
         });
@@ -67,12 +68,14 @@ const buildRequestHandler = (endpoints: Partial<Endpoints>) =>
             .map(([header]) => header)
             .join(", ")
         );
-        res.status(204).end();
+        res.status(StatusCodes.success.noContent).end();
       } else {
-        (res as NextApiResponse<ErrorDto>).status(405).json({
-          code: ErrorCode.httpMethodNotAllowed,
-          message: "HTTP method not allowed.",
-        });
+        (res as NextApiResponse<ErrorDto>)
+          .status(StatusCodes.clientError.methodNotAllowed)
+          .json({
+            code: ErrorCode.httpMethodNotAllowed,
+            message: "HTTP method not allowed.",
+          });
       }
     })
   );

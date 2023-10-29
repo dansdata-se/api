@@ -3,6 +3,7 @@
  */
 
 import { ErrorCode, ErrorDto } from "@/api/dto/error";
+import { StatusCodes } from "@/api/status_codes";
 import { commaSeparatedToArray, withParsedObject } from "@/api/util";
 import z from "@/api/zod";
 import { NextApiResponse } from "next";
@@ -65,7 +66,7 @@ describe("API utilities", () => {
         (parsed) => {
           if (errorCode === undefined) {
             expect(parsed).toEqual(expected);
-            res.status(200).end();
+            res.status(StatusCodes.success.ok).end();
           } else {
             fail("Callback should not run if an error is expected");
           }
@@ -74,9 +75,9 @@ describe("API utilities", () => {
       );
 
       if (errorCode === undefined) {
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(StatusCodes.success.ok);
       } else {
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(StatusCodes.clientError.badRequest);
         expect(res._getJSONData() as ErrorDto).toMatchObject({
           code: errorCode,
         } as Partial<ErrorDto>);

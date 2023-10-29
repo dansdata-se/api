@@ -3,6 +3,7 @@ import {
   IndividualTagDetailsDto,
   IndividualTagDetailsDtoSchema,
 } from "@/api/dto/profiles/individuals/tag_details";
+import { StatusCodes } from "@/api/status_codes";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { NextApiResponse } from "next";
 
@@ -15,7 +16,7 @@ export default defineEndpoints({
       tags: ["Profiles", "Individuals"],
       summary: "List possible individual tags",
       responses: {
-        "200": {
+        [StatusCodes.success.ok]: {
           description: "Ok\n\nA list of all supported individual tags.",
           content: {
             "application/json": {
@@ -28,7 +29,7 @@ export default defineEndpoints({
     async handler(_, res) {
       const tags = await IndividualDao.tags();
       (res as NextApiResponse<IndividualTagDetailsDto[]>)
-        .status(200)
+        .status(StatusCodes.success.ok)
         .json(tags);
     },
   },
