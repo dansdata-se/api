@@ -94,6 +94,7 @@ const withResponseLogger =
         host: req.headers.host,
         url: req.url,
         userAgent: req.headers["user-agent"],
+        referer: req.headers.referer,
         from: req.headers.from,
       },
       res: {
