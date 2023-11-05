@@ -27,13 +27,13 @@ export function imageToUrl(image: ImageModel): string {
     );
     switch (image.variant) {
       case "cover":
-        return `https://imagedelivery.net/${placeholderImage.accountHash}/${placeholderImage.cover.cloudflareId}`;
+        return `https://imagedelivery.net/${placeholderImage.accountHash}/${placeholderImage.cover.cloudflareId}/`;
       case "poster":
-        return `https://imagedelivery.net/${placeholderImage.accountHash}/${placeholderImage.poster.cloudflareId}`;
+        return `https://imagedelivery.net/${placeholderImage.accountHash}/${placeholderImage.poster.cloudflareId}/`;
       case "square":
-        return `https://imagedelivery.net/${placeholderImage.accountHash}/${placeholderImage.square.cloudflareId}`;
+        return `https://imagedelivery.net/${placeholderImage.accountHash}/${placeholderImage.square.cloudflareId}/`;
     }
   } else {
-    return `https://imagedelivery.net/${env.CLOUDFLARE_ACCOUNT_HASH}/${image.cloudflareId}`;
+    return `https://imagedelivery.net/${env.CLOUDFLARE_ACCOUNT_HASH}/${image.cloudflareId}/`;
   }
 }
