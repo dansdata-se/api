@@ -84,6 +84,7 @@ DROP SCHEMA portal CASCADE;
 DROP SCHEMA profiles CASCADE;
 DROP SCHEMA public CASCADE;
 DROP SCHEMA storage CASCADE;
+DROP SCHEMA logs CASCADE;
 ```
 
 Then use `npm run dev:db:push` to re-initialize your development database.

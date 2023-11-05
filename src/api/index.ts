@@ -2,6 +2,8 @@ import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { wrapEndpointWithMiddleware } from "@/api/middleware";
 import { registry } from "@/api/registry";
 import { StatusCodes } from "@/api/status_codes";
+import { getDbClient } from "@/db";
+import env from "@/env";
 import logger from "@/logger";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -101,6 +103,33 @@ const withResponseLogger =
         status: res.statusCode,
       },
     });
+
+    function getRequestHeader(name: string): string {
+      const value = req.headers[name];
+      if (Array.isArray(value)) {
+        return value.join(", ");
+      }
+      return value ?? "";
+    }
+
+    await getDbClient()
+      .request.create({
+        data: {
+          ip: getRequestHeader("x-forwarded-for"),
+          ipCountry: getRequestHeader("x-vercel-ip-country"),
+          url: req.url ?? "",
+          method: req.method ?? "",
+          status: res.statusCode ?? -1,
+          userAgent: req.headers["user-agent"] ?? "",
+          host: req.headers.host ?? "",
+          referer: req.headers.referer ?? "",
+          from: req.headers.from ?? "",
+          serverVersion: `${
+            env.VERCEL_GIT_COMMIT_REF
+          }:${env.VERCEL_GIT_COMMIT_SHA.substring(0, 7)}`,
+        },
+      })
+      .catch((e) => logger.error(e, "Failed to write to request log"));
   };
 
 /**

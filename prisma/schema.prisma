@@ -7,7 +7,7 @@ datasource db {
   provider   = "postgresql"
   url        = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl  = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
-  schemas    = ["events", "portal", "profiles", "storage"]
+  schemas    = ["events", "portal", "profiles", "storage", "logs"]
   extensions = [pg_trgm, postgis]
 }
 
@@ -383,4 +383,44 @@ model DanceStyleImageJunction {
   @@index([imageId])
   @@map("dance_style_images")
   @@schema("events")
+}
+
+model Request {
+  id            String   @id @default(cuid())
+  ip            String
+  ipCountry     String   @map("ip_country")
+  url           String
+  method        String
+  status        Int
+  userAgent     String   @map("user_agent")
+  host          String
+  referer       String
+  from          String
+  serverVersion String   @map("server_version")
+  createdAt     DateTime @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
+
+  @@index([ip])
+  @@index([ipCountry])
+  @@index([url])
+  @@index([method])
+  @@index([url, method])
+  @@index([status])
+  @@index([userAgent(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([from(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([createdAt])
+  @@index([serverVersion])
+  @@map("requests")
+  @@schema("logs")
+}
+
+model Error {
+  id            String   @id @default(cuid())
+  message       String
+  stackTrace    String   @map("stack_trace")
+  serverVersion String   @map("server_version")
+  createdAt     DateTime @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
+
+  @@index([createdAt])
+  @@map("errors")
+  @@schema("logs")
 }
