@@ -20,7 +20,7 @@
         "ms-azuretools.vscode-docker",
         "mtxr.sqltools-driver-pg",
         "mtxr.sqltools",
-        "firsttris.vscode-jest-runner"
+        "Orta.vscode-jest"
       ]
     }
   },

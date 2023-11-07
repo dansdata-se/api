@@ -13,5 +13,8 @@
       "username": "default",
       "password": "postgres"
     }
-  ]
+  ],
+  "jest.runMode": "on-demand",
+  "jest.autoRun": "off",
+  "jest.monitorLongRun": "off"
 }
