@@ -1,29 +1,10 @@
 import { cloudflareApi } from "@/cloudflare/api";
 import { getDbClient } from "@/db";
-import { ImagesModel } from "@/model/profiles/images";
+import { mapImageEntityToImageModel } from "@/mapping/storage/image";
 import { ImageModel, ImageUploadUrlModel } from "@/model/storage/image";
-import { ImageEntity, ImageVariant } from "@prisma/client";
 
 export class ImageNotUploadedToCloudflareError extends Error {}
 export class ImageInUseError extends Error {}
-
-function imageEntityToImageModel(entity: ImageEntity): ImageModel {
-  return {
-    id: entity.id,
-    cloudflareId: entity.cloudflareId,
-    variant: entity.variant,
-  };
-}
-
-export function imageEntitiesToImagesModel(images: ImageEntity[]): ImagesModel {
-  return Object.fromEntries(
-    Object.values(ImageVariant).map((variant) => {
-      const image = images.find((it) => it.variant === variant);
-      if (image === undefined) return [variant, null] as const;
-      return [variant, imageEntityToImageModel(image)];
-    })
-  ) as unknown as ImagesModel;
-}
 
 export const ImageDao = {
   /**
@@ -36,7 +17,7 @@ export const ImageDao = {
       },
     });
     if (entity === null) return null;
-    return imageEntityToImageModel(entity);
+    return mapImageEntityToImageModel(entity);
   },
   /**
    * Retrieve an image by its cloudflare id
@@ -48,7 +29,7 @@ export const ImageDao = {
       },
     });
     if (entity === null) return null;
-    return imageEntityToImageModel(entity);
+    return mapImageEntityToImageModel(entity);
   },
   /**
    * Creates a url to which an image can be uploaded.
@@ -100,7 +81,7 @@ export const ImageDao = {
       },
     });
 
-    return imageEntityToImageModel(entity);
+    return mapImageEntityToImageModel(entity);
   },
   /**
    * Deletes the given image from local database and cloudflare.

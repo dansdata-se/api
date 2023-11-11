@@ -1,5 +1,5 @@
 import { getDbClient } from "@/db";
-import { imageEntitiesToImagesModel } from "@/db/dao/storage/image";
+import { mapImageEntitiesToImagesModel } from "@/mapping/storage/image";
 import { BaseProfileModel } from "@/model/profiles/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
 import { isNonNull } from "@/util/is_defined";
@@ -34,7 +34,9 @@ export const BaseProfileDao = {
       name: entity.name,
       description: entity.description,
       links: entity.links.map((l) => ({ url: l.url })),
-      images: imageEntitiesToImagesModel(entity.images.map((it) => it.image)),
+      images: mapImageEntitiesToImagesModel(
+        entity.images.map((it) => it.image)
+      ),
     };
   },
   /**
@@ -68,7 +70,9 @@ export const BaseProfileDao = {
       id: entity.id,
       type: entity.type,
       name: entity.name,
-      images: imageEntitiesToImagesModel(entity.images.map((it) => it.image)),
+      images: mapImageEntitiesToImagesModel(
+        entity.images.map((it) => it.image)
+      ),
     };
   },
   /**

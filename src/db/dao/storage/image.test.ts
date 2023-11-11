@@ -13,9 +13,7 @@ fetch.enableMocks();
 import {
   ImageDao,
   ImageNotUploadedToCloudflareError,
-  imageEntitiesToImagesModel,
 } from "@/db/dao/storage/image";
-import { ImagesModel } from "@/model/profiles/images";
 import { ImageVariant } from "@prisma/client";
 
 describe("ImageDao unit tests", () => {
@@ -149,53 +147,5 @@ describe("ImageDao unit tests", () => {
     expect(dbMock.imageEntity.create.mock.calls).toHaveLength(1);
     // Ensure cloudflare API was consulted once only
     expect(fetch.mock.calls).toHaveLength(1);
-  });
-
-  test("imageEntitiesToImagesModel yields null values for unspecified image variants", () => {
-    const allNullImagesModel: ImagesModel = {
-      cover: null,
-      poster: null,
-      square: null,
-    };
-    expect(imageEntitiesToImagesModel([])).toEqual(allNullImagesModel);
-  });
-
-  test("imageEntitiesToImagesModel converts to ImagesModel", () => {
-    const input: Parameters<typeof imageEntitiesToImagesModel>[0] = [
-      {
-        id: "coverImageId",
-        cloudflareId: "coverImageCloudflareId",
-        variant: ImageVariant.cover,
-      },
-      {
-        id: "posterImageId",
-        cloudflareId: "posterImageCloudflareId",
-        variant: ImageVariant.poster,
-      },
-      {
-        id: "squareImageId",
-        cloudflareId: "squareImageCloudflareId",
-        variant: ImageVariant.square,
-      },
-    ];
-
-    const expectedImages: ImagesModel = {
-      cover: {
-        id: "coverImageId",
-        cloudflareId: "coverImageCloudflareId",
-        variant: ImageVariant.cover,
-      },
-      poster: {
-        id: "posterImageId",
-        cloudflareId: "posterImageCloudflareId",
-        variant: ImageVariant.poster,
-      },
-      square: {
-        id: "squareImageId",
-        cloudflareId: "squareImageCloudflareId",
-        variant: ImageVariant.square,
-      },
-    };
-    expect(imageEntitiesToImagesModel(input)).toEqual(expectedImages);
   });
 });
