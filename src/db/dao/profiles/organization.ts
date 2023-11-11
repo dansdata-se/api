@@ -1,5 +1,5 @@
 import { getDbClient } from "@/db";
-import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
+import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { OrganizationModel } from "@/model/profiles/organizations/profile";
 import { OrganizationReferenceModel } from "@/model/profiles/organizations/profile_reference";

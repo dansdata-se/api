@@ -1,5 +1,5 @@
 import { getDbClient } from "@/db";
-import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
+import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { CoordsModel } from "@/model/profiles/coords";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
 import { VenueModel } from "@/model/profiles/venues/profile";

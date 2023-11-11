@@ -9,14 +9,14 @@ dbTesting.overridePrismaClient(dbMock);
 
 import { OrganizationEntity, ProfileType } from "@prisma/client";
 
-import type { BaseProfileDaoType } from "@/db/dao/profiles/base_profile";
-jest.mock("@/db/dao/profiles/base_profile", () => ({
+import type { BaseProfileDaoType } from "@/db/dao/profiles/base";
+jest.mock("@/db/dao/profiles/base", () => ({
   __esModule: true,
   BaseProfileDao: mockDeep<BaseProfileDaoType>(),
 }));
 // prevent prettier from moving this import around
 // prettier-ignore
-import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
+import { BaseProfileDao } from "@/db/dao/profiles/base";
 
 import type { IndividualDaoType } from "@/db/dao/profiles/individual";
 jest.mock("@/db/dao/profiles/individual", () => ({

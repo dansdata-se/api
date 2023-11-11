@@ -7,7 +7,7 @@ import { mockDeep, mockReset } from "jest-mock-extended";
 const dbMock = mockDeep<DbClient>();
 dbTesting.overridePrismaClient(dbMock);
 
-import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
+import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { BaseProfileModel } from "@/model/profiles/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
 import { ProfileEntity, ProfileLinkEntity, ProfileType } from "@prisma/client";
