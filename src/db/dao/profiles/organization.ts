@@ -1,6 +1,7 @@
 import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
+import { BaseProfileModel } from "@/model/profiles/base";
 import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { OrganizationModel } from "@/model/profiles/organizations/profile";
 import { OrganizationReferenceModel } from "@/model/profiles/organizations/profile_reference";
@@ -19,6 +20,13 @@ export type OrganizationDaoType = typeof OrganizationDao;
  * DAO for working with profiles representing organizations
  */
 export const OrganizationDao = {
+  /**
+   * Delete a profile by its id
+   * @throws {import("@/db/dao/profiles/base").ProfileInUseError} if the profile cannot be deleted due to being linked to one or more events
+   */
+  async delete(id: BaseProfileModel["id"]): Promise<boolean> {
+    return await BaseProfileDao.delete(id);
+  },
   /**
    * Retrieve a full organization profile by its id
    */

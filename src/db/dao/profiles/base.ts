@@ -4,6 +4,7 @@ import { BaseProfileModel } from "@/model/profiles/base";
 import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { BaseCreateProfileModel } from "@/model/profiles/create";
 import { isNonNull } from "@/util/is_defined";
+import { ProfileType } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export class InvalidProfileError extends Error {
@@ -18,6 +19,15 @@ export class InvalidProfileError extends Error {
 export class InvalidProfileImageReferenceError extends InvalidProfileError {
   constructor(innerException: PrismaClientKnownRequestError) {
     super("One or more image ids are invalid", innerException);
+  }
+}
+
+export class ProfileInUseError extends Error {
+  constructor(
+    message: string,
+    public innerException: PrismaClientKnownRequestError
+  ) {
+    super(message);
   }
 }
 
@@ -66,6 +76,39 @@ export const BaseProfileDao = {
         throw e;
       });
     return result.id;
+  },
+  /**
+   * Delete a profile by its id
+   * @throws {ProfileLinkedToEventError} if the profile cannot be deleted due to being linked to one or more events
+   */
+  async delete(id: BaseProfileModel["id"]): Promise<boolean> {
+    return await getDbClient()
+      .profileEntity.delete({
+        where: {
+          id,
+        },
+      })
+      .then(() => true)
+      .catch((e) => {
+        if (e instanceof PrismaClientKnownRequestError) {
+          // https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
+          switch (e.code) {
+            // "Foreign key constraint failed on the field: {field_name}"
+            case "P2003":
+              if (e.message.toLocaleLowerCase().includes("event")) {
+                throw new ProfileInUseError(
+                  "The profile is linked to at least one event",
+                  e
+                );
+              }
+              break;
+            // "An operation failed because it depends on one or more records that were required but not found. {cause}"
+            case "P2025":
+              return false;
+          }
+        }
+        throw e;
+      });
   },
   /**
    * Retrieve a full profile by its id
@@ -156,5 +199,21 @@ export const BaseProfileDao = {
     return await Promise.all(
       entities.map(({ id }) => this.getReferenceById(id))
     ).then((it) => it.filter(isNonNull));
+  },
+  /**
+   * Retrieve the profile type given its id
+   */
+  async getTypeById(id: BaseProfileModel["id"]): Promise<ProfileType | null> {
+    const result = await getDbClient().profileEntity.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        type: true,
+      },
+    });
+    if (result === null) return null;
+
+    return result.type;
   },
 };

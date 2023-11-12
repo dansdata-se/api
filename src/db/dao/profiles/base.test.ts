@@ -161,4 +161,30 @@ describe("BaseProfileDao integration tests", () => {
       ).rejects.toThrowError(InvalidProfileImageReferenceError);
     }
   );
+
+  test("can delete a profile", async () => {
+    // Arrange
+    mockCreateImageUploadUrlFetchResponses();
+    const { id: coverImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: posterImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: squareImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const createModel: BaseCreateProfileModel = generateBaseCreateProfileModel({
+      images: {
+        coverId: coverImageId,
+        posterId: posterImageId,
+        squareId: squareImageId,
+      },
+    });
+    const profileId = await BaseProfileDao.create(createModel);
+
+    // Act
+    const deleteSuccessful = await BaseProfileDao.delete(profileId);
+
+    // Assert
+    expect(deleteSuccessful).toBe(true);
+    await expect(BaseProfileDao.getById(profileId)).resolves.toBeNull();
+  });
 });

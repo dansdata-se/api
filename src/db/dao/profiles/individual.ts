@@ -1,6 +1,7 @@
 import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { OrganizationDao } from "@/db/dao/profiles/organization";
+import { BaseProfileModel } from "@/model/profiles/base";
 import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { IndividualModel } from "@/model/profiles/individuals/profile";
 import { IndividualReferenceModel } from "@/model/profiles/individuals/profile_reference";
@@ -19,6 +20,13 @@ export type IndividualDaoType = typeof IndividualDao;
  * DAO for working with profiles representing individuals
  */
 export const IndividualDao = {
+  /**
+   * Delete a profile by its id
+   * @throws {import("@/db/dao/profiles/base").ProfileInUseError} if the profile cannot be deleted due to being linked to one or more events
+   */
+  async delete(id: BaseProfileModel["id"]): Promise<boolean> {
+    return await BaseProfileDao.delete(id);
+  },
   /**
    * Retrieve a full individual profile by its id
    */

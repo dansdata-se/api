@@ -1,5 +1,6 @@
 import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
+import { BaseProfileModel } from "@/model/profiles/base";
 import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { CoordsModel } from "@/model/profiles/coords";
 import { VenueModel } from "@/model/profiles/venues/profile";
@@ -18,6 +19,13 @@ export type VenueDaoType = typeof VenueDao;
  * DAO for working with profiles representing venues
  */
 export const VenueDao = {
+  /**
+   * Delete a profile by its id
+   * @throws {import("@/db/dao/profiles/base").ProfileInUseError} if the profile cannot be deleted due to being linked to one or more events
+   */
+  async delete(id: BaseProfileModel["id"]): Promise<boolean> {
+    return await BaseProfileDao.delete(id);
+  },
   /**
    * Retrieve a full venue profile by its id
    */
