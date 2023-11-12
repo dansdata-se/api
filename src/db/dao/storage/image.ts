@@ -87,36 +87,14 @@ export const ImageDao = {
    * Deletes the given image from local database and cloudflare.
    *
    * @param imageId the id of the image to delete
-   * @param force True if the image should be deleted even if it has usages.
-   *
-   * By default, an image is only deleted if it has no associated usages.
-   * @throws {@link ImageInUseError}
-   * Thrown if `force` is set to `false` and the related image has associated
-   * usages.
    */
-  async deleteById(
-    id: ImageModel["id"],
-    force = false
-  ): Promise<ImageModel | null> {
+  async deleteById(id: ImageModel["id"]): Promise<ImageModel | null> {
     const image = await getDbClient().imageEntity.findUnique({
       where: {
         id,
       },
-      include: {
-        _count: {
-          select: {
-            profileImages: true,
-          },
-        },
-      },
     });
     if (image === null) return null;
-
-    if (!force && Object.values(image._count).some((count) => count > 0)) {
-      throw new ImageInUseError(
-        "This image still has usages and the force flag is set to `false`"
-      );
-    }
 
     const { success } = await cloudflareApi.images.delete(image.cloudflareId);
 
@@ -126,7 +104,7 @@ export const ImageDao = {
 
     await getDbClient().imageEntity.delete({
       where: {
-        id: image.id,
+        id,
       },
     });
 
@@ -135,21 +113,12 @@ export const ImageDao = {
   /**
    * Deletes the given image from local database and cloudflare.
    *
-   * @param cloudflareId the cloudflare id of the image to delete
-   * @param force True if the image should be deleted even if it has usages.
-   *
-   * By default, an image is only deleted if it has no associated usages.
-   * @throws {@link ImageInUseError}
-   * Thrown if `force` is set to `false` and the related image has associated
-   * usages.
+   * @param cloudflareId the cloudflare id of the image to delete.
    */
-  async deleteByCloudflareId(
-    cloudflareId: ImageModel["cloudflareId"],
-    force = false
-  ) {
+  async deleteByCloudflareId(cloudflareId: ImageModel["cloudflareId"]) {
     const image = await this.getByCloudflareId(cloudflareId);
     if (image === null) return null;
 
-    return await this.deleteById(image.id, force);
+    return await this.deleteById(image.id);
   },
 };
