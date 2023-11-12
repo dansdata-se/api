@@ -19,27 +19,23 @@ export const CreateImageUploadUrlDtoSchema = registry.register(
   })
 );
 
-export const UploadedImageReferenceDtoSchema = z
-  .string()
-  .max(100)
-  .trim()
-  .min(5)
-  .optional()
-  .openapi({
-    // Techincally the cloudflareId
-    description: "The id of a previously uploaded image.",
-  });
-
 export type ImageDto = z.infer<typeof ImageDtoSchema>;
 export const ImageDtoSchema = registry.register(
   "ImageDto",
   z.object({
-    cover: z
-      .string()
-      .url()
-      .nullable()
-      .openapi({
-        description: `URL for a landscape oriented image.
+    id: z.string().cuid(),
+    url: z.string().url(),
+  })
+);
+
+export type ImagesDto = z.infer<typeof ImagesDtoSchema>;
+export const ImagesDtoSchema = registry.register(
+  "ImagesDto",
+  z.object({
+    cover: ImageDtoSchema.merge(
+      z.object({
+        url: ImageDtoSchema.shape.url.openapi({
+          description: `URL for a landscape oriented image.
 
 Append one of these postfixes to complete the url:
 
@@ -50,17 +46,17 @@ Append one of these postfixes to complete the url:
 | \`covermd\` | 600x315 |
 | \`coversm\` | 360x189 |
 `,
-        example: imageToUrl({
-          id: "123e4567-e89b-12d3-a456-426614174000",
-          cloudflareId: placeholderImage.cover.cloudflareId,
+          example: imageToUrl({
+            id: "123e4567-e89b-12d3-a456-426614174000",
+            cloudflareId: placeholderImage.cover.cloudflareId,
+          }),
         }),
-      }),
-    poster: z
-      .string()
-      .url()
-      .nullable()
-      .openapi({
-        description: `URL for a portrait oriented image.
+      })
+    ).nullable(),
+    poster: ImageDtoSchema.merge(
+      z.object({
+        url: ImageDtoSchema.shape.url.openapi({
+          description: `URL for a portrait oriented image.
 
 Append one of these postfixes to complete the url:
 
@@ -71,17 +67,17 @@ Append one of these postfixes to complete the url:
 | \`postermd\` | 600x840 |
 | \`postersm\` | 320x448 |
 `,
-        example: imageToUrl({
-          id: "123e4567-e89b-12d3-a456-426614174000",
-          cloudflareId: placeholderImage.poster.cloudflareId,
+          example: imageToUrl({
+            id: "123e4567-e89b-12d3-a456-426614174000",
+            cloudflareId: placeholderImage.poster.cloudflareId,
+          }),
         }),
-      }),
-    square: z
-      .string()
-      .url()
-      .nullable()
-      .openapi({
-        description: `URL for a square image.
+      })
+    ).nullable(),
+    square: ImageDtoSchema.merge(
+      z.object({
+        url: ImageDtoSchema.shape.url.openapi({
+          description: `URL for a square image.
 
 Append one of these postfixes to complete the url:
 
@@ -92,10 +88,12 @@ Append one of these postfixes to complete the url:
 | \`squaremd\` | 600x600 |
 | \`squaresm\` | 320x320 |
 `,
-        example: imageToUrl({
-          id: "123e4567-e89b-12d3-a456-426614174000",
-          cloudflareId: placeholderImage.square.cloudflareId,
+          example: imageToUrl({
+            id: "123e4567-e89b-12d3-a456-426614174000",
+            cloudflareId: placeholderImage.square.cloudflareId,
+          }),
         }),
-      }),
+      })
+    ).nullable(),
   })
 );

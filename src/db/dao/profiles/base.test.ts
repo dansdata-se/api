@@ -1,160 +1,164 @@
 /**
- * @group unit
+ * @group integration
  */
 
-import { DbClient, exportedForTesting as dbTesting } from "@/db";
-import { mockDeep, mockReset } from "jest-mock-extended";
-const dbMock = mockDeep<DbClient>();
-dbTesting.overridePrismaClient(dbMock);
-
-import { BaseProfileDao } from "@/db/dao/profiles/base";
+import { mockCreateImageUploadUrlFetchResponses } from "@/__test__/cloudflare";
+import { withTestDatabaseForEach } from "@/__test__/db";
+import { generateBaseCreateProfileModel } from "@/__test__/model/profiles/create";
+import {
+  BaseProfileDao,
+  InvalidProfileImageReferenceError,
+} from "@/db/dao/profiles/base";
+import { ImageDao } from "@/db/dao/storage/image";
 import { BaseProfileModel } from "@/model/profiles/base";
 import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
-import { ProfileEntity, ProfileLinkEntity, ProfileType } from "@prisma/client";
+import { BaseCreateProfileModel } from "@/model/profiles/create";
+import fetch from "jest-fetch-mock";
 
-describe("BaseProfileDao unit tests", () => {
+describe("BaseProfileDao integration tests", () => {
+  withTestDatabaseForEach();
+
+  beforeAll(() => {
+    fetch.enableMocks();
+  });
+
   beforeEach(() => {
-    mockReset(dbMock);
+    fetch.resetMocks();
   });
 
-  test("getById", async () => {
-    const expectedProfileEntity: ProfileEntity & {
-      coverImage: {
-        id: string;
-        cloudflareId: string;
-      } | null;
-      posterImage: {
-        id: string;
-        cloudflareId: string;
-      } | null;
-      squareImage: {
-        id: string;
-        cloudflareId: string;
-      } | null;
-      links: ProfileLinkEntity[];
-    } = {
-      id: "profileId",
-      type: ProfileType.organization,
-      name: "Profile Name",
-      description: "Profile description",
-      links: [
-        {
-          id: 1,
-          profileId: "profileId",
-          url: "https://profile.example",
-        },
-        {
-          id: 2,
-          profileId: "profileId",
-          url: "https://facebooke.com/profile",
-        },
-      ],
-      coverImageId: "coverImageId",
-      coverImage: {
-        id: "coverImageId",
-        cloudflareId: "coverImageCloudflareId",
-      },
-      posterImageId: "posterImageId",
-      posterImage: {
-        id: "posterImageId",
-        cloudflareId: "posterImageCloudflareId",
-      },
-      squareImageId: "squareImageId",
-      squareImage: {
-        id: "squareImageId",
-        cloudflareId: "squareImageCloudflareId",
-      },
-      createdAt: new Date("2023-06-16T22:26:49"),
-    };
-    dbMock.profileEntity.findUnique.mockResolvedValueOnce(
-      expectedProfileEntity
-    );
-
+  test("getById returns null if the profile is not found", async () => {
     await expect(
-      BaseProfileDao.getById("profileId")
-    ).resolves.toEqual<BaseProfileModel>({
-      id: expectedProfileEntity.id,
-      type: expectedProfileEntity.type,
-      name: expectedProfileEntity.name,
-      description: expectedProfileEntity.description,
-      links: expectedProfileEntity.links.map((l) => ({ url: l.url })),
+      BaseProfileDao.getById("thisIdDoesNotExist")
+    ).resolves.toBeNull();
+  });
+
+  test("getReferenceById returns null if the profile is not found", async () => {
+    await expect(
+      BaseProfileDao.getReferenceById("thisIdDoesNotExist")
+    ).resolves.toBeNull();
+  });
+
+  test("create and retrieve full base profile", async () => {
+    // Arrange
+    const cloudflareMockResponses = mockCreateImageUploadUrlFetchResponses();
+    const { id: coverImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: posterImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: squareImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const createModel: BaseCreateProfileModel = generateBaseCreateProfileModel({
+      images: {
+        coverId: coverImageId,
+        posterId: posterImageId,
+        squareId: squareImageId,
+      },
+    });
+
+    // Act
+    const profileId = await BaseProfileDao.create(createModel);
+    const profile = await BaseProfileDao.getById(profileId);
+
+    // Assert
+    expect(cloudflareMockResponses).toHaveLength(3);
+    expect(profile).toEqual<BaseProfileModel>({
+      id: profileId,
+      type: createModel.type,
+      name: createModel.name,
+      description: createModel.description,
+      links: createModel.links,
       images: {
         cover: {
-          id: "coverImageId",
-          cloudflareId: "coverImageCloudflareId",
+          id: coverImageId,
+          cloudflareId: cloudflareMockResponses[0].id,
         },
         poster: {
-          id: "posterImageId",
-          cloudflareId: "posterImageCloudflareId",
+          id: posterImageId,
+          cloudflareId: cloudflareMockResponses[1].id,
         },
         square: {
-          id: "squareImageId",
-          cloudflareId: "squareImageCloudflareId",
+          id: squareImageId,
+          cloudflareId: cloudflareMockResponses[2].id,
         },
       },
     });
   });
 
-  test("getReferenceById", async () => {
-    const expectedProfileEntity: ProfileEntity & {
-      coverImage: {
-        id: string;
-        cloudflareId: string;
-      } | null;
-      posterImage: {
-        id: string;
-        cloudflareId: string;
-      } | null;
-      squareImage: {
-        id: string;
-        cloudflareId: string;
-      } | null;
-    } = {
-      id: "profileId",
-      type: ProfileType.organization,
-      name: "Profile Name",
-      description: "Profile description",
-      coverImageId: "coverImageId",
-      coverImage: {
-        id: "coverImageId",
-        cloudflareId: "coverImageCloudflareId",
+  test("create and retrieve base profile reference", async () => {
+    // Arrange
+    const cloudflareMockResponses = mockCreateImageUploadUrlFetchResponses();
+    const { id: coverImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: posterImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: squareImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const createModel: BaseCreateProfileModel = generateBaseCreateProfileModel({
+      images: {
+        coverId: coverImageId,
+        posterId: posterImageId,
+        squareId: squareImageId,
       },
-      posterImageId: "posterImageId",
-      posterImage: {
-        id: "posterImageId",
-        cloudflareId: "posterImageCloudflareId",
-      },
-      squareImageId: "squareImageId",
-      squareImage: {
-        id: "squareImageId",
-        cloudflareId: "squareImageCloudflareId",
-      },
-      createdAt: new Date("2023-06-16T22:26:49"),
-    };
-    dbMock.profileEntity.findUnique.mockResolvedValueOnce(
-      expectedProfileEntity
-    );
+    });
 
-    await expect(
-      BaseProfileDao.getReferenceById("profileId")
-    ).resolves.toEqual<BaseProfileReferenceModel>({
-      id: expectedProfileEntity.id,
-      type: expectedProfileEntity.type,
-      name: expectedProfileEntity.name,
+    // Act
+    const profileId = await BaseProfileDao.create(createModel);
+    const profile = await BaseProfileDao.getReferenceById(profileId);
+
+    // Assert
+    expect(cloudflareMockResponses).toHaveLength(3);
+    expect(profile).toEqual<BaseProfileReferenceModel>({
+      id: profileId,
+      type: createModel.type,
+      name: createModel.name,
       images: {
         cover: {
-          id: "coverImageId",
-          cloudflareId: "coverImageCloudflareId",
+          id: coverImageId,
+          cloudflareId: cloudflareMockResponses[0].id,
         },
         poster: {
-          id: "posterImageId",
-          cloudflareId: "posterImageCloudflareId",
+          id: posterImageId,
+          cloudflareId: cloudflareMockResponses[1].id,
         },
         square: {
-          id: "squareImageId",
-          cloudflareId: "squareImageCloudflareId",
+          id: squareImageId,
+          cloudflareId: cloudflareMockResponses[2].id,
         },
       },
     });
   });
+
+  test.each([
+    {
+      images: {
+        coverId: "thisIdDoesNotExist",
+        posterId: null,
+        squareId: null,
+      },
+    },
+    {
+      images: {
+        coverId: null,
+        posterId: "thisIdDoesNotExist",
+        squareId: null,
+      },
+    },
+    {
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: "thisIdDoesNotExist",
+      },
+    },
+  ])(
+    "refuses to create profile with invalid image reference ($images)",
+    async (overrides) => {
+      const createModel: BaseCreateProfileModel =
+        generateBaseCreateProfileModel(overrides);
+
+      await expect(() =>
+        BaseProfileDao.create(createModel)
+      ).rejects.toThrowError(InvalidProfileImageReferenceError);
+    }
+  );
 });

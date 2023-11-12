@@ -1,4 +1,4 @@
-import { UploadedImageReferenceDtoSchema } from "@/api/dto/storage/image";
+import { ImageDtoSchema } from "@/api/dto/storage/image";
 import z from "@/api/zod";
 
 export const BaseCreateProfileDtoSchema = z.object({
@@ -15,12 +15,9 @@ export const BaseCreateProfileDtoSchema = z.object({
       description:
         "URL(s) associated with this profile, such as Facebook or Spotify page, webshop, website, etc..",
     }),
-  images: z
-    .object({
-      cover: UploadedImageReferenceDtoSchema,
-      poster: UploadedImageReferenceDtoSchema,
-      square: UploadedImageReferenceDtoSchema,
-    })
-    .optional()
-    .default({}),
+  images: z.object({
+    coverId: ImageDtoSchema.shape.id.nullable(),
+    posterId: ImageDtoSchema.shape.id.nullable(),
+    squareId: ImageDtoSchema.shape.id.nullable(),
+  }),
 });

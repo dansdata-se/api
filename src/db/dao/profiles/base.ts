@@ -2,13 +2,71 @@ import { getDbClient } from "@/db";
 import { mapImageEntitiesToImagesModel } from "@/mapping/storage/image";
 import { BaseProfileModel } from "@/model/profiles/base";
 import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
+import { BaseCreateProfileModel } from "@/model/profiles/create";
 import { isNonNull } from "@/util/is_defined";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+
+export class InvalidProfileError extends Error {
+  constructor(
+    message: string,
+    public innerException?: PrismaClientKnownRequestError
+  ) {
+    super(message);
+  }
+}
+
+export class InvalidProfileImageReferenceError extends InvalidProfileError {
+  constructor(innerException: PrismaClientKnownRequestError) {
+    super("One or more image ids are invalid", innerException);
+  }
+}
 
 export type BaseProfileDaoType = typeof BaseProfileDao;
 /**
  * DAO for working with profiles based on their common fields
  */
 export const BaseProfileDao = {
+  /**
+   * Create a new organization profile
+   * @throws {InvalidProfileImageReferenceError} when one or more image ids do not correspond to existing images
+   */
+  async create(model: BaseCreateProfileModel): Promise<BaseProfileModel["id"]> {
+    const result = await getDbClient()
+      .profileEntity.create({
+        data: {
+          name: model.name,
+          description: model.description,
+          type: model.type,
+          coverImageId: model.images.coverId ?? undefined,
+          posterImageId: model.images.posterId ?? undefined,
+          squareImageId: model.images.squareId ?? undefined,
+          links: {
+            createMany: {
+              data: model.links,
+              skipDuplicates: true,
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      })
+      .catch((e) => {
+        if (e instanceof PrismaClientKnownRequestError) {
+          // https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
+          switch (e.code) {
+            // "Foreign key constraint failed on the field: {field_name}"
+            case "P2003":
+              if (e.message.toLocaleLowerCase().includes("image")) {
+                throw new InvalidProfileImageReferenceError(e);
+              }
+              break;
+          }
+        }
+        throw e;
+      });
+    return result.id;
+  },
   /**
    * Retrieve a full profile by its id
    */
