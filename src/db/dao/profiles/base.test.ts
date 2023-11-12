@@ -8,8 +8,8 @@ const dbMock = mockDeep<DbClient>();
 dbTesting.overridePrismaClient(dbMock);
 
 import { BaseProfileDao } from "@/db/dao/profiles/base";
-import { BaseProfileModel } from "@/model/profiles/profile";
-import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
+import { BaseProfileModel } from "@/model/profiles/base";
+import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { ProfileEntity, ProfileLinkEntity, ProfileType } from "@prisma/client";
 
 describe("BaseProfileDao unit tests", () => {

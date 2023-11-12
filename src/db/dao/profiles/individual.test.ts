@@ -28,11 +28,11 @@ jest.mock("@/db/dao/profiles/organization", () => ({
 import { OrganizationDao } from "@/db/dao/profiles/organization";
 
 import { IndividualDao } from "@/db/dao/profiles/individual";
+import { BaseProfileModel } from "@/model/profiles/base";
+import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { IndividualModel } from "@/model/profiles/individuals/profile";
 import { IndividualReferenceModel } from "@/model/profiles/individuals/profile_reference";
 import { OrganizationReferenceModel } from "@/model/profiles/organizations/profile_reference";
-import { BaseProfileModel } from "@/model/profiles/profile";
-import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
 
 describe("IndividualDao unit tests", () => {
   const BaseProfileDaoMock =

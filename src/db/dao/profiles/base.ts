@@ -1,7 +1,7 @@
 import { getDbClient } from "@/db";
 import { mapImageEntitiesToImagesModel } from "@/mapping/storage/image";
-import { BaseProfileModel } from "@/model/profiles/profile";
-import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
+import { BaseProfileModel } from "@/model/profiles/base";
+import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { isNonNull } from "@/util/is_defined";
 
 export type BaseProfileDaoType = typeof BaseProfileDao;

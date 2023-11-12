@@ -1,5 +1,5 @@
 import { generateImagesModel } from "@/__test__/model/profiles/images";
-import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
+import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { faker } from "@faker-js/faker";
 import cuid2 from "@paralleldrive/cuid2";
 import { ProfileType } from "@prisma/client";

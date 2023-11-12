@@ -1,5 +1,6 @@
+import { BaseProfileModel } from "@/model/profiles/base";
 import { CoordsModel } from "@/model/profiles/coords";
-import { BaseProfileModel, ProfileModel } from "@/model/profiles/profile";
+import { ProfileModel } from "@/model/profiles/profile";
 import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
 import { ProfileType } from "@prisma/client";
 

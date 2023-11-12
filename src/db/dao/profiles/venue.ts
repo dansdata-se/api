@@ -1,7 +1,7 @@
 import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
+import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { CoordsModel } from "@/model/profiles/coords";
-import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
 import { VenueModel } from "@/model/profiles/venues/profile";
 import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
 import { isNonNull } from "@/util/is_defined";

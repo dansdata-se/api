@@ -1,7 +1,5 @@
-import {
-  BaseProfileReferenceModel,
-  ProfileReferenceModel,
-} from "@/model/profiles/profile_reference";
+import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
+import { ProfileReferenceModel } from "@/model/profiles/profile_reference";
 import { OrganizationTag, ProfileType } from "@prisma/client";
 
 /**
