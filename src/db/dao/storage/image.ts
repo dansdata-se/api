@@ -3,8 +3,6 @@ import { getDbClient } from "@/db";
 import { mapImageEntityToImageModel } from "@/mapping/storage/image";
 import { ImageModel, ImageUploadUrlModel } from "@/model/storage/image";
 
-export class ImageNotUploadedToCloudflareError extends Error {}
-
 export const ImageDao = {
   /**
    * Retrieve an image by its id
@@ -43,7 +41,7 @@ export const ImageDao = {
   async createImageUploadUrl(userId: string): Promise<ImageUploadUrlModel> {
     const {
       success,
-      result: { id, uploadURL },
+      result: { id: cloudflareId, uploadURL },
     } = await cloudflareApi.images.createImageUploadUrl({
       metadata: {
         uploaderId: userId,
@@ -54,32 +52,21 @@ export const ImageDao = {
       throw new Error("Failed to allocate upload url from cloudflare");
     }
 
+    // TODO(FelixZY): this can lead to the database listing an image which does not actually exist in cloudflare.
+    // We should clean such "dangling" entities up regularly.
+    // https://github.com/dansdata-se/api/issues/2
+    const image = await getDbClient()
+      .imageEntity.create({
+        data: {
+          cloudflareId,
+        },
+      })
+      .then(mapImageEntityToImageModel);
+
     return {
-      id,
+      id: image.id,
       uploadURL,
     };
-  },
-  /**
-   * Writes the given image to the database.
-   *
-   * Note that the `image.cloudflareId` property must point to an image which
-   * has already been uploaded to cloudflare.
-   * @throws {@link ImageNotUploadedToCloudflareError}
-   */
-  async create(image: Omit<ImageModel, "id">): Promise<ImageModel> {
-    if (!(await cloudflareApi.images.isUploaded(image.cloudflareId))) {
-      throw new ImageNotUploadedToCloudflareError(
-        `Image with cloudflareId ${image.cloudflareId} has not been uploaded.`
-      );
-    }
-
-    const entity = await getDbClient().imageEntity.create({
-      data: {
-        cloudflareId: image.cloudflareId,
-      },
-    });
-
-    return mapImageEntityToImageModel(entity);
   },
   /**
    * Deletes the given image from local database and cloudflare.
