@@ -7,7 +7,7 @@ import { DeepMockProxy, mockDeep, mockReset } from "jest-mock-extended";
 const dbMock = mockDeep<DbClient>();
 dbTesting.overridePrismaClient(dbMock);
 
-import { ImageVariant, OrganizationEntity, ProfileType } from "@prisma/client";
+import { OrganizationEntity, ProfileType } from "@prisma/client";
 
 import type { BaseProfileDaoType } from "@/db/dao/profiles/base_profile";
 jest.mock("@/db/dao/profiles/base_profile", () => ({
@@ -69,17 +69,14 @@ describe("OrganizationDao unit tests", () => {
         cover: {
           id: "coverImageId",
           cloudflareId: "coverImageCloudflareId",
-          variant: ImageVariant.cover,
         },
         poster: {
           id: "posterImageId",
           cloudflareId: "posterImageCloudflareId",
-          variant: ImageVariant.poster,
         },
         square: {
           id: "squareImageId",
           cloudflareId: "squareImageCloudflareId",
-          variant: ImageVariant.square,
         },
       },
     };
@@ -106,17 +103,14 @@ describe("OrganizationDao unit tests", () => {
         cover: {
           id: "coverImageId",
           cloudflareId: "coverImageCloudflareId",
-          variant: ImageVariant.cover,
         },
         poster: {
           id: "posterImageId",
           cloudflareId: "posterImageCloudflareId",
-          variant: ImageVariant.poster,
         },
         square: {
           id: "squareImageId",
           cloudflareId: "squareImageCloudflareId",
-          variant: ImageVariant.square,
         },
       },
     };
@@ -129,17 +123,14 @@ describe("OrganizationDao unit tests", () => {
         cover: {
           id: "coverImageId",
           cloudflareId: "coverImageCloudflareId",
-          variant: ImageVariant.cover,
         },
         poster: {
           id: "posterImageId",
           cloudflareId: "posterImageCloudflareId",
-          variant: ImageVariant.poster,
         },
         square: {
           id: "squareImageId",
           cloudflareId: "squareImageCloudflareId",
-          variant: ImageVariant.square,
         },
       },
     };
@@ -210,17 +201,14 @@ describe("OrganizationDao unit tests", () => {
         cover: {
           id: "coverImageId",
           cloudflareId: "coverImageCloudflareId",
-          variant: ImageVariant.cover,
         },
         poster: {
           id: "posterImageId",
           cloudflareId: "posterImageCloudflareId",
-          variant: ImageVariant.poster,
         },
         square: {
           id: "squareImageId",
           cloudflareId: "squareImageCloudflareId",
-          variant: ImageVariant.square,
         },
       },
     });
@@ -242,17 +230,14 @@ describe("OrganizationDao unit tests", () => {
         cover: {
           id: "coverImageId",
           cloudflareId: "coverImageCloudflareId",
-          variant: ImageVariant.cover,
         },
         poster: {
           id: "posterImageId",
           cloudflareId: "posterImageCloudflareId",
-          variant: ImageVariant.poster,
         },
         square: {
           id: "squareImageId",
           cloudflareId: "squareImageCloudflareId",
-          variant: ImageVariant.square,
         },
       },
     };
@@ -272,17 +257,14 @@ describe("OrganizationDao unit tests", () => {
         cover: {
           id: "coverImageId",
           cloudflareId: "coverImageCloudflareId",
-          variant: ImageVariant.cover,
         },
         poster: {
           id: "posterImageId",
           cloudflareId: "posterImageCloudflareId",
-          variant: ImageVariant.poster,
         },
         square: {
           id: "squareImageId",
           cloudflareId: "squareImageCloudflareId",
-          variant: ImageVariant.square,
         },
       },
     };
@@ -308,17 +290,14 @@ describe("OrganizationDao unit tests", () => {
         cover: {
           id: "coverImageId",
           cloudflareId: "coverImageCloudflareId",
-          variant: ImageVariant.cover,
         },
         poster: {
           id: "posterImageId",
           cloudflareId: "posterImageCloudflareId",
-          variant: ImageVariant.poster,
         },
         square: {
           id: "squareImageId",
           cloudflareId: "squareImageCloudflareId",
-          variant: ImageVariant.square,
         },
       },
     });

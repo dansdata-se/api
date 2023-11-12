@@ -4,7 +4,6 @@ import { mapImageEntityToImageModel } from "@/mapping/storage/image";
 import { ImageModel, ImageUploadUrlModel } from "@/model/storage/image";
 
 export class ImageNotUploadedToCloudflareError extends Error {}
-export class ImageInUseError extends Error {}
 
 export const ImageDao = {
   /**
@@ -77,7 +76,6 @@ export const ImageDao = {
     const entity = await getDbClient().imageEntity.create({
       data: {
         cloudflareId: image.cloudflareId,
-        variant: image.variant,
       },
     });
 

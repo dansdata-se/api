@@ -10,13 +10,7 @@ dbTesting.overridePrismaClient(dbMock);
 import { BaseProfileDao } from "@/db/dao/profiles/base_profile";
 import { BaseProfileModel } from "@/model/profiles/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/profile_reference";
-import {
-  ImageEntity,
-  ImageVariant,
-  ProfileEntity,
-  ProfileLinkEntity,
-  ProfileType,
-} from "@prisma/client";
+import { ProfileEntity, ProfileLinkEntity, ProfileType } from "@prisma/client";
 
 describe("BaseProfileDao unit tests", () => {
   beforeEach(() => {
@@ -25,9 +19,18 @@ describe("BaseProfileDao unit tests", () => {
 
   test("getById", async () => {
     const expectedProfileEntity: ProfileEntity & {
-      images: {
-        image: ImageEntity;
-      }[];
+      coverImage: {
+        id: string;
+        cloudflareId: string;
+      } | null;
+      posterImage: {
+        id: string;
+        cloudflareId: string;
+      } | null;
+      squareImage: {
+        id: string;
+        cloudflareId: string;
+      } | null;
       links: ProfileLinkEntity[];
     } = {
       id: "profileId",
@@ -46,29 +49,21 @@ describe("BaseProfileDao unit tests", () => {
           url: "https://facebooke.com/profile",
         },
       ],
-      images: [
-        {
-          image: {
-            id: "coverImageId",
-            cloudflareId: "coverImageCloudflareId",
-            variant: ImageVariant.cover,
-          },
-        },
-        {
-          image: {
-            id: "posterImageId",
-            cloudflareId: "posterImageCloudflareId",
-            variant: ImageVariant.poster,
-          },
-        },
-        {
-          image: {
-            id: "squareImageId",
-            cloudflareId: "squareImageCloudflareId",
-            variant: ImageVariant.square,
-          },
-        },
-      ],
+      coverImageId: "coverImageId",
+      coverImage: {
+        id: "coverImageId",
+        cloudflareId: "coverImageCloudflareId",
+      },
+      posterImageId: "posterImageId",
+      posterImage: {
+        id: "posterImageId",
+        cloudflareId: "posterImageCloudflareId",
+      },
+      squareImageId: "squareImageId",
+      squareImage: {
+        id: "squareImageId",
+        cloudflareId: "squareImageCloudflareId",
+      },
       createdAt: new Date("2023-06-16T22:26:49"),
     };
     dbMock.profileEntity.findUnique.mockResolvedValueOnce(
@@ -87,17 +82,14 @@ describe("BaseProfileDao unit tests", () => {
         cover: {
           id: "coverImageId",
           cloudflareId: "coverImageCloudflareId",
-          variant: ImageVariant.cover,
         },
         poster: {
           id: "posterImageId",
           cloudflareId: "posterImageCloudflareId",
-          variant: ImageVariant.poster,
         },
         square: {
           id: "squareImageId",
           cloudflareId: "squareImageCloudflareId",
-          variant: ImageVariant.square,
         },
       },
     });
@@ -105,37 +97,38 @@ describe("BaseProfileDao unit tests", () => {
 
   test("getReferenceById", async () => {
     const expectedProfileEntity: ProfileEntity & {
-      images: {
-        image: ImageEntity;
-      }[];
+      coverImage: {
+        id: string;
+        cloudflareId: string;
+      } | null;
+      posterImage: {
+        id: string;
+        cloudflareId: string;
+      } | null;
+      squareImage: {
+        id: string;
+        cloudflareId: string;
+      } | null;
     } = {
       id: "profileId",
       type: ProfileType.organization,
       name: "Profile Name",
       description: "Profile description",
-      images: [
-        {
-          image: {
-            id: "coverImageId",
-            cloudflareId: "coverImageCloudflareId",
-            variant: ImageVariant.cover,
-          },
-        },
-        {
-          image: {
-            id: "posterImageId",
-            cloudflareId: "posterImageCloudflareId",
-            variant: ImageVariant.poster,
-          },
-        },
-        {
-          image: {
-            id: "squareImageId",
-            cloudflareId: "squareImageCloudflareId",
-            variant: ImageVariant.square,
-          },
-        },
-      ],
+      coverImageId: "coverImageId",
+      coverImage: {
+        id: "coverImageId",
+        cloudflareId: "coverImageCloudflareId",
+      },
+      posterImageId: "posterImageId",
+      posterImage: {
+        id: "posterImageId",
+        cloudflareId: "posterImageCloudflareId",
+      },
+      squareImageId: "squareImageId",
+      squareImage: {
+        id: "squareImageId",
+        cloudflareId: "squareImageCloudflareId",
+      },
       createdAt: new Date("2023-06-16T22:26:49"),
     };
     dbMock.profileEntity.findUnique.mockResolvedValueOnce(
@@ -152,17 +145,14 @@ describe("BaseProfileDao unit tests", () => {
         cover: {
           id: "coverImageId",
           cloudflareId: "coverImageCloudflareId",
-          variant: ImageVariant.cover,
         },
         poster: {
           id: "posterImageId",
           cloudflareId: "posterImageCloudflareId",
-          variant: ImageVariant.poster,
         },
         square: {
           id: "squareImageId",
           cloudflareId: "squareImageCloudflareId",
-          variant: ImageVariant.square,
         },
       },
     });

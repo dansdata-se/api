@@ -21,33 +21,28 @@ enum ProfileType {
 }
 
 model ProfileEntity {
-  id           String                       @id @default(cuid())
-  type         ProfileType
-  name         String
-  description  String
-  createdAt    DateTime                     @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
-  images       ProfileImageJunction[]
-  links        ProfileLinkEntity[]
-  organization OrganizationEntity?
-  individual   IndividualEntity?
-  venue        VenueEntity?
-  eventSlots   EventSlotParticipantEntity[]
+  id            String                       @id @default(cuid())
+  type          ProfileType
+  name          String
+  description   String
+  createdAt     DateTime                     @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
+  coverImageId  String?                      @map("cover_image_id")
+  coverImage    ImageEntity?                 @relation(name: "profileCoverImage", fields: [coverImageId], references: [id], onDelete: SetNull)
+  posterImageId String?                      @map("poster_image_id")
+  posterImage   ImageEntity?                 @relation(name: "profilePosterImage", fields: [posterImageId], references: [id], onDelete: SetNull)
+  squareImageId String?                      @map("square_image_id")
+  squareImage   ImageEntity?                 @relation(name: "profileSquareImage", fields: [squareImageId], references: [id], onDelete: SetNull)
+  links         ProfileLinkEntity[]
+  organization  OrganizationEntity?
+  individual    IndividualEntity?
+  venue         VenueEntity?
+  eventSlots    EventSlotParticipantEntity[]
 
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([coverImageId])
+  @@index([posterImageId])
+  @@index([squareImageId])
   @@map("profiles")
-  @@schema("profiles")
-}
-
-model ProfileImageJunction {
-  profile   ProfileEntity @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  profileId String        @map("profile_id")
-  image     ImageEntity   @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  imageId   String        @map("image_id")
-
-  @@id([profileId, imageId])
-  @@index([profileId])
-  @@index([imageId])
-  @@map("profile_images")
   @@schema("profiles")
 }
 
@@ -152,23 +147,21 @@ model OrganizationMemberEntity {
   @@schema("profiles")
 }
 
-enum ImageVariant {
-  cover
-  poster
-  square
-
-  @@map("image_variant")
-  @@schema("storage")
-}
-
 model ImageEntity {
-  id               String                    @id @default(cuid())
-  cloudflareId     String                    @unique @map("cloudflare_id")
-  variant          ImageVariant
-  profileImages    ProfileImageJunction[]
-  eventImages      EventImageJunction[]
-  eventSlotImages  EventSlotImageJunction[]
-  danceStyleImages DanceStyleImageJunction[]
+  id                    String             @id @default(cuid())
+  cloudflareId          String             @unique @map("cloudflare_id")
+  profileCoverImage     ProfileEntity[]    @relation("profileCoverImage")
+  profilePosterImage    ProfileEntity[]    @relation("profilePosterImage")
+  profileSquareImage    ProfileEntity[]    @relation("profileSquareImage")
+  eventCoverImage       EventEntity[]      @relation("eventCoverImage")
+  eventPosterImage      EventEntity[]      @relation("eventPosterImage")
+  eventSquareImage      EventEntity[]      @relation("eventSquareImage")
+  eventSlotCoverImage   EventSlotEntity[]  @relation("eventSlotCoverImage")
+  eventSlotPosterImage  EventSlotEntity[]  @relation("eventSlotPosterImage")
+  eventSlotSquareImage  EventSlotEntity[]  @relation("eventSlotSquareImage")
+  danceStyleCoverImage  DanceStyleEntity[] @relation("danceStyleCoverImage")
+  danceStylePosterImage DanceStyleEntity[] @relation("danceStylePosterImage")
+  danceStyleSquareImage DanceStyleEntity[] @relation("danceStyleSquareImage")
 
   @@index([cloudflareId])
   @@map("images")
@@ -176,32 +169,27 @@ model ImageEntity {
 }
 
 model EventEntity {
-  id                  String               @id @default(cuid())
+  id                  String             @id @default(cuid())
   name                String
   description         String
-  cancelled           Boolean              @default(false)
-  mustAttendFullEvent Boolean              @default(false) @map("must_attend_full_event")
-  createdAt           DateTime             @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
-  images              EventImageJunction[]
+  cancelled           Boolean            @default(false)
+  mustAttendFullEvent Boolean            @default(false) @map("must_attend_full_event")
+  createdAt           DateTime           @default(dbgenerated("NOW()")) @map("created_at") @db.Timestamptz
+  coverImageId        String?            @map("cover_image_id")
+  coverImage          ImageEntity?       @relation(name: "eventCoverImage", fields: [coverImageId], references: [id], onDelete: SetNull)
+  posterImageId       String?            @map("poster_image_id")
+  posterImage         ImageEntity?       @relation(name: "eventPosterImage", fields: [posterImageId], references: [id], onDelete: SetNull)
+  squareImageId       String?            @map("square_image_id")
+  squareImage         ImageEntity?       @relation(name: "eventSquareImage", fields: [squareImageId], references: [id], onDelete: SetNull)
   links               EventLinkEntity[]
   tags                EventTagJunction[]
   slots               EventSlotEntity[]
 
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([coverImageId])
+  @@index([posterImageId])
+  @@index([squareImageId])
   @@map("events")
-  @@schema("events")
-}
-
-model EventImageJunction {
-  event   EventEntity @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId String      @map("event_id")
-  image   ImageEntity @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  imageId String      @map("image_id")
-
-  @@id([eventId, imageId])
-  @@index([eventId])
-  @@index([imageId])
-  @@map("event_images")
   @@schema("events")
 }
 
@@ -251,7 +239,12 @@ model EventSlotEntity {
   liveMusic      Boolean                       @map("live_music")
   venueId        String                        @map("venue_id")
   venue          VenueEntity                   @relation(fields: [venueId], references: [profileId], onDelete: Restrict)
-  images         EventSlotImageJunction[]
+  coverImageId   String?                       @map("cover_image_id")
+  coverImage     ImageEntity?                  @relation(name: "eventSlotCoverImage", fields: [coverImageId], references: [id], onDelete: SetNull)
+  posterImageId  String?                       @map("poster_image_id")
+  posterImage    ImageEntity?                  @relation(name: "eventSlotPosterImage", fields: [posterImageId], references: [id], onDelete: SetNull)
+  squareImageId  String?                       @map("square_image_id")
+  squareImage    ImageEntity?                  @relation(name: "eventSlotSquareImage", fields: [squareImageId], references: [id], onDelete: SetNull)
   links          EventSlotLinkEntity[]
   paymentOptions PaymentOptionEntity[]
   profiles       EventSlotParticipantEntity[]
@@ -261,20 +254,10 @@ model EventSlotEntity {
   @@index([venueId])
   @@index([start])
   @@index([end])
+  @@index([coverImageId])
+  @@index([posterImageId])
+  @@index([squareImageId])
   @@map("event_slots")
-  @@schema("events")
-}
-
-model EventSlotImageJunction {
-  slot    EventSlotEntity @relation(fields: [slotId], references: [id], onDelete: Cascade)
-  slotId  String          @map("slot_id")
-  image   ImageEntity     @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  imageId String          @map("image_id")
-
-  @@id([slotId, imageId])
-  @@index([slotId])
-  @@index([imageId])
-  @@map("event_slot_images")
   @@schema("events")
 }
 
@@ -361,27 +344,22 @@ model EventSlotDanceStyleJunction {
 }
 
 model DanceStyleEntity {
-  id          String                        @id @default(cuid())
-  name        String
-  description String
-  images      DanceStyleImageJunction[]
-  eventSlots  EventSlotDanceStyleJunction[]
+  id            String                        @id @default(cuid())
+  name          String
+  description   String
+  coverImageId  String?                       @map("cover_image_id")
+  coverImage    ImageEntity?                  @relation(name: "danceStyleCoverImage", fields: [coverImageId], references: [id], onDelete: SetNull)
+  posterImageId String?                       @map("poster_image_id")
+  posterImage   ImageEntity?                  @relation(name: "danceStylePosterImage", fields: [posterImageId], references: [id], onDelete: SetNull)
+  squareImageId String?                       @map("square_image_id")
+  squareImage   ImageEntity?                  @relation(name: "danceStyleSquareImage", fields: [squareImageId], references: [id], onDelete: SetNull)
+  eventSlots    EventSlotDanceStyleJunction[]
 
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([coverImageId])
+  @@index([posterImageId])
+  @@index([squareImageId])
   @@map("dance_styles")
-  @@schema("events")
-}
-
-model DanceStyleImageJunction {
-  danceStyle   DanceStyleEntity @relation(fields: [danceStyleId], references: [id], onDelete: Cascade)
-  danceStyleId String           @map("dance_style_id")
-  image        ImageEntity      @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  imageId      String           @map("image_id")
-
-  @@id([danceStyleId, imageId])
-  @@index([danceStyleId])
-  @@index([imageId])
-  @@map("dance_style_images")
   @@schema("events")
 }
 

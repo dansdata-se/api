@@ -53,7 +53,6 @@ Append one of these postfixes to complete the url:
         example: imageToUrl({
           id: "123e4567-e89b-12d3-a456-426614174000",
           cloudflareId: placeholderImage.cover.cloudflareId,
-          variant: "cover",
         }),
       }),
     poster: z
@@ -75,7 +74,6 @@ Append one of these postfixes to complete the url:
         example: imageToUrl({
           id: "123e4567-e89b-12d3-a456-426614174000",
           cloudflareId: placeholderImage.poster.cloudflareId,
-          variant: "poster",
         }),
       }),
     square: z
@@ -97,7 +95,6 @@ Append one of these postfixes to complete the url:
         example: imageToUrl({
           id: "123e4567-e89b-12d3-a456-426614174000",
           cloudflareId: placeholderImage.square.cloudflareId,
-          variant: "square",
         }),
       }),
   })

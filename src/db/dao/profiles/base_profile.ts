@@ -19,11 +19,9 @@ export const BaseProfileDao = {
       },
       include: {
         links: true,
-        images: {
-          select: {
-            image: true,
-          },
-        },
+        coverImage: true,
+        posterImage: true,
+        squareImage: true,
       },
     });
     if (entity === null) return null;
@@ -34,9 +32,11 @@ export const BaseProfileDao = {
       name: entity.name,
       description: entity.description,
       links: entity.links.map((l) => ({ url: l.url })),
-      images: mapImageEntitiesToImagesModel(
-        entity.images.map((it) => it.image)
-      ),
+      images: mapImageEntitiesToImagesModel({
+        cover: entity.coverImage,
+        poster: entity.posterImage,
+        square: entity.squareImage,
+      }),
     };
   },
   /**
@@ -57,11 +57,9 @@ export const BaseProfileDao = {
         id,
       },
       include: {
-        images: {
-          select: {
-            image: true,
-          },
-        },
+        coverImage: true,
+        posterImage: true,
+        squareImage: true,
       },
     });
     if (entity === null) return null;
@@ -70,9 +68,11 @@ export const BaseProfileDao = {
       id: entity.id,
       type: entity.type,
       name: entity.name,
-      images: mapImageEntitiesToImagesModel(
-        entity.images.map((it) => it.image)
-      ),
+      images: mapImageEntitiesToImagesModel({
+        cover: entity.coverImage,
+        poster: entity.posterImage,
+        square: entity.squareImage,
+      }),
     };
   },
   /**

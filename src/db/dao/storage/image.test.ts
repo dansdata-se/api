@@ -14,7 +14,6 @@ import {
   ImageDao,
   ImageNotUploadedToCloudflareError,
 } from "@/db/dao/storage/image";
-import { ImageVariant } from "@prisma/client";
 
 describe("ImageDao unit tests", () => {
   beforeEach(() => {
@@ -50,7 +49,6 @@ describe("ImageDao unit tests", () => {
     await expect(
       ImageDao.create({
         cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
-        variant: ImageVariant.cover,
       })
     ).rejects.toThrowError(ImageNotUploadedToCloudflareError);
   });
@@ -91,7 +89,6 @@ describe("ImageDao unit tests", () => {
     await expect(
       ImageDao.create({
         cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
-        variant: ImageVariant.cover,
       })
     ).rejects.toThrowError(ImageNotUploadedToCloudflareError);
   });
@@ -131,18 +128,15 @@ describe("ImageDao unit tests", () => {
     dbMock.imageEntity.create.mockResolvedValueOnce({
       id: "abc123",
       cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
-      variant: ImageVariant.cover,
     });
 
     await expect(
       ImageDao.create({
         cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
-        variant: ImageVariant.cover,
       })
     ).resolves.toEqual({
       id: "abc123",
       cloudflareId: "610a686f-3fa7-46ca-e36d-3c00bd791b00",
-      variant: ImageVariant.cover,
     });
     expect(dbMock.imageEntity.create.mock.calls).toHaveLength(1);
     // Ensure cloudflare API was consulted once only
