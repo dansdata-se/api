@@ -2,6 +2,7 @@ import { defineEndpoints } from "@/api";
 import { placeholderAuth } from "@/api/auth";
 import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { BaseProfileDtoSchema } from "@/api/dto/profiles/base";
+import { ProfileDto, ProfileDtoSchema } from "@/api/dto/profiles/profile";
 import { StatusCodes } from "@/api/status_codes";
 import { withParsedObject } from "@/api/util";
 import z from "@/api/zod";
@@ -9,6 +10,9 @@ import { BaseProfileDao, ProfileInUseError } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { VenueDao } from "@/db/dao/profiles/venue";
+import { mapIndividualModelToDto } from "@/mapping/profiles/individuals/profile";
+import { mapOrganizationModelToDto } from "@/mapping/profiles/organizations/profile";
+import { ProfileModel } from "@/model/profiles/profile";
 import { ProfileType } from "@prisma/client";
 import { NextApiResponse } from "next";
 
@@ -19,6 +23,80 @@ const pathParametersSchema = z.object({
 });
 
 export default defineEndpoints({
+  GET: {
+    authenticated: false,
+    docs: {
+      method: "get",
+      path: "/api/v1/profiles/{id}/",
+      tags: ["Profiles"],
+      summary: "Retrieve a specific profile",
+      request: {
+        params: pathParametersSchema,
+      },
+      responses: {
+        [StatusCodes.success.ok]: {
+          description: "Ok",
+          content: {
+            "application/json": {
+              schema: ProfileDtoSchema,
+            },
+          },
+        },
+        [StatusCodes.clientError.notFound]: {
+          description: "Not found\n\nThe profile was not found.",
+        },
+      },
+    },
+    async handler(req, res) {
+      await withParsedObject(
+        pathParametersSchema,
+        req.query,
+        res,
+        ErrorCode.invalidParameters,
+        async ({ id }) => {
+          const type = await BaseProfileDao.getTypeById(id);
+
+          let model: ProfileModel | null;
+          let dto: ProfileDto | null;
+          switch (type) {
+            case ProfileType.individual:
+              model = await IndividualDao.getById(id);
+              dto = model ? mapIndividualModelToDto(model) : null;
+              break;
+            case ProfileType.organization:
+              model = await OrganizationDao.getById(id);
+              dto = model ? mapOrganizationModelToDto(model) : null;
+              break;
+            case ProfileType.venue:
+              (res as NextApiResponse<ErrorDto>)
+                .status(StatusCodes.serverError.notImplemented)
+                .json({
+                  code: ErrorCode.notImplemented,
+                  message: "Venue profiles are not yet supported",
+                });
+              return;
+            default:
+              throw new Error(
+                `Profile type '${type}' has not been implemented`
+              );
+          }
+
+          if (dto) {
+            (res as NextApiResponse<ProfileDto>)
+              .status(StatusCodes.success.ok)
+              .json(dto);
+          } else {
+            (res as NextApiResponse<ErrorDto>)
+              .status(StatusCodes.clientError.notFound)
+              .json({
+                code: ErrorCode.notFound,
+                message: "The profile was not found",
+              });
+          }
+        }
+      );
+    },
+  },
   DELETE: {
     authenticated: true,
     docs: {
