@@ -3,6 +3,7 @@ import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { BaseProfileModel } from "@/model/profiles/base";
 import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
+import { CreateOrganizationModel } from "@/model/profiles/organizations/create";
 import { OrganizationModel } from "@/model/profiles/organizations/profile";
 import { OrganizationReferenceModel } from "@/model/profiles/organizations/profile_reference";
 import { OrganizationTagDetailsModel } from "@/model/profiles/organizations/tag_details";
@@ -20,6 +21,30 @@ export type OrganizationDaoType = typeof OrganizationDao;
  * DAO for working with profiles representing organizations
  */
 export const OrganizationDao = {
+  /**
+   * Create a new organization profile
+   */
+  async create(model: CreateOrganizationModel): Promise<OrganizationModel> {
+    const profileId = await BaseProfileDao.create(model);
+    await getDbClient().organizationEntity.create({
+      data: {
+        profileId,
+        tags: model.tags,
+        members: {
+          createMany: {
+            data: model.members,
+          },
+        },
+      },
+    });
+    const profile = await this.getById(profileId);
+    if (profile === null) {
+      throw new Error(
+        `Profile id ${profileId} successfully created but could not be retrieved`
+      );
+    }
+    return profile;
+  },
   /**
    * Delete a profile by its id
    * @throws {import("@/db/dao/profiles/base").ProfileInUseError} if the profile cannot be deleted due to being linked to one or more events

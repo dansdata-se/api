@@ -3,6 +3,7 @@ import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { BaseProfileModel } from "@/model/profiles/base";
 import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
+import { CreateIndividualModel } from "@/model/profiles/individuals/create";
 import { IndividualModel } from "@/model/profiles/individuals/profile";
 import { IndividualReferenceModel } from "@/model/profiles/individuals/profile_reference";
 import { IndividualTagDetailsModel } from "@/model/profiles/individuals/tag_details";
@@ -20,6 +21,30 @@ export type IndividualDaoType = typeof IndividualDao;
  * DAO for working with profiles representing individuals
  */
 export const IndividualDao = {
+  /**
+   * Create a new organization profile
+   */
+  async create(model: CreateIndividualModel): Promise<IndividualModel> {
+    const profileId = await BaseProfileDao.create(model);
+    await getDbClient().individualEntity.create({
+      data: {
+        profileId,
+        tags: model.tags,
+        organizations: {
+          createMany: {
+            data: model.organizations,
+          },
+        },
+      },
+    });
+    const profile = await this.getById(profileId);
+    if (profile === null) {
+      throw new Error(
+        `Profile id ${profileId} successfully created but could not be retrieved`
+      );
+    }
+    return profile;
+  },
   /**
    * Delete a profile by its id
    * @throws {import("@/db/dao/profiles/base").ProfileInUseError} if the profile cannot be deleted due to being linked to one or more events

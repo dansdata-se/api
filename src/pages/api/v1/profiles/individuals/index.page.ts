@@ -2,9 +2,15 @@ import { defineEndpoints } from "@/api";
 import { placeholderAuth } from "@/api/auth";
 import { ErrorCode } from "@/api/dto/error";
 import { CreateIndividualDtoSchema } from "@/api/dto/profiles/individuals/create";
+import {
+  IndividualDto,
+  IndividualDtoSchema,
+} from "@/api/dto/profiles/individuals/profile";
 import { StatusCodes } from "@/api/status_codes";
 import { withParsedObject } from "@/api/util";
-import z from "@/api/zod";
+import { IndividualDao } from "@/db/dao/profiles/individual";
+import { mapCreateIndividualDtoToModel } from "@/mapping/profiles/individuals/create";
+import { mapIndividualModelToDto } from "@/mapping/profiles/individuals/profile";
 import { NextApiResponse } from "next";
 
 export default defineEndpoints({
@@ -31,7 +37,7 @@ export default defineEndpoints({
           description: "Created",
           content: {
             "application/json": {
-              schema: z.string().cuid(),
+              schema: IndividualDtoSchema,
             },
           },
         },
@@ -43,12 +49,12 @@ export default defineEndpoints({
         req.body,
         res,
         ErrorCode.invalidBody,
-        // TODO(FelixZY): Implement
-        () => {
-          (res as NextApiResponse<void>)
-            .status(StatusCodes.serverError.notImplemented)
-            .end();
-          return Promise.resolve();
+        async (dto) => {
+          const createProfileModel = mapCreateIndividualDtoToModel(dto);
+          const profileModel = await IndividualDao.create(createProfileModel);
+          return (res as NextApiResponse<IndividualDto>)
+            .status(StatusCodes.success.created)
+            .json(mapIndividualModelToDto(profileModel));
         }
       );
     },

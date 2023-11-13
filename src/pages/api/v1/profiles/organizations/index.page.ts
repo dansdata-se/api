@@ -2,9 +2,15 @@ import { defineEndpoints } from "@/api";
 import { placeholderAuth } from "@/api/auth";
 import { ErrorCode } from "@/api/dto/error";
 import { CreateOrganizationDtoSchema } from "@/api/dto/profiles/organizations/create";
+import {
+  OrganizationDto,
+  OrganizationDtoSchema,
+} from "@/api/dto/profiles/organizations/profile";
 import { StatusCodes } from "@/api/status_codes";
 import { withParsedObject } from "@/api/util";
-import z from "@/api/zod";
+import { OrganizationDao } from "@/db/dao/profiles/organization";
+import { mapCreateOrganizationDtoToModel } from "@/mapping/profiles/organizations/create";
+import { mapOrganizationModelToDto } from "@/mapping/profiles/organizations/profile";
 import { NextApiResponse } from "next";
 
 export default defineEndpoints({
@@ -31,7 +37,7 @@ export default defineEndpoints({
           description: "Created",
           content: {
             "application/json": {
-              schema: z.string().cuid(),
+              schema: OrganizationDtoSchema,
             },
           },
         },
@@ -43,12 +49,12 @@ export default defineEndpoints({
         req.body,
         res,
         ErrorCode.invalidBody,
-        // TODO(FelixZY): Implement
-        () => {
-          (res as NextApiResponse<void>)
-            .status(StatusCodes.serverError.notImplemented)
-            .end();
-          return Promise.resolve();
+        async (dto) => {
+          const createProfileModel = mapCreateOrganizationDtoToModel(dto);
+          const profileModel = await OrganizationDao.create(createProfileModel);
+          return (res as NextApiResponse<OrganizationDto>)
+            .status(StatusCodes.success.created)
+            .json(mapOrganizationModelToDto(profileModel));
         }
       );
     },

@@ -1,302 +1,243 @@
 /**
- * @group unit
+ * @group integration
  */
 
-import { DbClient, exportedForTesting as dbTesting } from "@/db";
-import { DeepMockProxy, mockDeep, mockReset } from "jest-mock-extended";
-const dbMock = mockDeep<DbClient>();
-dbTesting.overridePrismaClient(dbMock);
-
-import { IndividualEntity, ProfileType } from "@prisma/client";
-
-import type { BaseProfileDaoType } from "@/db/dao/profiles/base";
-jest.mock("@/db/dao/profiles/base", () => ({
-  __esModule: true,
-  BaseProfileDao: mockDeep<BaseProfileDaoType>(),
-}));
-// prevent prettier from moving this import around
-// prettier-ignore
+import { mockCreateImageUploadUrlFetchResponses } from "@/__test__/cloudflare";
+import { withTestDatabaseForEach } from "@/__test__/db";
+import { generateCreateIndividualModel } from "@/__test__/model/profiles/individuals/create";
+import { generateCreateOrganizationModel } from "@/__test__/model/profiles/organizations/create";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
-
-import type { OrganizationDaoType } from "@/db/dao/profiles/organization";
-jest.mock("@/db/dao/profiles/organization", () => ({
-  __esModule: true,
-  OrganizationDao: mockDeep<OrganizationDaoType>(),
-}));
-// prevent prettier from moving this import around
-// prettier-ignore
-import { OrganizationDao } from "@/db/dao/profiles/organization";
-
 import { IndividualDao } from "@/db/dao/profiles/individual";
-import { BaseProfileModel } from "@/model/profiles/base";
-import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
+import { OrganizationDao } from "@/db/dao/profiles/organization";
+import { ImageDao } from "@/db/dao/storage/image";
+import { CreateIndividualModel } from "@/model/profiles/individuals/create";
 import { IndividualModel } from "@/model/profiles/individuals/profile";
 import { IndividualReferenceModel } from "@/model/profiles/individuals/profile_reference";
-import { OrganizationReferenceModel } from "@/model/profiles/organizations/profile_reference";
+import { CreateOrganizationModel } from "@/model/profiles/organizations/create";
+import { faker } from "@faker-js/faker";
+import fetch from "jest-fetch-mock";
 
-describe("IndividualDao unit tests", () => {
-  const BaseProfileDaoMock =
-    BaseProfileDao as unknown as DeepMockProxy<BaseProfileDaoType>;
-  const OrganizationDaoMock =
-    OrganizationDao as unknown as DeepMockProxy<OrganizationDaoType>;
+describe("IndividualDao integration tests", () => {
+  withTestDatabaseForEach();
+
+  beforeAll(() => {
+    fetch.enableMocks();
+  });
 
   beforeEach(() => {
-    mockReset(dbMock);
-    mockReset(BaseProfileDaoMock);
-    mockReset(OrganizationDaoMock);
+    fetch.resetMocks();
   });
 
-  test("getById handles base profile not found", async () => {
-    BaseProfileDaoMock.getById.mockResolvedValueOnce(null);
-    await expect(IndividualDao.getById("profileId")).resolves.toBeNull();
+  test("getById returns null if base profile is not found", async () => {
+    await expect(
+      IndividualDao.getById("thisIdDoesNotExist")
+    ).resolves.toBeNull();
   });
 
-  test("getById ignores profile where type != individual", async () => {
-    const baseProfile: BaseProfileModel = {
-      id: "profileId",
-      type: ProfileType.organization,
-      name: "Profile name",
-      description: "Profile description",
-      links: [
+  test("getById returns null for profile where type != individual", async () => {
+    // Arrange
+    const createModel: CreateOrganizationModel =
+      generateCreateOrganizationModel({
+        images: {
+          coverId: null,
+          posterId: null,
+          squareId: null,
+        },
+        members: [],
+      });
+    const organization = await OrganizationDao.create(createModel);
+
+    // Act
+    const profile = await IndividualDao.getById(organization.id);
+
+    // Assert
+    await expect(BaseProfileDao.getTypeById(organization.id)).resolves.toEqual(
+      createModel.type
+    );
+    expect(profile).toBeNull();
+  });
+
+  test("create and retrieve full individual profile", async () => {
+    // Arrange
+    const cloudflareMockResponses = mockCreateImageUploadUrlFetchResponses();
+    const { id: coverImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: posterImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: squareImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const createOrg1Model: CreateOrganizationModel =
+      generateCreateOrganizationModel({
+        images: {
+          coverId: coverImageId,
+          posterId: null,
+          squareId: squareImageId,
+        },
+        members: [],
+      });
+    const org1Model = await OrganizationDao.create(createOrg1Model);
+    const createOrg2Model: CreateOrganizationModel =
+      generateCreateOrganizationModel({
+        images: {
+          coverId: null,
+          posterId: posterImageId,
+          squareId: squareImageId,
+        },
+        members: [],
+      });
+    const org2Model = await OrganizationDao.create(createOrg2Model);
+    const createModel: CreateIndividualModel = generateCreateIndividualModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      organizations: [
         {
-          url: "https://profile.example",
+          organizationId: org1Model.id,
+          title: faker.person.jobTitle(),
         },
         {
-          url: "https://facebooke.com/profile",
+          organizationId: org2Model.id,
+          title: faker.person.jobTitle(),
         },
       ],
-      images: {
-        cover: {
-          id: "coverImageId",
-          cloudflareId: "coverImageCloudflareId",
-        },
-        poster: {
-          id: "posterImageId",
-          cloudflareId: "posterImageCloudflareId",
-        },
-        square: {
-          id: "squareImageId",
-          cloudflareId: "squareImageCloudflareId",
-        },
-      },
-    };
-    BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
+    });
 
-    await expect(IndividualDao.getById("profileId")).resolves.toBeNull();
-  });
+    // Act
+    const createdProfile = await IndividualDao.create(createModel);
+    const retrievedProfile = await IndividualDao.getById(createdProfile.id);
 
-  test("getById resolves profile", async () => {
-    const baseProfile: BaseProfileModel = {
-      id: "profileId",
-      type: ProfileType.individual,
-      name: "Profile name",
-      description: "Profile description",
-      links: [
-        {
-          url: "https://profile.example",
-        },
-        {
-          url: "https://facebooke.com/profile",
-        },
-      ],
-      images: {
-        cover: {
-          id: "coverImageId",
-          cloudflareId: "coverImageCloudflareId",
-        },
-        poster: {
-          id: "posterImageId",
-          cloudflareId: "posterImageCloudflareId",
-        },
-        square: {
-          id: "squareImageId",
-          cloudflareId: "squareImageCloudflareId",
-        },
-      },
-    };
-    const org1ReferenceModel: OrganizationReferenceModel = {
-      id: "org1Id",
-      type: ProfileType.organization,
-      name: "Organization 1 name",
-      tags: ["performer"],
-      images: {
-        cover: {
-          id: "coverImageId",
-          cloudflareId: "coverImageCloudflareId",
-        },
-        poster: {
-          id: "posterImageId",
-          cloudflareId: "posterImageCloudflareId",
-        },
-        square: {
-          id: "squareImageId",
-          cloudflareId: "squareImageCloudflareId",
-        },
-      },
-    };
-    const org2ReferenceModel: OrganizationReferenceModel = {
-      id: "org2Id",
-      type: ProfileType.organization,
-      name: "Organization 2 name",
-      tags: ["educator"],
+    // Assert
+    expect(cloudflareMockResponses).toHaveLength(3);
+    expect(createdProfile).toEqual(retrievedProfile);
+    expect(createdProfile).toEqual<IndividualModel>({
+      id: createdProfile.id,
+      type: createModel.type,
+      name: createModel.name,
+      description: createModel.description,
+      links: createModel.links,
       images: {
         cover: null,
         poster: null,
         square: null,
       },
-    };
-    const individualEntity: IndividualEntity & {
-      organizations: {
-        title: string;
-        organizationId: string;
-      }[];
-    } = {
-      profileId: baseProfile.id,
-      tags: ["musician", "instructor"],
+      tags: createModel.tags,
       organizations: [
         {
-          organizationId: org1ReferenceModel.id,
-          title: "org1Title",
+          profileReference: {
+            type: org1Model.type,
+            id: org1Model.id,
+            name: org1Model.name,
+            tags: org1Model.tags,
+            images: {
+              cover: {
+                id: coverImageId,
+                cloudflareId: cloudflareMockResponses[0].id,
+              },
+              poster: null,
+              square: {
+                id: squareImageId,
+                cloudflareId: cloudflareMockResponses[2].id,
+              },
+            },
+          },
+          title: createModel.organizations[0].title,
         },
         {
-          organizationId: org2ReferenceModel.id,
-          title: "org2Title",
+          profileReference: {
+            type: org2Model.type,
+            id: org2Model.id,
+            name: org2Model.name,
+            tags: org2Model.tags,
+            images: {
+              cover: null,
+              poster: {
+                id: posterImageId,
+                cloudflareId: cloudflareMockResponses[1].id,
+              },
+              square: {
+                id: squareImageId,
+                cloudflareId: cloudflareMockResponses[2].id,
+              },
+            },
+          },
+          title: createModel.organizations[1].title,
         },
       ],
-    };
-    BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
-    dbMock.individualEntity.findUnique.mockResolvedValueOnce(individualEntity);
-    OrganizationDaoMock.getReferenceById.mockImplementation(async (id) => {
-      if (id === org1ReferenceModel.id) {
-        return Promise.resolve(org1ReferenceModel);
-      } else if (id === org2ReferenceModel.id) {
-        return Promise.resolve(org2ReferenceModel);
-      } else {
-        throw new Error(`Unsupported id: ${id}`);
-      }
-    });
-
-    await expect(
-      IndividualDao.getById("profileId")
-    ).resolves.toEqual<IndividualModel>({
-      id: baseProfile.id,
-      type: ProfileType.individual,
-      name: baseProfile.name,
-      description: baseProfile.description,
-      links: baseProfile.links.map((l) => ({ url: l.url })),
-      organizations: [
-        {
-          title: "org1Title",
-          profileReference: org1ReferenceModel,
-        },
-
-        {
-          title: "org2Title",
-          profileReference: org2ReferenceModel,
-        },
-      ],
-      tags: individualEntity.tags,
-      images: {
-        cover: {
-          id: "coverImageId",
-          cloudflareId: "coverImageCloudflareId",
-        },
-        poster: {
-          id: "posterImageId",
-          cloudflareId: "posterImageCloudflareId",
-        },
-        square: {
-          id: "squareImageId",
-          cloudflareId: "squareImageCloudflareId",
-        },
-      },
     });
   });
 
-  test("getReferenceById handles base profile not found", async () => {
-    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(null);
+  test("getReferenceById returns null if the base profile is not found", async () => {
     await expect(
-      IndividualDao.getReferenceById("profileId")
+      IndividualDao.getReferenceById("thisIdDoesNotExist")
     ).resolves.toBeNull();
   });
 
-  test("getReferenceById ignores profile where type != individual", async () => {
-    const baseProfile: BaseProfileReferenceModel = {
-      id: "profileId",
-      type: ProfileType.organization,
-      name: "Profile name",
-      images: {
-        cover: {
-          id: "coverImageId",
-          cloudflareId: "coverImageCloudflareId",
+  test("getReferenceById returns null for profile where type != individual", async () => {
+    // Arrange
+    const createModel: CreateOrganizationModel =
+      generateCreateOrganizationModel({
+        images: {
+          coverId: null,
+          posterId: null,
+          squareId: null,
         },
-        poster: {
-          id: "posterImageId",
-          cloudflareId: "posterImageCloudflareId",
-        },
-        square: {
-          id: "squareImageId",
-          cloudflareId: "squareImageCloudflareId",
-        },
-      },
-    };
-    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(baseProfile);
+        members: [],
+      });
+    const organization = await OrganizationDao.create(createModel);
 
-    await expect(
-      IndividualDao.getReferenceById("profileId")
-    ).resolves.toBeNull();
-  });
+    // Act
+    const profile = await IndividualDao.getReferenceById(organization.id);
 
-  test("getReferenceById resolves profile reference", async () => {
-    const baseProfileReference: BaseProfileReferenceModel = {
-      id: "profileId",
-      type: ProfileType.individual,
-      name: "Profile name",
-      images: {
-        cover: {
-          id: "coverImageId",
-          cloudflareId: "coverImageCloudflareId",
-        },
-        poster: {
-          id: "posterImageId",
-          cloudflareId: "posterImageCloudflareId",
-        },
-        square: {
-          id: "squareImageId",
-          cloudflareId: "squareImageCloudflareId",
-        },
-      },
-    };
-    const individualEntity: IndividualEntity = {
-      profileId: baseProfileReference.id,
-      tags: ["musician", "instructor"],
-    };
-    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(
-      baseProfileReference
+    // Assert
+    await expect(BaseProfileDao.getTypeById(organization.id)).resolves.toEqual(
+      createModel.type
     );
-    dbMock.individualEntity.findUnique.mockResolvedValueOnce(individualEntity);
+    expect(profile).toBeNull();
+  });
 
-    await expect(
-      IndividualDao.getReferenceById("profileId")
-    ).resolves.toEqual<IndividualReferenceModel>({
-      id: baseProfileReference.id,
-      type: ProfileType.individual,
-      name: baseProfileReference.name,
-      tags: individualEntity.tags,
+  test("create and retrieve individual profile reference", async () => {
+    // Arrange
+    const createModel: CreateIndividualModel = generateCreateIndividualModel({
       images: {
-        cover: {
-          id: "coverImageId",
-          cloudflareId: "coverImageCloudflareId",
-        },
-        poster: {
-          id: "posterImageId",
-          cloudflareId: "posterImageCloudflareId",
-        },
-        square: {
-          id: "squareImageId",
-          cloudflareId: "squareImageCloudflareId",
-        },
+        coverId: null,
+        posterId: null,
+        squareId: null,
       },
+      organizations: [],
+    });
+
+    // Act
+    const createdProfile = await IndividualDao.create(createModel);
+    const retrievedProfile = await IndividualDao.getReferenceById(
+      createdProfile.id
+    );
+
+    expect(createdProfile).toEqual<IndividualModel>({
+      id: createdProfile.id,
+      type: createModel.type,
+      name: createModel.name,
+      description: createModel.description,
+      links: createModel.links,
+      images: {
+        cover: null,
+        poster: null,
+        square: null,
+      },
+      organizations: [],
+      tags: createModel.tags,
+    });
+    expect(retrievedProfile).toEqual<IndividualReferenceModel>({
+      id: createdProfile.id,
+      type: createModel.type,
+      name: createModel.name,
+      images: {
+        cover: null,
+        poster: null,
+        square: null,
+      },
+      tags: createModel.tags,
     });
   });
 });

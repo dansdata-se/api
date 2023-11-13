@@ -1,6 +1,7 @@
 import { ImageDtoSchema } from "@/api/dto/storage/image";
 import z from "@/api/zod";
 
+export type BaseCreateProfileDto = z.infer<typeof BaseCreateProfileDtoSchema>;
 export const BaseCreateProfileDtoSchema = z.object({
   name: z.string().max(100).trim().min(1),
   description: z.string().max(2000).trim().optional().default(""),
