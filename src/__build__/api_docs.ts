@@ -178,6 +178,11 @@ Dansdata is an open source project aiming to provide Swedish social dancing info
           "Descriptions and images for individuals - e.g. musicians, instructors and photographers.",
       },
       {
+        name: "Venues",
+        description:
+          "Descriptions and images for venues - locations where events take place.",
+      },
+      {
         name: "Storage",
         description: "Images and other file-related endpoints.",
       },

@@ -3,49 +3,116 @@
  */
 
 import { withTestDatabaseForEach } from "@/__test__/db";
-import { generateVenueModel } from "@/__test__/model/profiles/venues/profile";
+import { generateCreateVenueModel } from "@/__test__/model/profiles/venues/create";
 import { getDbClient } from "@/db";
+import { VenueDao } from "@/db/dao/profiles/venue";
+import { CreateVenueModel } from "@/model/profiles/venues/create";
+import { VenueModel } from "@/model/profiles/venues/profile";
 import { faker } from "@faker-js/faker";
-import cuid2 from "@paralleldrive/cuid2";
-import { Prisma } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+
+describe("Venue hierarchy constraints", () => {
+  withTestDatabaseForEach();
+
+  async function expectConstraintViolation(
+    profileId: VenueModel["id"],
+    promise: Promise<unknown>
+  ) {
+    await expect(promise).rejects.toThrowError(PrismaClientKnownRequestError);
+    await expect(promise).rejects.toMatchObject<
+      Partial<PrismaClientKnownRequestError>
+    >({
+      code: "P2010",
+    });
+    expect(
+      (
+        (await promise.catch(
+          (it) => it as PrismaClientKnownRequestError
+        )) as PrismaClientKnownRequestError
+      ).message
+    ).toContain(
+      `Profile with id ${profileId} is already present in the venue hierarchy`
+    );
+  }
+
+  test.each([
+    // Connect to self
+    { count: 1, childIndex: 0, parentIndex: 0 },
+
+    // Connect head to tail
+    { count: 2, childIndex: 0, parentIndex: 1 },
+    { count: 3, childIndex: 0, parentIndex: 2 },
+    { count: 100, childIndex: 0, parentIndex: 99 },
+
+    // Connect random points inside hierarchy
+    { count: 3, childIndex: 1, parentIndex: 2 },
+    { count: 3, childIndex: 0, parentIndex: 1 },
+    { count: 100, childIndex: 30, parentIndex: 70 },
+
+    // Connect to self while inside hierarchy with other nodes
+    { count: 100, childIndex: 50, parentIndex: 50 },
+  ])(
+    "constraint prevents loop from forming when connecting node $childIndex to node $parentIndex via UPDATE (total nodes: $count)",
+    async ({
+      count,
+      childIndex,
+      parentIndex,
+    }: {
+      count: number;
+      childIndex: number;
+      parentIndex: number;
+    }) => {
+      // Arrange
+      const models: VenueModel[] = [];
+      for (let i = 0; i < count; i++) {
+        const createModel = generateCreateVenueModel({
+          images: {
+            coverId: null,
+            posterId: null,
+            squareId: null,
+          },
+          parentId: models.at(-1)?.id ?? null,
+        });
+        models.push(await VenueDao.create(createModel));
+      }
+
+      // Act
+      const promise = getDbClient().$executeRaw`
+        UPDATE "profiles"."venues"
+        SET parent_id = ${models[parentIndex].id}
+        WHERE profile_id = ${models[childIndex].id}
+      `;
+
+      // Assert
+      await expectConstraintViolation(models[childIndex].id, promise);
+    }
+  );
+});
 
 describe("Venues manual SQL", () => {
   withTestDatabaseForEach();
 
   test("retrieve coordinates for a venue", async () => {
+    // Arrange
     const db = getDbClient();
 
-    const linkoping = {
-      id: cuid2.createId(),
+    const createLinkoping = generateCreateVenueModel({
       name: "Linköping",
       coords: {
         lat: 58.41616195587502,
         lng: 15.625933242341707,
       },
-    };
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      parentId: null,
+    });
 
-    await db.$executeRaw`
-      INSERT INTO profiles.profiles(id, type, name, description)
-      VALUES (${Prisma.join([
-        linkoping.id,
-        Prisma.sql`'venue'::profiles.profile_type`,
-        linkoping.name,
-        "",
-      ])});
-    `;
+    const linkoping = await VenueDao.create(createLinkoping);
 
-    await db.$executeRaw`
-      INSERT INTO profiles.venues(profile_id, parent_id, coords)
-      VALUES (${Prisma.join([
-        linkoping.id,
-        null,
-        Prisma.sql`ST_MakePoint(${linkoping.coords.lng}, ${linkoping.coords.lat})`,
-      ])});
-    `;
-
-    await expect(db.profileEntity.count()).resolves.toEqual(1);
-    await expect(db.venueEntity.count()).resolves.toEqual(1);
-
+    // Act
     const coords = await db.venueEntity
       .findUnique({
         select: {
@@ -57,72 +124,75 @@ describe("Venues manual SQL", () => {
       })
       .then((it) => it?.coords);
 
+    // Assert
     expect(coords?.lat).toBeCloseTo(linkoping.coords.lat, 6);
     expect(coords?.lng).toBeCloseTo(linkoping.coords.lng, 6);
   });
 
   test("retrieve the ancestors for a venue", async () => {
+    // Arrange
     const db = getDbClient();
 
-    const root = generateVenueModel();
-    const sub1 = generateVenueModel({
-      ancestors: [root],
+    const rootCreate = generateCreateVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      parentId: null,
     });
-    const sub2 = generateVenueModel({
-      ancestors: [root, sub1],
+    const sub1Create = generateCreateVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
     });
-    const leaf = generateVenueModel({
-      ancestors: [root, sub1, sub2],
+    const sub2Create = generateCreateVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+    });
+    const leafCreate = generateCreateVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
     });
 
-    const tree = [root, sub1, sub2, leaf];
+    const createTree = [rootCreate, sub1Create, sub2Create, leafCreate];
+    const tree: VenueModel[] = [];
 
-    await db.$executeRaw`
-      INSERT INTO profiles.profiles(id, type, name, description)
-      VALUES ${Prisma.join(
-        tree.map(
-          (branch) =>
-            Prisma.sql`(${Prisma.join([
-              branch.id,
-              Prisma.sql`'venue'::profiles.profile_type`,
-              branch.name,
-              "",
-            ])})`
-        )
-      )};
-    `;
+    for (let i = 0; i < createTree.length; i++) {
+      if (i > 0) {
+        createTree[i].parentId = tree[i - 1].id;
+      }
+      tree.push(await VenueDao.create(createTree[i]));
+    }
 
-    await db.$executeRaw`
-      INSERT INTO profiles.venues(profile_id, parent_id, coords)
-      VALUES ${Prisma.join(
-        tree.map(
-          (branch) =>
-            Prisma.sql`(${Prisma.join([
-              branch.id,
-              branch.ancestors.at(-1)?.id ?? null,
-              Prisma.sql`ST_MakePoint(${branch.coords.lng}, ${branch.coords.lat})`,
-            ])})`
-        )
-      )};
-    `;
-
-    await expect(db.profileEntity.count()).resolves.toEqual(tree.length);
-    await expect(db.venueEntity.count()).resolves.toEqual(tree.length);
-
+    // Act
     const actual = await db.venueEntity
       .findMany({
         select: {
           profileId: true,
-          ancestorIds: true,
+          ancestors: {
+            select: {
+              parentId: true,
+            },
+            orderBy: {
+              distance: "desc",
+            },
+          },
         },
       })
       .then((result) =>
-        Promise.all(
-          result.map(async (it) => ({
-            id: it.profileId,
-            ancestorIds: await it.ancestorIds,
-          }))
-        )
+        result.map((it) => ({
+          id: it.profileId,
+          ancestorIds: it.ancestors.map((it) => it.parentId),
+        }))
       )
       .then((result) =>
         // Restore original list order
@@ -133,6 +203,7 @@ describe("Venues manual SQL", () => {
         )
       );
 
+    // Assert
     expect(actual).toEqual(
       tree.map((it) => ({
         id: it.id,
@@ -141,172 +212,166 @@ describe("Venues manual SQL", () => {
     );
   });
 
-  test("find venues near a set of coordinates", async () => {
-    const db = getDbClient();
-
-    const origin = {
-      lat: 58.41616195587502,
-      lng: 15.625933242341707,
-    };
-    // Sorted by distance
-    const cities: {
-      id: string;
-      name: string;
-      distanceToOrigin: number;
-      coords: {
-        lat: number;
-        lng: number;
+  test.each([0, 10, 1_000, 15_000, 50_000, 100_000, Infinity])(
+    "find venues within %s m of the origin",
+    async (maxDistance) => {
+      // Arrange
+      const db = getDbClient();
+      const origin = {
+        lat: 58.41616195587502,
+        lng: 15.625933242341707,
       };
-    }[] = [
-      {
-        id: cuid2.createId(),
-        name: "Linköping",
-        distanceToOrigin: 618,
-        coords: {
-          lat: 58.4118163514212,
-          lng: 15.619312724913462,
-        },
-      },
-      {
-        id: cuid2.createId(),
-        name: "Ljungsbro",
-        distanceToOrigin: 12_556,
-        coords: {
-          lat: 58.50563179706094,
-          lng: 15.494221140260903,
-        },
-      },
-      {
-        id: cuid2.createId(),
-        name: "Borensberg",
-        distanceToOrigin: 24_246,
-        coords: {
-          lat: 58.55553782832458,
-          lng: 15.305118297934813,
-        },
-      },
-      {
-        id: cuid2.createId(),
-        name: "Norrköping",
-        distanceToOrigin: 35_272,
-        coords: {
-          lat: 58.5776551226464,
-          lng: 16.148422882592975,
-        },
-      },
-      {
-        id: cuid2.createId(),
-        name: "Södra Vi",
-        distanceToOrigin: 75_577,
-        coords: {
-          lat: 57.7422407209703,
-          lng: 15.792965255566815,
-        },
-      },
-      {
-        id: cuid2.createId(),
-        name: "Örebro",
-        distanceToOrigin: 96_033,
-        coords: {
-          lat: 59.24684390768979,
-          lng: 15.16925002256166,
-        },
-      },
-      {
-        id: cuid2.createId(),
-        name: "Jönköping",
-        distanceToOrigin: 112_111,
-        coords: {
-          lat: 57.78247783258018,
-          lng: 14.141843832283167,
-        },
-      },
-      {
-        id: cuid2.createId(),
-        name: "Göteborg",
-        distanceToOrigin: 228_116,
-        coords: {
-          lat: 57.69483118235473,
-          lng: 11.995524355564582,
-        },
-      },
-    ];
-
-    await db.$executeRaw`
-      INSERT INTO profiles.profiles(id, type, name, description)
-      VALUES ${Prisma.join(
-        // Randomize insertion order
-        faker.helpers.shuffle(
-          cities.map(
-            (it) =>
-              Prisma.sql`(${Prisma.join([
-                it.id,
-                Prisma.sql`'venue'::profiles.profile_type`,
-                it.name,
-                "",
-              ])})`
-          )
-        )
-      )};
-    `;
-
-    await db.$executeRaw`
-      INSERT INTO profiles.venues(profile_id, parent_id, coords)
-      VALUES ${Prisma.join(
-        cities.map(
-          (it) =>
-            Prisma.sql`(${Prisma.join([
-              it.id,
-              null,
-              Prisma.sql`ST_MakePoint(${it.coords.lng}, ${it.coords.lat})`,
-            ])})`
-        )
-      )};
-    `;
-
-    await expect(db.profileEntity.count()).resolves.toEqual(cities.length);
-    await expect(db.venueEntity.count()).resolves.toEqual(cities.length);
-
-    await expect(db.venueEntity.findIdsNear(origin, 10)).resolves.toHaveLength(
-      0
-    );
-
-    for (const distance of [1_000, 15_000, 50_000, 100_000]) {
-      const actual = await db.venueEntity
-        .findIdsNear(origin, distance)
-        .then((ids) =>
-          db.venueEntity.findMany({
-            select: {
-              profileId: true,
-              coords: true,
+      // Sorted by distance
+      const cities: {
+        distanceToOrigin: number;
+        createModel: CreateVenueModel;
+      }[] = [
+        {
+          distanceToOrigin: 618,
+          createModel: generateCreateVenueModel({
+            name: "Linköping",
+            coords: {
+              lat: 58.4118163514212,
+              lng: 15.619312724913462,
             },
-            where: {
-              profileId: {
-                in: ids.map((it) => it.profileId),
-              },
+            images: {
+              coverId: null,
+              posterId: null,
+              squareId: null,
             },
-          })
-        )
-        .then((venues) =>
-          Promise.all(
-            venues.map(async (it) => ({
-              id: it.profileId,
-              coords: await it.coords,
-            }))
-          )
-        );
-      const expected = cities.filter((it) => it.distanceToOrigin < distance);
-      expect(actual).toHaveLength(expected.length);
-      expect(actual.map((it) => it.id)).toEqual(expected.map((it) => it.id));
-      actual.forEach(({ coords }, i) => {
-        expect(coords.lat).toBeCloseTo(expected[i].coords.lat, 6);
-        expect(coords.lng).toBeCloseTo(expected[i].coords.lng, 6);
-      });
+            parentId: null,
+          }),
+        },
+        {
+          distanceToOrigin: 12_556,
+          createModel: generateCreateVenueModel({
+            name: "Ljungsbro",
+            coords: {
+              lat: 58.50563179706094,
+              lng: 15.494221140260903,
+            },
+            images: {
+              coverId: null,
+              posterId: null,
+              squareId: null,
+            },
+            parentId: null,
+          }),
+        },
+        {
+          distanceToOrigin: 24_246,
+          createModel: generateCreateVenueModel({
+            name: "Borensberg",
+            coords: {
+              lat: 58.55553782832458,
+              lng: 15.305118297934813,
+            },
+            images: {
+              coverId: null,
+              posterId: null,
+              squareId: null,
+            },
+            parentId: null,
+          }),
+        },
+        {
+          distanceToOrigin: 35_272,
+          createModel: generateCreateVenueModel({
+            name: "Norrköping",
+            coords: {
+              lat: 58.5776551226464,
+              lng: 16.148422882592975,
+            },
+            images: {
+              coverId: null,
+              posterId: null,
+              squareId: null,
+            },
+            parentId: null,
+          }),
+        },
+        {
+          distanceToOrigin: 75_577,
+          createModel: generateCreateVenueModel({
+            name: "Södra Vi",
+            coords: {
+              lat: 57.7422407209703,
+              lng: 15.792965255566815,
+            },
+            images: {
+              coverId: null,
+              posterId: null,
+              squareId: null,
+            },
+            parentId: null,
+          }),
+        },
+        {
+          distanceToOrigin: 96_033,
+          createModel: generateCreateVenueModel({
+            name: "Örebro",
+            coords: {
+              lat: 59.24684390768979,
+              lng: 15.16925002256166,
+            },
+            images: {
+              coverId: null,
+              posterId: null,
+              squareId: null,
+            },
+            parentId: null,
+          }),
+        },
+        {
+          distanceToOrigin: 112_111,
+          createModel: generateCreateVenueModel({
+            name: "Jönköping",
+            coords: {
+              lat: 57.78247783258018,
+              lng: 14.141843832283167,
+            },
+            images: {
+              coverId: null,
+              posterId: null,
+              squareId: null,
+            },
+            parentId: null,
+          }),
+        },
+        {
+          distanceToOrigin: 228_116,
+          createModel: generateCreateVenueModel({
+            name: "Göteborg",
+            coords: {
+              lat: 57.69483118235473,
+              lng: 11.995524355564582,
+            },
+            images: {
+              coverId: null,
+              posterId: null,
+              squareId: null,
+            },
+            parentId: null,
+          }),
+        },
+      ];
+      // Randomize insertion order
+      for (const city of faker.helpers.shuffle(cities)) {
+        await VenueDao.create(city.createModel);
+      }
+
+      // Act
+      const result = await db.venueEntity.findIdsNear(origin, maxDistance);
+
+      // Assert
+      const expected = cities.filter((it) => it.distanceToOrigin < maxDistance);
+      if (maxDistance === Infinity) {
+        expect(expected.length).toBeGreaterThan(0);
+      }
+      expect(result).toHaveLength(expected.length);
+      expect(result.map((it) => it.distance)).toEqual(
+        expected.map((it) => it.distanceToOrigin)
+      );
     }
-
-    const actual = await db.venueEntity.findIdsNear(origin, Infinity);
-    expect(actual.map((it) => it.distance)).toEqual(
-      cities.map((it) => it.distanceToOrigin)
-    );
-  });
+  );
 });

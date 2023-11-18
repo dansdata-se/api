@@ -12,6 +12,7 @@ import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { VenueDao } from "@/db/dao/profiles/venue";
 import { mapIndividualModelToDto } from "@/mapping/profiles/individuals/profile";
 import { mapOrganizationModelToDto } from "@/mapping/profiles/organizations/profile";
+import { mapVenueModelToDto } from "@/mapping/profiles/venues/profile";
 import { ProfileModel } from "@/model/profiles/profile";
 import { ProfileType } from "@prisma/client";
 import { NextApiResponse } from "next";
@@ -68,13 +69,9 @@ export default defineEndpoints({
               dto = model ? mapOrganizationModelToDto(model) : null;
               break;
             case ProfileType.venue:
-              (res as NextApiResponse<ErrorDto>)
-                .status(StatusCodes.serverError.notImplemented)
-                .json({
-                  code: ErrorCode.notImplemented,
-                  message: "Venue profiles are not yet supported",
-                });
-              return;
+              model = await VenueDao.getById(id);
+              dto = model ? mapVenueModelToDto(model) : null;
+              break;
             default:
               throw new Error(
                 `Profile type '${type}' has not been implemented`

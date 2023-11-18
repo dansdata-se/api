@@ -3,6 +3,7 @@ import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { BaseProfileModel } from "@/model/profiles/base";
 import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
 import { CoordsModel } from "@/model/profiles/coords";
+import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { VenueModel } from "@/model/profiles/venues/profile";
 import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
 import { isNonNull } from "@/util/is_defined";
@@ -19,6 +20,20 @@ export type VenueDaoType = typeof VenueDao;
  * DAO for working with profiles representing venues
  */
 export const VenueDao = {
+  /**
+   * Create a new organization profile
+   */
+  async create(model: CreateVenueModel): Promise<VenueModel> {
+    const profileId = await BaseProfileDao.create(model);
+    await getDbClient().venueEntity.create(profileId, model);
+    const profile = await this.getById(profileId);
+    if (profile === null) {
+      throw new Error(
+        `Profile id ${profileId} successfully created but could not be retrieved`
+      );
+    }
+    return profile;
+  },
   /**
    * Delete a profile by its id
    * @throws {import("@/db/dao/profiles/base").ProfileInUseError} if the profile cannot be deleted due to being linked to one or more events
@@ -44,13 +59,22 @@ export const VenueDao = {
             profileId: true,
           },
         },
+        ancestors: {
+          select: {
+            parentId: true,
+          },
+          orderBy: {
+            distance: "desc",
+          },
+        },
       },
     });
     if (!entity) return null;
 
-    const ancestorIds = await entity.ancestorIds;
     const ancestors = (
-      await Promise.all(ancestorIds.map((id) => VenueDao.getReferenceById(id)))
+      await Promise.all(
+        entity.ancestors.map((it) => VenueDao.getReferenceById(it.parentId))
+      )
     )
       // If we get null, the profile was likely deleted since our initial query.
       // Silently ignore this.

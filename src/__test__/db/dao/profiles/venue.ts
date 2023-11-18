@@ -6,13 +6,13 @@ export function generateVenueEntity(
   overrides: Partial<
     VenueEntity & {
       coords: Promise<{ lat: number; lng: number }>;
-      ancestorIds: Promise<VenueEntity["profileId"][]>;
+      ancestorIds: { parentId: VenueEntity["profileId"] }[];
       childVenues: { profileId: VenueEntity["profileId"] }[];
     }
   > = {}
 ): VenueEntity & {
   coords: Promise<{ lat: number; lng: number }>;
-  ancestorIds: Promise<VenueEntity["profileId"][]>;
+  ancestorIds: { parentId: VenueEntity["profileId"] }[];
   childVenues: { profileId: VenueEntity["profileId"] }[];
 } {
   return {
@@ -23,7 +23,7 @@ export function generateVenueEntity(
     }),
     permanentlyClosed: false,
     parentId: null,
-    ancestorIds: Promise.resolve([]),
+    ancestorIds: [],
     childVenues: [],
     ...overrides,
   };

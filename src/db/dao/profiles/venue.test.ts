@@ -1,259 +1,295 @@
 /**
- * @group unit
+ * @group integration
  */
 
-import { DbClient, exportedForTesting as dbTesting } from "@/db";
-import { DeepMockProxy, mockDeep, mockReset } from "jest-mock-extended";
-const dbMock = mockDeep<DbClient>();
-dbTesting.overridePrismaClient(dbMock);
-
-import { ProfileType } from "@prisma/client";
-
-import type { BaseProfileDaoType } from "@/db/dao/profiles/base";
-jest.mock("@/db/dao/profiles/base", () => ({
-  __esModule: true,
-  BaseProfileDao: mockDeep<BaseProfileDaoType>(),
-}));
-// prevent prettier from moving this import around
-// prettier-ignore
+import { mockCreateImageUploadUrlFetchResponses } from "@/__test__/cloudflare";
+import { withTestDatabaseForEach } from "@/__test__/db";
+import { generateCreateIndividualModel } from "@/__test__/model/profiles/individuals/create";
+import { generateCreateVenueModel } from "@/__test__/model/profiles/venues/create";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
-
-import { generateVenueEntity } from "@/__test__/db/dao/profiles/venue";
-import { generateBaseProfileModel } from "@/__test__/model/profiles/profile";
-import { generateBaseProfileReferenceModel } from "@/__test__/model/profiles/profile_reference";
-import { generateVenueReferenceModel } from "@/__test__/model/profiles/venues/profile_reference";
+import { IndividualDao } from "@/db/dao/profiles/individual";
 import { VenueDao } from "@/db/dao/profiles/venue";
+import { ImageDao } from "@/db/dao/storage/image";
+import { mapVenueModelToReferenceModel } from "@/mapping/profiles/venues/profile";
+import { CreateIndividualModel } from "@/model/profiles/individuals/create";
+import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { VenueModel } from "@/model/profiles/venues/profile";
 import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
-import { faker } from "@faker-js/faker";
-import cuid2 from "@paralleldrive/cuid2";
+import fetch from "jest-fetch-mock";
 
-describe("VenueDao unit tests", () => {
-  const BaseProfileDaoMock =
-    BaseProfileDao as unknown as DeepMockProxy<BaseProfileDaoType>;
+describe("VenueDao integration tests", () => {
+  withTestDatabaseForEach();
+
+  beforeAll(() => {
+    fetch.enableMocks();
+  });
 
   beforeEach(() => {
-    mockReset(dbMock);
-    mockReset(BaseProfileDaoMock);
+    fetch.resetMocks();
   });
 
-  test("getById handles base profile not found", async () => {
-    BaseProfileDaoMock.getById.mockResolvedValueOnce(null);
-    await expect(VenueDao.getById(cuid2.createId())).resolves.toBeNull();
+  test("getById returns null if base profile is not found", async () => {
+    await expect(VenueDao.getById("thisIdDoesNotExist")).resolves.toBeNull();
   });
 
-  test("getById ignores profile where type != venue", async () => {
-    const baseProfile = generateBaseProfileModel({
-      type: ProfileType.individual,
+  test("getById returns null for profile where type != venue", async () => {
+    // Arrange
+    const createModel: CreateIndividualModel = generateCreateIndividualModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      organizations: [],
     });
-    BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
+    const individual = await IndividualDao.create(createModel);
 
-    await expect(VenueDao.getById(baseProfile.id)).resolves.toBeNull();
+    // Act
+    const profile = await VenueDao.getById(individual.id);
+
+    // Assert
+    await expect(BaseProfileDao.getTypeById(individual.id)).resolves.toEqual(
+      createModel.type
+    );
+    expect(profile).toBeNull();
   });
 
-  test("getById resolves profile", async () => {
-    const baseProfile = generateBaseProfileModel({ type: ProfileType.venue });
-    const parentVenue1Entity = generateVenueEntity();
-    const parentVenue1ReferenceModel = generateVenueReferenceModel({
-      id: parentVenue1Entity.profileId,
-      coords: await parentVenue1Entity.coords,
+  test("create and retrieve full venue profile", async () => {
+    // Arrange
+    const cloudflareMockResponses = mockCreateImageUploadUrlFetchResponses();
+    const { id: coverImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: posterImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const { id: squareImageId } =
+      await ImageDao.createImageUploadUrl("testUser");
+    const venueLevel1CreateModel: CreateVenueModel = generateCreateVenueModel({
+      images: {
+        coverId: coverImageId,
+        posterId: posterImageId,
+        squareId: squareImageId,
+      },
+      parentId: null,
     });
-    const parentVenue2Entity = generateVenueEntity({
-      parentId: parentVenue1Entity.profileId,
-      ancestorIds: Promise.resolve([parentVenue1Entity.profileId]),
+    const venueLevel2CreateModel1: CreateVenueModel = generateCreateVenueModel({
+      images: {
+        coverId: coverImageId,
+        posterId: null,
+        squareId: squareImageId,
+      },
     });
-    const parentVenue2ReferenceModel = generateVenueReferenceModel({
-      id: parentVenue2Entity.profileId,
-      coords: await parentVenue2Entity.coords,
+    const venueLevel2CreateModel2: CreateVenueModel = generateCreateVenueModel({
+      images: {
+        coverId: null,
+        posterId: posterImageId,
+        squareId: null,
+      },
     });
-    const childEntities = Array.from({
-      length: faker.number.int({ min: 0, max: 3 }),
-    }).map(() =>
-      generateVenueEntity({
-        parentId: baseProfile.id,
-        ancestorIds: Promise.resolve([
-          parentVenue1Entity.profileId,
-          parentVenue2Entity.profileId,
-          baseProfile.id,
-        ]),
-      })
-    );
-    const childReferenceModels = await Promise.all(
-      childEntities.map(async (it) =>
-        generateVenueReferenceModel({
-          id: it.profileId,
-          coords: await it.coords,
-        })
-      )
-    );
-    const venueEntity = generateVenueEntity({
-      profileId: baseProfile.id,
-      parentId: parentVenue2ReferenceModel.id,
-      ancestorIds: Promise.resolve([
-        parentVenue1Entity.profileId,
-        parentVenue2Entity.profileId,
-      ]),
-      childVenues: childReferenceModels.map((it) => ({
-        profileId: it.id,
-      })),
-    });
-    BaseProfileDaoMock.getById.mockResolvedValueOnce(baseProfile);
-    dbMock.venueEntity.findUnique.mockImplementation(
-      // @ts-expect-error <- typescript is concerned that we do
-      // not support _all_ possible variations of findUnique.
-      (args) => {
-        const needle = args.where.profileId;
-        const child = childEntities.find((it) => it.profileId === needle);
-        if (child) return Promise.resolve(child);
-
-        switch (needle) {
-          case parentVenue1Entity.profileId:
-            return Promise.resolve(parentVenue1Entity);
-          case parentVenue2Entity.profileId:
-            return Promise.resolve(parentVenue2Entity);
-          case venueEntity.profileId:
-            return Promise.resolve(venueEntity);
-          default:
-            return Promise.resolve(null);
-        }
-      }
-    );
-    BaseProfileDaoMock.getReferenceById.mockImplementation(async (id) => {
-      const child = childReferenceModels.find((it) => it.id === id);
-      if (child) return Promise.resolve(child);
-      switch (id) {
-        case parentVenue1ReferenceModel.id:
-          return Promise.resolve(parentVenue1ReferenceModel);
-        case parentVenue2ReferenceModel.id:
-          return Promise.resolve(parentVenue2ReferenceModel);
-        default:
-          return Promise.resolve(null);
-      }
+    const venueLevel3CreateModel: CreateVenueModel = generateCreateVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
     });
 
-    await expect(VenueDao.getById(baseProfile.id)).resolves.toEqual<VenueModel>(
-      {
-        id: baseProfile.id,
-        type: ProfileType.venue,
-        permanentlyClosed: false,
-        name: baseProfile.name,
-        description: baseProfile.description,
-        links: baseProfile.links,
-        coords: await venueEntity.coords,
-        ancestors: [parentVenue1ReferenceModel, parentVenue2ReferenceModel],
-        children: childReferenceModels,
-        images: baseProfile.images,
-      }
+    // Act
+    const venueLevel1Created = await VenueDao.create(venueLevel1CreateModel);
+
+    venueLevel2CreateModel1.parentId = venueLevel1Created.id;
+    const venueLevel2Created1 = await VenueDao.create(venueLevel2CreateModel1);
+
+    venueLevel2CreateModel2.parentId = venueLevel1Created.id;
+    const venueLevel2Created2 = await VenueDao.create(venueLevel2CreateModel2);
+
+    venueLevel3CreateModel.parentId = venueLevel2Created1.id;
+    const venueLevel3Created = await VenueDao.create(venueLevel3CreateModel);
+
+    const venueLevel1Retrieved = await VenueDao.getById(venueLevel1Created.id);
+    const venueLevel2Retrieved1 = await VenueDao.getById(
+      venueLevel2Created1.id
     );
+    const venueLevel2Retrieved2 = await VenueDao.getById(
+      venueLevel2Created2.id
+    );
+    const venueLevel3Retrieved = await VenueDao.getById(venueLevel3Created.id);
+
+    // Assert
+    expect(cloudflareMockResponses).toHaveLength(3);
+    expect(venueLevel1Retrieved).not.toBeNull();
+    expect(venueLevel2Retrieved1).not.toBeNull();
+    expect(venueLevel2Retrieved2).not.toBeNull();
+    expect(venueLevel3Retrieved).not.toBeNull();
+    if (
+      venueLevel1Retrieved === null ||
+      venueLevel2Retrieved1 === null ||
+      venueLevel2Retrieved2 === null ||
+      venueLevel3Retrieved === null
+    ) {
+      return;
+    }
+
+    expect(venueLevel1Retrieved).toEqual<VenueModel>({
+      id: venueLevel1Created.id,
+      type: venueLevel1CreateModel.type,
+      name: venueLevel1CreateModel.name,
+      description: venueLevel1CreateModel.description,
+      coords: venueLevel1CreateModel.coords,
+      links: venueLevel1CreateModel.links,
+      permanentlyClosed: venueLevel1CreateModel.permanentlyClosed,
+      ancestors: [],
+      children: [
+        mapVenueModelToReferenceModel(venueLevel2Retrieved1),
+        mapVenueModelToReferenceModel(venueLevel2Retrieved2),
+      ],
+      images: {
+        cover: {
+          id: coverImageId,
+          cloudflareId: cloudflareMockResponses[0].id,
+        },
+        poster: {
+          id: posterImageId,
+          cloudflareId: cloudflareMockResponses[1].id,
+        },
+        square: {
+          id: squareImageId,
+          cloudflareId: cloudflareMockResponses[2].id,
+        },
+      },
+    });
+    expect(venueLevel2Retrieved1).toEqual<VenueModel>({
+      id: venueLevel2Created1.id,
+      type: venueLevel2CreateModel1.type,
+      name: venueLevel2CreateModel1.name,
+      description: venueLevel2CreateModel1.description,
+      coords: venueLevel2CreateModel1.coords,
+      links: venueLevel2CreateModel1.links,
+      permanentlyClosed: venueLevel2CreateModel1.permanentlyClosed,
+      ancestors: [mapVenueModelToReferenceModel(venueLevel1Retrieved)],
+      children: [mapVenueModelToReferenceModel(venueLevel3Retrieved)],
+      images: {
+        cover: {
+          id: coverImageId,
+          cloudflareId: cloudflareMockResponses[0].id,
+        },
+        poster: null,
+        square: {
+          id: squareImageId,
+          cloudflareId: cloudflareMockResponses[2].id,
+        },
+      },
+    });
+    expect(venueLevel2Retrieved2).toEqual<VenueModel>({
+      id: venueLevel2Created2.id,
+      type: venueLevel2CreateModel2.type,
+      name: venueLevel2CreateModel2.name,
+      description: venueLevel2CreateModel2.description,
+      coords: venueLevel2CreateModel2.coords,
+      links: venueLevel2CreateModel2.links,
+      permanentlyClosed: venueLevel2CreateModel2.permanentlyClosed,
+      ancestors: [mapVenueModelToReferenceModel(venueLevel1Retrieved)],
+      children: [],
+      images: {
+        cover: null,
+        poster: {
+          id: posterImageId,
+          cloudflareId: cloudflareMockResponses[1].id,
+        },
+        square: null,
+      },
+    });
+    expect(venueLevel3Retrieved).toEqual<VenueModel>({
+      id: venueLevel3Created.id,
+      type: venueLevel3CreateModel.type,
+      name: venueLevel3CreateModel.name,
+      description: venueLevel3CreateModel.description,
+      coords: venueLevel3CreateModel.coords,
+      links: venueLevel3CreateModel.links,
+      permanentlyClosed: venueLevel3CreateModel.permanentlyClosed,
+      ancestors: [
+        mapVenueModelToReferenceModel(venueLevel1Retrieved),
+        mapVenueModelToReferenceModel(venueLevel2Retrieved1),
+      ],
+      children: [],
+      images: {
+        cover: null,
+        poster: null,
+        square: null,
+      },
+    });
   });
 
-  test("getReferenceById handles base profile not found", async () => {
-    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(null);
+  test("getReferenceById returns null if the base profile is not found", async () => {
     await expect(
-      VenueDao.getReferenceById(cuid2.createId())
+      VenueDao.getReferenceById("thisIdDoesNotExist")
     ).resolves.toBeNull();
   });
 
-  test("getReferenceById ignores profile where type != venue", async () => {
-    const baseProfileReference = generateBaseProfileReferenceModel({
-      type: ProfileType.individual,
+  test("getReferenceById returns null for profile where type != venue", async () => {
+    // Arrange
+    const createModel: CreateIndividualModel = generateCreateIndividualModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      organizations: [],
     });
-    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(
-      baseProfileReference
-    );
+    const individual = await IndividualDao.create(createModel);
 
-    await expect(
-      VenueDao.getReferenceById(baseProfileReference.id)
-    ).resolves.toBeNull();
+    // Act
+    const profile = await VenueDao.getReferenceById(individual.id);
+
+    // Assert
+    await expect(BaseProfileDao.getTypeById(individual.id)).resolves.toEqual(
+      createModel.type
+    );
+    expect(profile).toBeNull();
   });
 
   test("getReferenceById resolves profile reference", async () => {
-    const baseProfileReference = generateBaseProfileReferenceModel({
-      type: ProfileType.venue,
-    });
-    const parentVenue1Entity = generateVenueEntity();
-    const parentVenue1ReferenceModel = generateVenueReferenceModel({
-      id: parentVenue1Entity.profileId,
-      coords: await parentVenue1Entity.coords,
-    });
-    const parentVenue2Entity = generateVenueEntity({
-      parentId: parentVenue1Entity.profileId,
-      ancestorIds: Promise.resolve([parentVenue1Entity.profileId]),
-    });
-    const parentVenue2ReferenceModel = generateVenueReferenceModel({
-      id: parentVenue2Entity.profileId,
-      coords: await parentVenue2Entity.coords,
-    });
-    const childEntities = Array.from({
-      length: faker.number.int({ min: 0, max: 3 }),
-    }).map(() =>
-      generateVenueEntity({
-        parentId: baseProfileReference.id,
-        ancestorIds: Promise.resolve([baseProfileReference.id]),
-      })
-    );
-    const childReferenceModels = await Promise.all(
-      childEntities.map(async (it) =>
-        generateVenueReferenceModel({
-          id: it.profileId,
-          coords: await it.coords,
-        })
-      )
-    );
-    const venueEntity = generateVenueEntity({
-      profileId: baseProfileReference.id,
-      parentId: parentVenue2ReferenceModel.id,
-      ancestorIds: Promise.resolve([parentVenue2ReferenceModel.id]),
-      childVenues: childReferenceModels.map((it) => ({
-        profileId: it.id,
-      })),
-    });
-    BaseProfileDaoMock.getReferenceById.mockResolvedValueOnce(
-      baseProfileReference
-    );
-    dbMock.venueEntity.findUnique.mockResolvedValueOnce(venueEntity);
-    dbMock.venueEntity.findUnique.mockImplementation(
-      // @ts-expect-error <- typescript is concerned that we do
-      // not support _all_ possible variations of findUnique.
-      (args) => {
-        const needle = args.where.profileId;
-        const child = childEntities.find((it) => it.profileId === needle);
-        if (child) return Promise.resolve(child);
-
-        switch (needle) {
-          case parentVenue1Entity.profileId:
-            return Promise.resolve(parentVenue1Entity);
-          case parentVenue2Entity.profileId:
-            return Promise.resolve(parentVenue2Entity);
-          case venueEntity.profileId:
-            return Promise.resolve(venueEntity);
-          default:
-            return Promise.resolve(null);
-        }
-      }
-    );
-    BaseProfileDaoMock.getReferenceById.mockImplementation(async (id) => {
-      const child = childReferenceModels.find((it) => it.id === id);
-      if (child) return Promise.resolve(child);
-      switch (id) {
-        case parentVenue1ReferenceModel.id:
-          return Promise.resolve(parentVenue1ReferenceModel);
-        case parentVenue2ReferenceModel.id:
-          return Promise.resolve(parentVenue2ReferenceModel);
-        default:
-          return Promise.resolve(null);
-      }
+    // Arrange
+    const createModel: CreateVenueModel = generateCreateVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      parentId: null,
     });
 
-    await expect(
-      VenueDao.getReferenceById(baseProfileReference.id)
-    ).resolves.toEqual<VenueReferenceModel>({
-      id: baseProfileReference.id,
-      type: ProfileType.venue,
-      permanentlyClosed: false,
-      name: baseProfileReference.name,
-      coords: await venueEntity.coords,
-      images: baseProfileReference.images,
+    // Act
+    const createdProfile = await VenueDao.create(createModel);
+    const retrievedProfile = await VenueDao.getReferenceById(createdProfile.id);
+
+    // Assert
+    expect(createdProfile).toEqual<VenueModel>({
+      id: createdProfile.id,
+      type: createModel.type,
+      name: createModel.name,
+      description: createModel.description,
+      coords: createModel.coords,
+      links: createModel.links,
+      permanentlyClosed: createModel.permanentlyClosed,
+      ancestors: [],
+      children: [],
+      images: {
+        cover: null,
+        poster: null,
+        square: null,
+      },
+    });
+    expect(retrievedProfile).toEqual<VenueReferenceModel>({
+      id: createdProfile.id,
+      type: createModel.type,
+      name: createModel.name,
+      coords: createModel.coords,
+      permanentlyClosed: createModel.permanentlyClosed,
+      images: {
+        cover: null,
+        poster: null,
+        square: null,
+      },
     });
   });
 });

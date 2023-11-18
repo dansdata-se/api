@@ -1,8 +1,33 @@
 import { CoordsModel } from "@/model/profiles/coords";
-import { VenueEntity, type PrismaClient } from "@prisma/client";
+import { CreateVenueModel } from "@/model/profiles/venues/create";
+import { ProfileEntity, VenueEntity, type PrismaClient } from "@prisma/client";
 
 export function buildVenueEntityModelExtends(prisma: PrismaClient) {
   return {
+    /**
+     * Create a new Venue profile
+     */
+    async create(
+      profileId: ProfileEntity["id"],
+      model: CreateVenueModel
+    ): Promise<void> {
+      await prisma.$executeRaw`
+        INSERT INTO
+          profiles.venues(
+            profile_id,
+            parent_id,
+            coords,
+            permanently_closed
+          )
+        VALUES
+          (
+            ${profileId},
+            ${model.parentId},
+            ST_MakePoint(${model.coords.lng}, ${model.coords.lat}),
+            ${model.permanentlyClosed}
+          );
+      `;
+    },
     /**
      * Finds the ids of venues near a certain geographical location.
      *
@@ -63,37 +88,6 @@ export function buildVenueEntityModelExtends(prisma: PrismaClient) {
 
 export function buildVenueEntityResultExtends(prisma: PrismaClient) {
   return {
-    /**
-     * List this venue's ancestors' ids, starting from the root ancestor and
-     * ending with the venue's direct direct parent.
-     */
-    ancestorIds: {
-      needs: { profileId: true },
-      async compute(data: { profileId: VenueEntity["profileId"] }) {
-        const ancestors = await prisma.$queryRaw<{ profileId: string }[]>`
-          WITH RECURSIVE parent_query AS (
-            SELECT
-              parent_id,
-              0 AS depth
-            FROM profiles.venues
-            WHERE profile_id = ${data.profileId}
-              AND parent_id IS NOT NULL
-            UNION ALL
-              SELECT
-                profiles.venues.parent_id as parent_id,
-                parent_query.depth + 1 AS depth
-              FROM parent_query, profiles.venues
-              WHERE profiles.venues.profile_id = parent_query.parent_id
-                AND profiles.venues.parent_id IS NOT NULL
-          )
-          SELECT parent_id as "profileId", depth
-          FROM parent_query
-          ORDER BY depth DESC;
-        `;
-
-        return ancestors.map((p) => p.profileId);
-      },
-    },
     coords: {
       needs: { profileId: true },
       async compute(data: {

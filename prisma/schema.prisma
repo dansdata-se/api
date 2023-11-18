@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["multiSchema", "postgresqlExtensions"]
+  previewFeatures = ["multiSchema", "postgresqlExtensions", "views"]
 }
 
 datasource db {
@@ -123,15 +123,32 @@ model IndividualTagDetailEntity {
 model VenueEntity {
   profile           ProfileEntity                         @relation(fields: [profileId], references: [id], onDelete: Cascade)
   profileId         String                                @id @map("profile_id")
-  parent            VenueEntity?                          @relation("ChildVenues", fields: [parentId], references: [profileId], onDelete: SetNull)
+  parent            VenueEntity?                          @relation("directChildren", fields: [parentId], references: [profileId], onDelete: SetNull)
   parentId          String?                               @map("parent_id")
-  childVenues       VenueEntity[]                         @relation("ChildVenues")
+  childVenues       VenueEntity[]                         @relation("directChildren")
   coords            Unsupported("geography(Point, 4326)")
   permanentlyClosed Boolean                               @default(false) @map("permanently_closed")
   eventSlots        EventSlotEntity[]
+  ancestors         VenueParentEntity[]                   @relation("ancestors")
+  descendents       VenueParentEntity[]                   @relation("descendents")
 
   @@index([coords], type: Gist)
   @@map("venues")
+  @@schema("profiles")
+}
+
+view VenueParentEntity {
+  child    VenueEntity @relation("ancestors", fields: [childId], references: [profileId])
+  childId  String      @map("child_id")
+  parent   VenueEntity @relation("descendents", fields: [parentId], references: [profileId])
+  parentId String      @map("parent_id")
+  distance Int
+
+  @@unique([childId, parentId])
+  @@index([childId])
+  @@index([parentId])
+  @@index([distance])
+  @@map("venue_parents")
   @@schema("profiles")
 }
 
