@@ -1,6 +1,6 @@
 import { generateImagesModel } from "@/__test__/model/profiles/images";
 import { generateLinkModel } from "@/__test__/model/profiles/link";
-import { BaseProfileModel } from "@/model/profiles/base";
+import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { faker } from "@faker-js/faker";
 import cuid2 from "@paralleldrive/cuid2";
 import { ProfileType } from "@prisma/client";

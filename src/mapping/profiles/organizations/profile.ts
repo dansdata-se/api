@@ -1,6 +1,6 @@
 import { OrganizationDto } from "@/api/dto/profiles/organizations/profile";
-import { mapBaseProfileModelToDto } from "@/mapping/profiles/base";
-import { mapIndividualReferenceModelToDto } from "@/mapping/profiles/individuals/profile_reference";
+import { mapBaseProfileModelToDto } from "@/mapping/profiles/base/profile";
+import { mapIndividualReferenceModelToDto } from "@/mapping/profiles/individuals/reference";
 import { OrganizationModel } from "@/model/profiles/organizations/profile";
 
 export function mapOrganizationModelToDto(

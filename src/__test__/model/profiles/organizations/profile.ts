@@ -1,5 +1,5 @@
-import { generateIndividualReferenceModel } from "@/__test__/model/profiles/individuals/profile_reference";
-import { generateBaseProfileModel } from "@/__test__/model/profiles/profile";
+import { generateBaseProfileModel } from "@/__test__/model/profiles/base/profile";
+import { generateIndividualReferenceModel } from "@/__test__/model/profiles/individuals/reference";
 import { OrganizationModel } from "@/model/profiles/organizations/profile";
 import { faker } from "@faker-js/faker";
 import { OrganizationTag, ProfileType } from "@prisma/client";

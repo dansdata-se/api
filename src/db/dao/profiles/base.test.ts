@@ -4,15 +4,15 @@
 
 import { mockCreateImageUploadUrlFetchResponses } from "@/__test__/cloudflare";
 import { withTestDatabaseForEach } from "@/__test__/db";
-import { generateBaseCreateProfileModel } from "@/__test__/model/profiles/create";
+import { generateBaseCreateProfileModel } from "@/__test__/model/profiles/base/create";
 import {
   BaseProfileDao,
   InvalidProfileImageReferenceError,
 } from "@/db/dao/profiles/base";
 import { ImageDao } from "@/db/dao/storage/image";
-import { BaseProfileModel } from "@/model/profiles/base";
-import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
-import { BaseCreateProfileModel } from "@/model/profiles/create";
+import { BaseCreateProfileModel } from "@/model/profiles/base/create";
+import { BaseProfileModel } from "@/model/profiles/base/profile";
+import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import fetch from "jest-fetch-mock";
 
 describe("BaseProfileDao integration tests", () => {

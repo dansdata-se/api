@@ -1,6 +1,6 @@
-import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
+import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { CoordsModel } from "@/model/profiles/coords";
-import { ProfileReferenceModel } from "@/model/profiles/profile_reference";
+import { ProfileReferenceModel } from "@/model/profiles/reference";
 import { ProfileType } from "@prisma/client";
 
 /**

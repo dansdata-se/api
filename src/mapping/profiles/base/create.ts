@@ -1,5 +1,5 @@
-import { BaseCreateProfileDto } from "@/api/dto/profiles/create";
-import { BaseCreateProfileModel } from "@/model/profiles/create";
+import { BaseCreateProfileDto } from "@/api/dto/profiles/base/create";
+import { BaseCreateProfileModel } from "@/model/profiles/base/create";
 import { ProfileType } from "@prisma/client";
 
 export function mapBaseCreateProfileDtoToModel<T extends ProfileType>(

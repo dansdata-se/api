@@ -1,5 +1,5 @@
 import { generateLinkModel } from "@/__test__/model/profiles/link";
-import { BaseCreateProfileModel } from "@/model/profiles/create";
+import { BaseCreateProfileModel } from "@/model/profiles/base/create";
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
 import { ProfileType } from "@prisma/client";

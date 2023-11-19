@@ -1,6 +1,6 @@
 import { CoordsDtoSchema } from "@/api/dto/coords";
-import { BaseProfileDtoSchema } from "@/api/dto/profiles/base";
-import { BaseCreateProfileDtoSchema } from "@/api/dto/profiles/create";
+import { BaseCreateProfileDtoSchema } from "@/api/dto/profiles/base/create";
+import { BaseProfileDtoSchema } from "@/api/dto/profiles/base/profile";
 import { registry } from "@/api/registry";
 import z from "@/api/zod";
 

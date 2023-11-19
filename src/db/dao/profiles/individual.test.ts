@@ -12,7 +12,7 @@ import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { ImageDao } from "@/db/dao/storage/image";
 import { CreateIndividualModel } from "@/model/profiles/individuals/create";
 import { IndividualModel } from "@/model/profiles/individuals/profile";
-import { IndividualReferenceModel } from "@/model/profiles/individuals/profile_reference";
+import { IndividualReferenceModel } from "@/model/profiles/individuals/reference";
 import { CreateOrganizationModel } from "@/model/profiles/organizations/create";
 import { faker } from "@faker-js/faker";
 import fetch from "jest-fetch-mock";

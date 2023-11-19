@@ -1,11 +1,11 @@
 import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
-import { BaseProfileModel } from "@/model/profiles/base";
-import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
+import { BaseProfileModel } from "@/model/profiles/base/profile";
+import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { CoordsModel } from "@/model/profiles/coords";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { VenueModel } from "@/model/profiles/venues/profile";
-import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
+import { VenueReferenceModel } from "@/model/profiles/venues/reference";
 import { isNonNull } from "@/util/is_defined";
 import { ProfileType } from "@prisma/client";
 

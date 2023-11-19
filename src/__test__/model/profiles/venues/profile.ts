@@ -1,6 +1,6 @@
+import { generateBaseProfileModel } from "@/__test__/model/profiles/base/profile";
 import { generateCoordsModel } from "@/__test__/model/profiles/coords";
-import { generateBaseProfileModel } from "@/__test__/model/profiles/profile";
-import { generateVenueReferenceModel } from "@/__test__/model/profiles/venues/profile_reference";
+import { generateVenueReferenceModel } from "@/__test__/model/profiles/venues/reference";
 import { VenueModel } from "@/model/profiles/venues/profile";
 import { faker } from "@faker-js/faker";
 import { ProfileType } from "@prisma/client";

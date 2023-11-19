@@ -1,6 +1,6 @@
-import { IndividualReferenceModel } from "@/model/profiles/individuals/profile_reference";
-import { OrganizationReferenceModel } from "@/model/profiles/organizations/profile_reference";
-import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
+import { IndividualReferenceModel } from "@/model/profiles/individuals/reference";
+import { OrganizationReferenceModel } from "@/model/profiles/organizations/reference";
+import { VenueReferenceModel } from "@/model/profiles/venues/reference";
 
 /**
  * Represents a reference to a profile.

@@ -1,6 +1,6 @@
 import { CoordsDtoSchema } from "@/api/dto/coords";
-import { BaseProfileDtoSchema } from "@/api/dto/profiles/base";
-import { VenueReferenceDtoSchema } from "@/api/dto/profiles/venues/profile_reference";
+import { BaseProfileDtoSchema } from "@/api/dto/profiles/base/profile";
+import { VenueReferenceDtoSchema } from "@/api/dto/profiles/venues/reference";
 import { registry } from "@/api/registry";
 import z from "@/api/zod";
 import { ProfileType } from "@prisma/client";

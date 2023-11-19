@@ -1,4 +1,4 @@
-import { generateBaseCreateProfileModel } from "@/__test__/model/profiles/create";
+import { generateBaseCreateProfileModel } from "@/__test__/model/profiles/base/create";
 import { CreateOrganizationModel } from "@/model/profiles/organizations/create";
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";

@@ -1,5 +1,5 @@
-import { BaseProfileDtoSchema } from "@/api/dto/profiles/base";
-import { OrganizationReferenceDtoSchema } from "@/api/dto/profiles/organizations/profile_reference";
+import { BaseProfileDtoSchema } from "@/api/dto/profiles/base/profile";
+import { OrganizationReferenceDtoSchema } from "@/api/dto/profiles/organizations/reference";
 import { registry } from "@/api/registry";
 import z from "@/api/zod";
 import { IndividualTag, ProfileType } from "@prisma/client";

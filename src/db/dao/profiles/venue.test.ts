@@ -14,7 +14,7 @@ import { mapVenueModelToReferenceModel } from "@/mapping/profiles/venues/profile
 import { CreateIndividualModel } from "@/model/profiles/individuals/create";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { VenueModel } from "@/model/profiles/venues/profile";
-import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
+import { VenueReferenceModel } from "@/model/profiles/venues/reference";
 import fetch from "jest-fetch-mock";
 
 describe("VenueDao integration tests", () => {

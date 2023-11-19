@@ -1,5 +1,5 @@
+import { generateBaseCreateProfileModel } from "@/__test__/model/profiles/base/create";
 import { generateCoordsModel } from "@/__test__/model/profiles/coords";
-import { generateBaseCreateProfileModel } from "@/__test__/model/profiles/create";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";

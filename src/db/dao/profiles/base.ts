@@ -1,8 +1,8 @@
 import { getDbClient } from "@/db";
 import { mapImageEntitiesToImagesModel } from "@/mapping/storage/image";
-import { BaseProfileModel } from "@/model/profiles/base";
-import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
-import { BaseCreateProfileModel } from "@/model/profiles/create";
+import { BaseCreateProfileModel } from "@/model/profiles/base/create";
+import { BaseProfileModel } from "@/model/profiles/base/profile";
+import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { isNonNull } from "@/util/is_defined";
 import { ProfileType } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";

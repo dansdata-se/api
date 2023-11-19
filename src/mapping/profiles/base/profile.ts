@@ -1,7 +1,7 @@
-import { BaseProfileDto } from "@/api/dto/profiles/base";
+import { BaseProfileDto } from "@/api/dto/profiles/base/profile";
 import { mapImagesModelToDto } from "@/mapping/storage/image";
-import { BaseProfileModel } from "@/model/profiles/base";
-import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
+import { BaseProfileModel } from "@/model/profiles/base/profile";
+import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 
 export function mapBaseProfileModelToDto<T extends BaseProfileModel>(
   model: T

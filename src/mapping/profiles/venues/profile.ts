@@ -2,10 +2,10 @@ import { VenueDto } from "@/api/dto/profiles/venues/profile";
 import {
   mapBaseProfileModelToDto,
   mapBaseProfileModelToReferenceModel,
-} from "@/mapping/profiles/base";
-import { mapVenueReferenceModelToDto } from "@/mapping/profiles/venues/profile_reference";
+} from "@/mapping/profiles/base/profile";
+import { mapVenueReferenceModelToDto } from "@/mapping/profiles/venues/reference";
 import { VenueModel } from "@/model/profiles/venues/profile";
-import { VenueReferenceModel } from "@/model/profiles/venues/profile_reference";
+import { VenueReferenceModel } from "@/model/profiles/venues/reference";
 
 export function mapVenueModelToDto(model: VenueModel): VenueDto {
   return {

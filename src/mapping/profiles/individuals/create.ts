@@ -1,5 +1,5 @@
 import { CreateIndividualDto } from "@/api/dto/profiles/individuals/create";
-import { mapBaseCreateProfileDtoToModel } from "@/mapping/profiles/create";
+import { mapBaseCreateProfileDtoToModel } from "@/mapping/profiles/base/create";
 import { CreateIndividualModel } from "@/model/profiles/individuals/create";
 import { ProfileType } from "@prisma/client";
 

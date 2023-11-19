@@ -1,5 +1,5 @@
 import { CreateVenueDto } from "@/api/dto/profiles/venues/create";
-import { mapBaseCreateProfileDtoToModel } from "@/mapping/profiles/create";
+import { mapBaseCreateProfileDtoToModel } from "@/mapping/profiles/base/create";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { ProfileType } from "@prisma/client";
 

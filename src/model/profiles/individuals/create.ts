@@ -1,4 +1,4 @@
-import { BaseCreateProfileModel } from "@/model/profiles/create";
+import { BaseCreateProfileModel } from "@/model/profiles/base/create";
 import { IndividualTag, ProfileEntity, ProfileType } from "@prisma/client";
 
 /**

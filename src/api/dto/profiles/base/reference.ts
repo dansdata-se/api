@@ -1,4 +1,4 @@
-import { BaseProfileDtoSchema } from "@/api/dto/profiles/base";
+import { BaseProfileDtoSchema } from "@/api/dto/profiles/base/profile";
 import { ImagesDtoSchema } from "@/api/dto/storage/image";
 import z from "@/api/zod";
 

@@ -1,5 +1,5 @@
 import { CoordsDtoSchema } from "@/api/dto/coords";
-import { BaseProfileReferenceDtoSchema } from "@/api/dto/profiles/base_reference";
+import { BaseProfileReferenceDtoSchema } from "@/api/dto/profiles/base/reference";
 import { registry } from "@/api/registry";
 import z from "@/api/zod";
 import { ProfileType } from "@prisma/client";

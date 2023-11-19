@@ -1,7 +1,7 @@
 import { defineEndpoints } from "@/api";
 import { placeholderAuth } from "@/api/auth/methods/placeholder_auth";
 import { ErrorCode, ErrorDto } from "@/api/dto/error";
-import { BaseProfileDtoSchema } from "@/api/dto/profiles/base";
+import { BaseProfileDtoSchema } from "@/api/dto/profiles/base/profile";
 import { ProfileDto, ProfileDtoSchema } from "@/api/dto/profiles/profile";
 import { StatusCodes } from "@/api/status_codes";
 import { withParsedObject } from "@/api/util";

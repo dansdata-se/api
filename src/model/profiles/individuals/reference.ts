@@ -1,5 +1,5 @@
-import { BaseProfileReferenceModel } from "@/model/profiles/base_reference";
-import { ProfileReferenceModel } from "@/model/profiles/profile_reference";
+import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
+import { ProfileReferenceModel } from "@/model/profiles/reference";
 import { IndividualTag, ProfileType } from "@prisma/client";
 
 /**
