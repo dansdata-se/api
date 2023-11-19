@@ -12,7 +12,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 export type ApiRequestHandler = (
   req: NextApiRequest,
   res: NextApiResponse
-) => Promise<void>;
+) => void | Promise<void>;
 
 export interface Endpoint {
   authentication: AuthenticationMethod | null;
@@ -30,7 +30,7 @@ export interface Endpoints {
 
 export function defineEndpoints(
   endpoints: Partial<Endpoints>
-): (req: NextApiRequest, res: NextApiResponse) => Promise<void> {
+): ApiRequestHandler {
   Object.entries(endpoints)
     .filter(([, { docs }]) => docs !== "undocumented")
     .forEach(([, endpoint]) => {
