@@ -47,9 +47,9 @@ export const BaseProfileDao = {
           name: model.name,
           description: model.description,
           type: model.type,
-          coverImageId: model.images.coverId ?? undefined,
-          posterImageId: model.images.posterId ?? undefined,
-          squareImageId: model.images.squareId ?? undefined,
+          coverImageId: model.images.coverId,
+          posterImageId: model.images.posterId,
+          squareImageId: model.images.squareId,
           links: {
             createMany: {
               data: model.links,
