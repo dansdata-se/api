@@ -1,6 +1,7 @@
 import { getDbClient } from "@/db";
 import { mapImageEntitiesToImagesModel } from "@/mapping/storage/image";
 import { BaseCreateProfileModel } from "@/model/profiles/base/create";
+import { BasePatchProfileModel } from "@/model/profiles/base/patch";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { isNonNull } from "@/util/is_defined";
@@ -76,6 +77,34 @@ export const BaseProfileDao = {
         throw e;
       });
     return result.id;
+  },
+  /**
+   * Update a profile
+   */
+  async patch(model: BasePatchProfileModel): Promise<void> {
+    await getDbClient().profileEntity.update({
+      where: {
+        id: model.id,
+        type: model.type,
+      },
+      data: {
+        name: model.name,
+        description: model.description,
+        coverImageId: model.images?.coverId,
+        posterImageId: model.images?.posterId,
+        squareImageId: model.images?.squareId,
+        links: model.links && {
+          deleteMany: {},
+          createMany: {
+            data: model.links,
+            skipDuplicates: true,
+          },
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
   },
   /**
    * Delete a profile by its id

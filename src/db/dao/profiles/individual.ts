@@ -4,6 +4,7 @@ import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { CreateIndividualModel } from "@/model/profiles/individuals/create";
+import { PatchIndividualModel } from "@/model/profiles/individuals/patch";
 import { IndividualModel } from "@/model/profiles/individuals/profile";
 import { IndividualReferenceModel } from "@/model/profiles/individuals/reference";
 import { IndividualTagDetailsModel } from "@/model/profiles/individuals/tag_details";
@@ -41,6 +42,33 @@ export const IndividualDao = {
     if (profile === null) {
       throw new Error(
         `Profile id ${profileId} successfully created but could not be retrieved`
+      );
+    }
+    return profile;
+  },
+  /**
+   * Update an individual's profile
+   */
+  async patch(model: PatchIndividualModel): Promise<IndividualModel | null> {
+    await BaseProfileDao.patch(model);
+    await getDbClient().individualEntity.update({
+      where: {
+        profileId: model.id,
+      },
+      data: {
+        tags: model.tags,
+        organizations: model.organizations && {
+          deleteMany: {},
+          createMany: {
+            data: model.organizations,
+          },
+        },
+      },
+    });
+    const profile = await this.getById(model.id);
+    if (profile === null) {
+      throw new Error(
+        `Profile id ${model.id} successfully updated but could not be retrieved`
       );
     }
     return profile;

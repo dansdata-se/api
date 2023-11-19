@@ -2,6 +2,7 @@ import { defineEndpoints } from "@/api";
 import { placeholderAuth } from "@/api/auth/methods/placeholder_auth";
 import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { BaseProfileDtoSchema } from "@/api/dto/profiles/base/profile";
+import { PatchProfileDtoSchema } from "@/api/dto/profiles/patch";
 import { ProfileDto, ProfileDtoSchema } from "@/api/dto/profiles/profile";
 import { StatusCodes } from "@/api/status_codes";
 import { withParsedObject } from "@/api/util";
@@ -10,6 +11,7 @@ import { BaseProfileDao, ProfileInUseError } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { VenueDao } from "@/db/dao/profiles/venue";
+import { mapPatchIndividualDtoToModel } from "@/mapping/profiles/individuals/patch";
 import { mapIndividualModelToDto } from "@/mapping/profiles/individuals/profile";
 import { mapOrganizationModelToDto } from "@/mapping/profiles/organizations/profile";
 import { mapVenueModelToDto } from "@/mapping/profiles/venues/profile";
@@ -96,6 +98,98 @@ export default defineEndpoints({
               });
           }
         }
+      );
+    },
+  },
+  PATCH: {
+    authentication: placeholderAuth,
+    docs: {
+      method: "patch",
+      path: "/api/v1/profiles/{id}/",
+      tags: ["Profiles"],
+      summary: "Update a profile",
+      request: {
+        params: pathParametersSchema,
+        body: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: PatchProfileDtoSchema,
+            },
+          },
+        },
+      },
+      responses: {
+        [StatusCodes.success.ok]: {
+          description: "Ok",
+          content: {
+            "application/json": {
+              schema: ProfileDtoSchema,
+            },
+          },
+        },
+        [StatusCodes.clientError.notFound]: {
+          description: "Not found\n\nThe profile was not found.",
+        },
+      },
+    },
+    async handler(req, res) {
+      await withParsedObject(
+        pathParametersSchema,
+        req.query,
+        res,
+        ErrorCode.invalidParameters,
+        async ({ id }) =>
+          await withParsedObject(
+            PatchProfileDtoSchema,
+            req.body,
+            res,
+            ErrorCode.invalidBody,
+            async (patchDto) => {
+              const type = await BaseProfileDao.getTypeById(id);
+
+              let model: ProfileModel | null;
+              let responseDto: ProfileDto | null;
+              switch (type) {
+                case null:
+                  model = null;
+                  responseDto = null;
+                  break;
+                case ProfileType.individual:
+                  model = await IndividualDao.patch(
+                    mapPatchIndividualDtoToModel(patchDto, id)
+                  );
+                  responseDto = model ? mapIndividualModelToDto(model) : null;
+                  break;
+                case ProfileType.organization:
+                case ProfileType.venue:
+                  return (res as NextApiResponse<ErrorDto>)
+                    .status(StatusCodes.serverError.notImplemented)
+                    .json({
+                      code: ErrorCode.notImplemented,
+                      message: "Not implemented",
+                    });
+                default:
+                  throw new Error(
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                    `Profile type '${type}' has not been implemented`
+                  );
+              }
+
+              if (responseDto) {
+                (res as NextApiResponse<ProfileDto>)
+                  .status(StatusCodes.success.ok)
+                  .json(responseDto);
+              } else {
+                (res as NextApiResponse<ErrorDto>)
+                  .status(StatusCodes.clientError.notFound)
+                  .json({
+                    code: ErrorCode.notFound,
+                    message: "The profile was not found",
+                  });
+              }
+            }
+          )
       );
     },
   },
