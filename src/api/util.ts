@@ -10,13 +10,13 @@ import { fromZodError } from "zod-validation-error";
  * @param errorCode The error code to use in the returned {@link ErrorDto} if
  * parsing fails.
  */
-export async function withParsedObject<T extends z.ZodSchema>(
+export async function withParsedObject<T extends z.ZodSchema, R>(
   schema: T,
   obj: unknown,
   res: NextApiResponse,
   errorCode: ErrorCode,
-  callback: (obj: z.infer<T>) => Promise<void>
-): Promise<void> {
+  callback: (obj: z.infer<T>) => R | Promise<R>
+): Promise<R | null> {
   const parseResult = schema.safeParse(obj);
   if (parseResult.success) {
     return await callback(parseResult.data as z.infer<T>);
@@ -29,6 +29,7 @@ export async function withParsedObject<T extends z.ZodSchema>(
         code: errorCode,
         message: validationError.message,
       });
+    return null;
   }
 }
 

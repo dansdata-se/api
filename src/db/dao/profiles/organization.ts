@@ -4,6 +4,7 @@ import { IndividualDao } from "@/db/dao/profiles/individual";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { CreateOrganizationModel } from "@/model/profiles/organizations/create";
+import { PatchOrganizationModel } from "@/model/profiles/organizations/patch";
 import { OrganizationModel } from "@/model/profiles/organizations/profile";
 import { OrganizationReferenceModel } from "@/model/profiles/organizations/reference";
 import { OrganizationTagDetailsModel } from "@/model/profiles/organizations/tag_details";
@@ -41,6 +42,35 @@ export const OrganizationDao = {
     if (profile === null) {
       throw new Error(
         `Profile id ${profileId} successfully created but could not be retrieved`
+      );
+    }
+    return profile;
+  },
+  /**
+   * Update an organization's profile
+   */
+  async patch(
+    model: PatchOrganizationModel
+  ): Promise<OrganizationModel | null> {
+    await BaseProfileDao.patch(model);
+    await getDbClient().organizationEntity.update({
+      where: {
+        profileId: model.id,
+      },
+      data: {
+        tags: model.tags,
+        members: model.members && {
+          deleteMany: {},
+          createMany: {
+            data: model.members,
+          },
+        },
+      },
+    });
+    const profile = await this.getById(model.id);
+    if (profile === null) {
+      throw new Error(
+        `Profile id ${model.id} successfully updated but could not be retrieved`
       );
     }
     return profile;

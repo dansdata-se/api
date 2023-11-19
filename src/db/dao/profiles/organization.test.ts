@@ -6,12 +6,14 @@ import { mockCreateImageUploadUrlFetchResponses } from "@/__test__/cloudflare";
 import { withTestDatabaseForEach } from "@/__test__/db";
 import { generateCreateIndividualModel } from "@/__test__/model/profiles/individuals/create";
 import { generateCreateOrganizationModel } from "@/__test__/model/profiles/organizations/create";
+import { generatePatchOrganizationModel } from "@/__test__/model/profiles/organizations/patch";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { ImageDao } from "@/db/dao/storage/image";
 import { CreateIndividualModel } from "@/model/profiles/individuals/create";
 import { CreateOrganizationModel } from "@/model/profiles/organizations/create";
+import { PatchOrganizationModel } from "@/model/profiles/organizations/patch";
 import { OrganizationModel } from "@/model/profiles/organizations/profile";
 import { OrganizationReferenceModel } from "@/model/profiles/organizations/reference";
 import { faker } from "@faker-js/faker";
@@ -240,4 +242,153 @@ describe("OrganizationDao integration tests", () => {
       tags: createModel.tags,
     });
   });
+
+  test("create and patch full organization profile", async () => {
+    // Arrange
+    const createModel: CreateOrganizationModel =
+      generateCreateOrganizationModel({
+        images: {
+          coverId: null,
+          posterId: null,
+          squareId: null,
+        },
+        members: [],
+      });
+    const patchModel: PatchOrganizationModel = generatePatchOrganizationModel({
+      images: {},
+      members: [],
+    });
+
+    // Act
+    const createdProfile = await OrganizationDao.create(createModel);
+    patchModel.id = createdProfile.id;
+
+    await OrganizationDao.patch(patchModel);
+    const patchedProfile = await OrganizationDao.getById(patchModel.id);
+
+    // Assert
+    expect(createdProfile).toEqual<OrganizationModel>({
+      id: createdProfile.id,
+      type: createModel.type,
+      name: createModel.name,
+      description: createModel.description,
+      links: createModel.links,
+      images: {
+        cover: null,
+        poster: null,
+        square: null,
+      },
+      members: [],
+      tags: createModel.tags,
+    });
+    expect(patchedProfile).toEqual<OrganizationModel>({
+      id: createdProfile.id,
+      type: patchModel.type,
+      name: patchModel.name ?? createModel.name,
+      description: patchModel.description ?? createModel.description,
+      links: patchModel.links ?? createModel.links,
+      images: {
+        cover: null,
+        poster: null,
+        square: null,
+      },
+      members: [],
+      tags: patchModel.tags ?? createModel.tags,
+    });
+  });
+
+  test.each([0, 1, 2])(
+    "patch can update the members list to have %s members",
+    async (patchedMemberCount) => {
+      // Arrange
+      const createIndividual1Model: CreateIndividualModel =
+        generateCreateIndividualModel({
+          images: {
+            coverId: null,
+            posterId: null,
+            squareId: null,
+          },
+          organizations: [],
+        });
+      const individual1Model = await IndividualDao.create(
+        createIndividual1Model
+      );
+      const createIndividual2Model: CreateIndividualModel =
+        generateCreateIndividualModel({
+          images: {
+            coverId: null,
+            posterId: null,
+            squareId: null,
+          },
+          organizations: [],
+        });
+      const individual2Model = await IndividualDao.create(
+        createIndividual2Model
+      );
+      const createIndividual3Model: CreateIndividualModel =
+        generateCreateIndividualModel({
+          images: {
+            coverId: null,
+            posterId: null,
+            squareId: null,
+          },
+          organizations: [],
+        });
+      const individual3Model = await IndividualDao.create(
+        createIndividual3Model
+      );
+      const createModel: CreateOrganizationModel =
+        generateCreateOrganizationModel({
+          images: {
+            coverId: null,
+            posterId: null,
+            squareId: null,
+          },
+          members: [
+            {
+              individualId: individual1Model.id,
+              title: "technician",
+            },
+            {
+              individualId: individual2Model.id,
+              title: "drummer",
+            },
+            {
+              individualId: individual3Model.id,
+              title: "singer",
+            },
+          ],
+        });
+      const createdModel = await OrganizationDao.create(createModel);
+
+      const members = faker.helpers.shuffle([
+        individual1Model,
+        individual2Model,
+        individual3Model,
+      ]);
+      const patchModel: PatchOrganizationModel = generatePatchOrganizationModel(
+        {
+          id: createdModel.id,
+          images: {},
+          members: Array.from({
+            length: patchedMemberCount,
+          }).map((_, i) => ({
+            individualId: members[i].id,
+            title: faker.person.jobTitle(),
+          })),
+        }
+      );
+
+      // Act
+      await OrganizationDao.patch(patchModel);
+      const patchedProfile = await OrganizationDao.getById(patchModel.id);
+
+      // Assert
+      expect(patchedProfile).not.toBeNull();
+      expect(patchedProfile?.members).toHaveLength(patchedMemberCount);
+      expect(patchedProfile).toMatchObject<Pick<OrganizationModel, "members">>({
+        members: patchedProfile?.members ?? [],
+      });
+    }
+  );
 });

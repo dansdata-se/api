@@ -2,6 +2,8 @@ import { defineEndpoints } from "@/api";
 import { placeholderAuth } from "@/api/auth/methods/placeholder_auth";
 import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { BaseProfileDtoSchema } from "@/api/dto/profiles/base/profile";
+import { PatchIndividualDtoSchema } from "@/api/dto/profiles/individuals/patch";
+import { PatchOrganizationDtoSchema } from "@/api/dto/profiles/organizations/patch";
 import { PatchProfileDtoSchema } from "@/api/dto/profiles/patch";
 import { ProfileDto, ProfileDtoSchema } from "@/api/dto/profiles/profile";
 import { StatusCodes } from "@/api/status_codes";
@@ -13,6 +15,7 @@ import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { VenueDao } from "@/db/dao/profiles/venue";
 import { mapPatchIndividualDtoToModel } from "@/mapping/profiles/individuals/patch";
 import { mapIndividualModelToDto } from "@/mapping/profiles/individuals/profile";
+import { mapPatchOrganizationDtoToModel } from "@/mapping/profiles/organizations/patch";
 import { mapOrganizationModelToDto } from "@/mapping/profiles/organizations/profile";
 import { mapVenueModelToDto } from "@/mapping/profiles/venues/profile";
 import { ProfileModel } from "@/model/profiles/profile";
@@ -142,60 +145,77 @@ export default defineEndpoints({
         req.query,
         res,
         ErrorCode.invalidParameters,
-        async ({ id }) =>
-          await withParsedObject(
-            PatchProfileDtoSchema,
-            req.body,
-            res,
-            ErrorCode.invalidBody,
-            async (patchDto) => {
-              const type = await BaseProfileDao.getTypeById(id);
+        async ({ id }) => {
+          const type = await BaseProfileDao.getTypeById(id);
 
-              let model: ProfileModel | null;
-              let responseDto: ProfileDto | null;
-              switch (type) {
-                case null:
-                  model = null;
-                  responseDto = null;
-                  break;
-                case ProfileType.individual:
+          let model: ProfileModel | null;
+          let responseDto: ProfileDto | null;
+          switch (type) {
+            case null:
+              responseDto = null;
+              break;
+
+            case ProfileType.individual:
+              responseDto = await withParsedObject(
+                PatchIndividualDtoSchema,
+                req.body,
+                res,
+                ErrorCode.invalidBody,
+                async (patchDto) => {
                   model = await IndividualDao.patch(
                     mapPatchIndividualDtoToModel(patchDto, id)
                   );
-                  responseDto = model ? mapIndividualModelToDto(model) : null;
-                  break;
-                case ProfileType.organization:
-                case ProfileType.venue:
-                  return (res as NextApiResponse<ErrorDto>)
-                    .status(StatusCodes.serverError.notImplemented)
-                    .json({
-                      code: ErrorCode.notImplemented,
-                      message: "Not implemented",
-                    });
-                default:
-                  return (res as NextApiResponse<ErrorDto>)
-                    .status(StatusCodes.serverError.notImplemented)
-                    .json({
-                      code: ErrorCode.notImplemented,
-                      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                      message: `Profile type '${type}' has not been implemented`,
-                    });
-              }
+                  return model ? mapIndividualModelToDto(model) : null;
+                }
+              );
+              break;
 
-              if (responseDto) {
-                (res as NextApiResponse<ProfileDto>)
-                  .status(StatusCodes.success.ok)
-                  .json(responseDto);
-              } else {
-                (res as NextApiResponse<ErrorDto>)
-                  .status(StatusCodes.clientError.notFound)
-                  .json({
-                    code: ErrorCode.notFound,
-                    message: "The profile was not found",
-                  });
-              }
-            }
-          )
+            case ProfileType.organization:
+              responseDto = await withParsedObject(
+                PatchOrganizationDtoSchema,
+                req.body,
+                res,
+                ErrorCode.invalidBody,
+                async (patchDto) => {
+                  model = await OrganizationDao.patch(
+                    mapPatchOrganizationDtoToModel(patchDto, id)
+                  );
+                  return model ? mapOrganizationModelToDto(model) : null;
+                }
+              );
+              break;
+
+            case ProfileType.venue:
+              return (res as NextApiResponse<ErrorDto>)
+                .status(StatusCodes.serverError.notImplemented)
+                .json({
+                  code: ErrorCode.notImplemented,
+                  message: "Not implemented",
+                });
+
+            default:
+              return (res as NextApiResponse<ErrorDto>)
+                .status(StatusCodes.serverError.notImplemented)
+                .json({
+                  code: ErrorCode.notImplemented,
+                  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                  message: `Profile type '${type}' has not been implemented`,
+                });
+          }
+
+          if (responseDto) {
+            (res as NextApiResponse<ProfileDto>)
+              .status(StatusCodes.success.ok)
+              .json(responseDto);
+          } else {
+            (res as NextApiResponse<ErrorDto>)
+              .status(StatusCodes.clientError.notFound)
+              .json({
+                code: ErrorCode.notFound,
+                message: "The profile was not found",
+              });
+          }
+        }
       );
     },
   },
