@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== "production") {
   // prettier moves content so that the eslint suppressions are not applied
   // prettier-ignore
   // Use `require` as pino-pretty should only be used in development builds
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const pretty = (require("pino-pretty") as (
     options: PrettyOptions
   ) => PinoPretty.PrettyStream);

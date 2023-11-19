@@ -13,6 +13,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   root: true,
+  reportUnusedDisableDirectives: true,
   rules: {
     eqeqeq: "error",
     "no-restricted-imports": [
