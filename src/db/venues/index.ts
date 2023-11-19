@@ -1,6 +1,12 @@
 import { CoordsModel } from "@/model/profiles/coords";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
-import { ProfileEntity, VenueEntity, type PrismaClient } from "@prisma/client";
+import { PatchVenueModel } from "@/model/profiles/venues/patch";
+import {
+  PrismaPromise,
+  ProfileEntity,
+  VenueEntity,
+  type PrismaClient,
+} from "@prisma/client";
 
 export function buildVenueEntityModelExtends(prisma: PrismaClient) {
   return {
@@ -27,6 +33,35 @@ export function buildVenueEntityModelExtends(prisma: PrismaClient) {
             ${model.permanentlyClosed}
           );
       `;
+    },
+    /**
+     * Update an existing Venue profile
+     */
+    async update(model: PatchVenueModel): Promise<void> {
+      const queries: PrismaPromise<unknown>[] = [];
+      if (model.coords !== undefined) {
+        queries.push(prisma.$executeRaw`
+          UPDATE profiles.venues
+          SET coords=ST_MakePoint(${model.coords.lng}, ${model.coords.lat})
+          WHERE profile_id=${model.id};
+        `);
+      }
+      if (model.permanentlyClosed !== undefined) {
+        queries.push(prisma.$executeRaw`
+          UPDATE profiles.venues
+          SET permanently_closed=${model.permanentlyClosed}
+          WHERE profile_id=${model.id};
+        `);
+      }
+      if (model.parentId !== undefined) {
+        queries.push(prisma.$executeRaw`
+          UPDATE profiles.venues
+          SET parent_id=${model.parentId}
+          WHERE profile_id=${model.id};
+        `);
+      }
+
+      await Promise.all(queries);
     },
     /**
      * Finds the ids of venues near a certain geographical location.

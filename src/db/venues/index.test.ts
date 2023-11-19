@@ -3,12 +3,15 @@
  */
 
 import { withTestDatabaseForEach } from "@/__test__/db";
+import { generateCoordsModel } from "@/__test__/model/profiles/coords";
 import { generateCreateVenueModel } from "@/__test__/model/profiles/venues/create";
 import { getDbClient } from "@/db";
 import { VenueDao } from "@/db/dao/profiles/venue";
+import { mapVenueModelToReferenceModel } from "@/mapping/profiles/venues/profile";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { VenueModel } from "@/model/profiles/venues/profile";
 import { faker } from "@faker-js/faker";
+import { ProfileType } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 describe("Venue hierarchy constraints", () => {
@@ -77,11 +80,11 @@ describe("Venue hierarchy constraints", () => {
       }
 
       // Act
-      const promise = getDbClient().$executeRaw`
-        UPDATE "profiles"."venues"
-        SET parent_id = ${models[parentIndex].id}
-        WHERE profile_id = ${models[childIndex].id}
-      `;
+      const promise = getDbClient().venueEntity.update({
+        id: models[childIndex].id,
+        type: ProfileType.venue,
+        parentId: models[parentIndex].id,
+      });
 
       // Assert
       await expectConstraintViolation(models[childIndex].id, promise);
@@ -91,6 +94,107 @@ describe("Venue hierarchy constraints", () => {
 
 describe("Venues manual SQL", () => {
   withTestDatabaseForEach();
+
+  test("update coords field", async () => {
+    // Arrange
+    const model = await VenueDao.create(
+      generateCreateVenueModel({
+        images: {
+          coverId: null,
+          posterId: null,
+          squareId: null,
+        },
+        parentId: null,
+      })
+    );
+    const newCoords = generateCoordsModel();
+
+    // Act
+    await getDbClient().venueEntity.update({
+      id: model.id,
+      type: ProfileType.venue,
+      coords: newCoords,
+    });
+
+    // Assert
+    await expect(VenueDao.getById(model.id)).resolves.toMatchObject<
+      Pick<VenueModel, "coords">
+    >({
+      coords: newCoords,
+    });
+  });
+
+  test("update permanentlyClosed field", async () => {
+    // Arrange
+    const model = await VenueDao.create(
+      generateCreateVenueModel({
+        permanentlyClosed: false,
+        images: {
+          coverId: null,
+          posterId: null,
+          squareId: null,
+        },
+        parentId: null,
+      })
+    );
+
+    // Act
+    await getDbClient().venueEntity.update({
+      id: model.id,
+      type: ProfileType.venue,
+      permanentlyClosed: true,
+    });
+
+    // Assert
+    await expect(VenueDao.getById(model.id)).resolves.toMatchObject<
+      Pick<VenueModel, "permanentlyClosed">
+    >({
+      permanentlyClosed: true,
+    });
+  });
+
+  test("update parentId field", async () => {
+    // Arrange
+    const model1 = await VenueDao.create(
+      generateCreateVenueModel({
+        images: {
+          coverId: null,
+          posterId: null,
+          squareId: null,
+        },
+        parentId: null,
+      })
+    );
+    const model2 = await VenueDao.create(
+      generateCreateVenueModel({
+        images: {
+          coverId: null,
+          posterId: null,
+          squareId: null,
+        },
+        parentId: null,
+      })
+    );
+
+    // Act
+    await getDbClient().venueEntity.update({
+      id: model2.id,
+      type: ProfileType.venue,
+      parentId: model1.id,
+    });
+
+    // Assert
+    await expect(VenueDao.getById(model1.id)).resolves.toMatchObject<
+      Pick<VenueModel, "children">
+    >({
+      children: [mapVenueModelToReferenceModel(model2)],
+    });
+    await expect(VenueDao.getById(model2.id)).resolves.toMatchObject<
+      Pick<VenueModel, "ancestors">
+    >({
+      ancestors: [mapVenueModelToReferenceModel(model1)],
+    });
+  });
 
   test("retrieve coordinates for a venue", async () => {
     // Arrange

@@ -4,6 +4,7 @@ import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { CoordsModel } from "@/model/profiles/coords";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
+import { PatchVenueModel } from "@/model/profiles/venues/patch";
 import { VenueModel } from "@/model/profiles/venues/profile";
 import { VenueReferenceModel } from "@/model/profiles/venues/reference";
 import { isNonNull } from "@/util/is_defined";
@@ -30,6 +31,20 @@ export const VenueDao = {
     if (profile === null) {
       throw new Error(
         `Profile id ${profileId} successfully created but could not be retrieved`
+      );
+    }
+    return profile;
+  },
+  /**
+   * Update a venue's profile
+   */
+  async patch(model: PatchVenueModel): Promise<VenueModel | null> {
+    await BaseProfileDao.patch(model);
+    await getDbClient().venueEntity.update(model);
+    const profile = await this.getById(model.id);
+    if (profile === null) {
+      throw new Error(
+        `Profile id ${model.id} successfully updated but could not be retrieved`
       );
     }
     return profile;

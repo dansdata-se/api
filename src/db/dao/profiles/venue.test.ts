@@ -6,13 +6,16 @@ import { mockCreateImageUploadUrlFetchResponses } from "@/__test__/cloudflare";
 import { withTestDatabaseForEach } from "@/__test__/db";
 import { generateCreateIndividualModel } from "@/__test__/model/profiles/individuals/create";
 import { generateCreateVenueModel } from "@/__test__/model/profiles/venues/create";
+import { generatePatchVenueModel } from "@/__test__/model/profiles/venues/patch";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { VenueDao } from "@/db/dao/profiles/venue";
 import { ImageDao } from "@/db/dao/storage/image";
 import { mapVenueModelToReferenceModel } from "@/mapping/profiles/venues/profile";
+import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { CreateIndividualModel } from "@/model/profiles/individuals/create";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
+import { PatchVenueModel } from "@/model/profiles/venues/patch";
 import { VenueModel } from "@/model/profiles/venues/profile";
 import { VenueReferenceModel } from "@/model/profiles/venues/reference";
 import fetch from "jest-fetch-mock";
@@ -290,6 +293,100 @@ describe("VenueDao integration tests", () => {
         poster: null,
         square: null,
       },
+    });
+  });
+
+  test("create and patch full venue profile", async () => {
+    // Arrange
+    const venueLevel1CreateModel: CreateVenueModel = generateCreateVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      parentId: null,
+    });
+    const venueLevel2CreateModel: CreateVenueModel = generateCreateVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      parentId: null,
+    });
+
+    const venueLevel1PatchModel: PatchVenueModel = generatePatchVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      parentId: null,
+    });
+    const venueLevel2PatchModel: PatchVenueModel = generatePatchVenueModel({
+      images: {
+        coverId: null,
+        posterId: null,
+        squareId: null,
+      },
+      parentId: null,
+    });
+
+    // Act
+    const venueLevel1Created = await VenueDao.create(venueLevel1CreateModel);
+    venueLevel1PatchModel.id = venueLevel1Created.id;
+    venueLevel2PatchModel.parentId = venueLevel1Created.id;
+
+    const venueLevel2Created = await VenueDao.create(venueLevel2CreateModel);
+    venueLevel2PatchModel.id = venueLevel2Created.id;
+
+    await VenueDao.patch(venueLevel1PatchModel);
+    const venueLevel2Patched = await VenueDao.patch(venueLevel2PatchModel);
+    const venueLevel1Patched = await VenueDao.getById(venueLevel1PatchModel.id);
+
+    // Assert
+    expect(venueLevel1Created).toMatchObject<
+      Omit<VenueModel, keyof BaseProfileModel>
+    >({
+      coords: venueLevel1CreateModel.coords,
+      permanentlyClosed: venueLevel1CreateModel.permanentlyClosed,
+      ancestors: [],
+      children: [],
+    });
+    expect(venueLevel2Created).toMatchObject<
+      Omit<VenueModel, keyof BaseProfileModel>
+    >({
+      coords: venueLevel2CreateModel.coords,
+      permanentlyClosed: venueLevel2CreateModel.permanentlyClosed,
+      ancestors: [],
+      children: [],
+    });
+
+    expect(venueLevel1Patched).not.toBeNull();
+    expect(venueLevel2Patched).not.toBeNull();
+    if (venueLevel1Patched === null || venueLevel2Patched === null) {
+      return;
+    }
+
+    expect(venueLevel1Patched).toMatchObject<
+      Omit<VenueModel, keyof BaseProfileModel>
+    >({
+      coords: venueLevel1PatchModel.coords ?? venueLevel1CreateModel.coords,
+      permanentlyClosed:
+        venueLevel1PatchModel.permanentlyClosed ??
+        venueLevel1CreateModel.permanentlyClosed,
+      ancestors: [],
+      children: [mapVenueModelToReferenceModel(venueLevel2Patched)],
+    });
+    expect(venueLevel2Patched).toMatchObject<
+      Omit<VenueModel, keyof BaseProfileModel>
+    >({
+      coords: venueLevel2PatchModel.coords ?? venueLevel2CreateModel.coords,
+      permanentlyClosed:
+        venueLevel2PatchModel.permanentlyClosed ??
+        venueLevel2CreateModel.permanentlyClosed,
+      ancestors: [mapVenueModelToReferenceModel(venueLevel1Patched)],
+      children: [],
     });
   });
 });

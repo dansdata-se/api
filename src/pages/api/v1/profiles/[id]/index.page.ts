@@ -6,6 +6,7 @@ import { PatchIndividualDtoSchema } from "@/api/dto/profiles/individuals/patch";
 import { PatchOrganizationDtoSchema } from "@/api/dto/profiles/organizations/patch";
 import { PatchProfileDtoSchema } from "@/api/dto/profiles/patch";
 import { ProfileDto, ProfileDtoSchema } from "@/api/dto/profiles/profile";
+import { PatchVenueDtoSchema } from "@/api/dto/profiles/venues/patch";
 import { StatusCodes } from "@/api/status_codes";
 import { withParsedObject } from "@/api/util";
 import z from "@/api/zod";
@@ -17,6 +18,7 @@ import { mapPatchIndividualDtoToModel } from "@/mapping/profiles/individuals/pat
 import { mapIndividualModelToDto } from "@/mapping/profiles/individuals/profile";
 import { mapPatchOrganizationDtoToModel } from "@/mapping/profiles/organizations/patch";
 import { mapOrganizationModelToDto } from "@/mapping/profiles/organizations/profile";
+import { mapPatchVenueDtoToModel } from "@/mapping/profiles/venues/patch";
 import { mapVenueModelToDto } from "@/mapping/profiles/venues/profile";
 import { ProfileModel } from "@/model/profiles/profile";
 import { ProfileType } from "@prisma/client";
@@ -186,12 +188,19 @@ export default defineEndpoints({
               break;
 
             case ProfileType.venue:
-              return (res as NextApiResponse<ErrorDto>)
-                .status(StatusCodes.serverError.notImplemented)
-                .json({
-                  code: ErrorCode.notImplemented,
-                  message: "Not implemented",
-                });
+              responseDto = await withParsedObject(
+                PatchVenueDtoSchema,
+                req.body,
+                res,
+                ErrorCode.invalidBody,
+                async (patchDto) => {
+                  model = await VenueDao.patch(
+                    mapPatchVenueDtoToModel(patchDto, id)
+                  );
+                  return model ? mapVenueModelToDto(model) : null;
+                }
+              );
+              break;
 
             default:
               return (res as NextApiResponse<ErrorDto>)
