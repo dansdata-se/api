@@ -79,10 +79,13 @@ export default defineEndpoints({
               dto = model ? mapVenueModelToDto(model) : null;
               break;
             default:
-              throw new Error(
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                `Profile type '${type}' has not been implemented`
-              );
+              return (res as NextApiResponse<ErrorDto>)
+                .status(StatusCodes.serverError.notImplemented)
+                .json({
+                  code: ErrorCode.notImplemented,
+                  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                  message: `Profile type '${type}' has not been implemented`,
+                });
           }
 
           if (dto) {
@@ -170,10 +173,13 @@ export default defineEndpoints({
                       message: "Not implemented",
                     });
                 default:
-                  throw new Error(
-                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                    `Profile type '${type}' has not been implemented`
-                  );
+                  return (res as NextApiResponse<ErrorDto>)
+                    .status(StatusCodes.serverError.notImplemented)
+                    .json({
+                      code: ErrorCode.notImplemented,
+                      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                      message: `Profile type '${type}' has not been implemented`,
+                    });
               }
 
               if (responseDto) {
@@ -237,10 +243,13 @@ export default defineEndpoints({
                 deleted = await VenueDao.delete(id);
                 break;
               default:
-                throw new Error(
-                  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                  `Profile type '${type}' has not been implemented`
-                );
+                return (res as NextApiResponse<ErrorDto>)
+                  .status(StatusCodes.serverError.notImplemented)
+                  .json({
+                    code: ErrorCode.notImplemented,
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                    message: `Profile type '${type}' has not been implemented`,
+                  });
             }
 
             if (deleted) {
