@@ -88,7 +88,11 @@ const buildRequestHandler = (endpoints: Partial<Endpoints>) =>
 const withResponseLogger =
   (handler: ApiRequestHandler): ApiRequestHandler =>
   async (req, res) => {
+    const start = performance.now();
+
     await handler(req, res);
+
+    const duration = performance.now() - start;
 
     logger.info({
       req: {
@@ -101,6 +105,7 @@ const withResponseLogger =
       },
       res: {
         status: res.statusCode,
+        duration: `${duration} ms`,
       },
     });
 
@@ -120,6 +125,7 @@ const withResponseLogger =
           url: req.url ?? "",
           method: req.method ?? "",
           status: res.statusCode ?? -1,
+          duration,
           userAgent: req.headers["user-agent"] ?? "",
           host: req.headers.host ?? "",
           referer: req.headers.referer ?? "",

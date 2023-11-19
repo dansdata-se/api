@@ -387,6 +387,7 @@ model Request {
   url           String
   method        String
   status        Int
+  duration      Int
   userAgent     String   @map("user_agent")
   host          String
   referer       String
