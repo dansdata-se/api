@@ -37,7 +37,7 @@ export type BaseProfileDaoType = typeof BaseProfileDao;
  */
 export const BaseProfileDao = {
   /**
-   * Create a new organization profile
+   * Create a new profile
    * @throws {InvalidProfileImageReferenceError} when one or more image ids do not correspond to existing images
    */
   async create(model: BaseCreateProfileModel): Promise<BaseProfileModel["id"]> {

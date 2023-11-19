@@ -21,7 +21,7 @@ export type VenueDaoType = typeof VenueDao;
  */
 export const VenueDao = {
   /**
-   * Create a new organization profile
+   * Create a new venue profile
    */
   async create(model: CreateVenueModel): Promise<VenueModel> {
     const profileId = await BaseProfileDao.create(model);

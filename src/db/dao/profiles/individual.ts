@@ -22,7 +22,7 @@ export type IndividualDaoType = typeof IndividualDao;
  */
 export const IndividualDao = {
   /**
-   * Create a new organization profile
+   * Create a new individual profile
    */
   async create(model: CreateIndividualModel): Promise<IndividualModel> {
     const profileId = await BaseProfileDao.create(model);
