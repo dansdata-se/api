@@ -13,7 +13,7 @@ export function generateCreateVenueModel(
     type: ProfileType.venue,
     name: faker.commerce.department(),
     coords: generateCoordsModel(),
-    permanentlyClosed: faker.datatype.boolean({ probability: 0.9 }),
+    permanentlyClosed: faker.datatype.boolean({ probability: 0.2 }),
     parentId: faker.datatype.boolean() ? createId() : null,
     ...overrides,
   };
