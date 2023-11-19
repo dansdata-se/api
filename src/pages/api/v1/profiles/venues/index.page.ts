@@ -1,5 +1,5 @@
 import { defineEndpoints } from "@/api";
-import { placeholderAuth } from "@/api/auth";
+import { placeholderAuth } from "@/api/auth/methods/placeholder_auth";
 import { ErrorCode } from "@/api/dto/error";
 import { CreateVenueDtoSchema } from "@/api/dto/profiles/venues/create";
 import { VenueDto, VenueDtoSchema } from "@/api/dto/profiles/venues/profile";
@@ -12,12 +12,11 @@ import { NextApiResponse } from "next";
 
 export default defineEndpoints({
   POST: {
-    authenticated: true,
+    authentication: placeholderAuth,
     docs: {
       method: "post",
       path: "/api/v1/profiles/venues/",
       tags: ["Profiles", "Venues"],
-      security: [{ [placeholderAuth.name]: [] }],
       summary: "Create a profile for a venue",
       request: {
         body: {

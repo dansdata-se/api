@@ -1,5 +1,5 @@
 import { defineEndpoints } from "@/api";
-import { placeholderAuth } from "@/api/auth";
+import { placeholderAuth } from "@/api/auth/methods/placeholder_auth";
 import { ErrorCode } from "@/api/dto/error";
 import { CreateOrganizationDtoSchema } from "@/api/dto/profiles/organizations/create";
 import {
@@ -15,12 +15,11 @@ import { NextApiResponse } from "next";
 
 export default defineEndpoints({
   POST: {
-    authenticated: true,
+    authentication: placeholderAuth,
     docs: {
       method: "post",
       path: "/api/v1/profiles/organizations/",
       tags: ["Profiles", "Organizations"],
-      security: [{ [placeholderAuth.name]: [] }],
       summary: "Create a profile for an organization",
       request: {
         body: {

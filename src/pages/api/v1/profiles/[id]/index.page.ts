@@ -1,5 +1,5 @@
 import { defineEndpoints } from "@/api";
-import { placeholderAuth } from "@/api/auth";
+import { placeholderAuth } from "@/api/auth/methods/placeholder_auth";
 import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { BaseProfileDtoSchema } from "@/api/dto/profiles/base";
 import { ProfileDto, ProfileDtoSchema } from "@/api/dto/profiles/profile";
@@ -25,7 +25,7 @@ const pathParametersSchema = z.object({
 
 export default defineEndpoints({
   GET: {
-    authenticated: false,
+    authentication: null,
     docs: {
       method: "get",
       path: "/api/v1/profiles/{id}/",
@@ -95,12 +95,11 @@ export default defineEndpoints({
     },
   },
   DELETE: {
-    authenticated: true,
+    authentication: placeholderAuth,
     docs: {
       method: "delete",
       path: "/api/v1/profiles/{id}/",
       tags: ["Profiles"],
-      security: [{ [placeholderAuth.name]: [] }],
       summary: "Delete a profile",
       request: {
         params: pathParametersSchema,

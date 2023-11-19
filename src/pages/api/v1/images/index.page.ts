@@ -1,5 +1,5 @@
 import { defineEndpoints } from "@/api";
-import { placeholderAuth } from "@/api/auth";
+import { placeholderAuth } from "@/api/auth/methods/placeholder_auth";
 import {
   CreateImageUploadUrlDto,
   CreateImageUploadUrlDtoSchema,
@@ -10,12 +10,11 @@ import { NextApiResponse } from "next";
 
 export default defineEndpoints({
   POST: {
-    authenticated: true,
+    authentication: placeholderAuth,
     docs: {
       method: "post",
       path: "/api/v1/images/",
       tags: ["Storage"],
-      security: [{ [placeholderAuth.name]: [] }],
       summary: "Create an image upload url",
       responses: {
         [StatusCodes.success.created]: {

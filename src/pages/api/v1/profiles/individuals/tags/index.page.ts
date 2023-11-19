@@ -9,7 +9,7 @@ import { NextApiResponse } from "next";
 
 export default defineEndpoints({
   GET: {
-    authenticated: false,
+    authentication: null,
     docs: {
       method: "get",
       path: "/api/v1/profiles/individuals/tags/",

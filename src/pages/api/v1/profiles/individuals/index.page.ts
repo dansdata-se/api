@@ -1,5 +1,5 @@
 import { defineEndpoints } from "@/api";
-import { placeholderAuth } from "@/api/auth";
+import { placeholderAuth } from "@/api/auth/methods/placeholder_auth";
 import { ErrorCode } from "@/api/dto/error";
 import { CreateIndividualDtoSchema } from "@/api/dto/profiles/individuals/create";
 import {
@@ -15,12 +15,11 @@ import { NextApiResponse } from "next";
 
 export default defineEndpoints({
   POST: {
-    authenticated: true,
+    authentication: placeholderAuth,
     docs: {
       method: "post",
       path: "/api/v1/profiles/individuals/",
       tags: ["Profiles", "Individuals"],
-      security: [{ [placeholderAuth.name]: [] }],
       summary: "Create a profile for an individual",
       request: {
         body: {

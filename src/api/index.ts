@@ -1,3 +1,4 @@
+import { AuthenticationMethod } from "@/api/auth";
 import { ErrorCode, ErrorDto } from "@/api/dto/error";
 import { wrapEndpointWithMiddleware } from "@/api/middleware";
 import { registry } from "@/api/registry";
@@ -14,8 +15,8 @@ export type ApiRequestHandler = (
 ) => Promise<void>;
 
 export interface Endpoint {
-  authenticated: boolean;
-  docs: RouteConfig;
+  authentication: AuthenticationMethod | null;
+  docs: RouteConfig | "undocumented";
   handler: ApiRequestHandler;
 }
 export interface Endpoints {
@@ -30,9 +31,23 @@ export interface Endpoints {
 export function defineEndpoints(
   endpoints: Partial<Endpoints>
 ): (req: NextApiRequest, res: NextApiResponse) => Promise<void> {
-  Object.entries(endpoints).forEach(([, endpoint]) => {
-    registry.registerPath(endpoint.docs);
-  });
+  Object.entries(endpoints)
+    .filter(([, { docs }]) => docs !== "undocumented")
+    .forEach(([, endpoint]) => {
+      const docs = endpoint.docs as RouteConfig;
+
+      if (
+        endpoint.authentication &&
+        typeof endpoint.authentication.securityScheme === "object"
+      ) {
+        docs.security = [
+          ...(docs.security ?? []),
+          { [endpoint.authentication.securityScheme.name]: [] },
+        ];
+      }
+
+      registry.registerPath(docs);
+    });
 
   return buildRequestHandler(endpoints);
 }

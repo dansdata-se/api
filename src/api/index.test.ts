@@ -3,6 +3,7 @@
  */
 
 import { Endpoint, defineEndpoints } from "@/api";
+import { AuthenticationMethod } from "@/api/auth";
 import { StatusCodes } from "@/api/status_codes";
 import { exportedForTesting as dbTesting } from "@/db";
 import { RouteConfig } from "@asteasolutions/zod-to-openapi";
@@ -11,33 +12,23 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { createMocks } from "node-mocks-http";
 
 const authorizationHeaderValue = "Bearer aBearerToken";
-const xUserRoleHeaderValue = "aRoleWithAccess";
-jest.mock("@/api/auth", () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const original = jest.requireActual("@/api/auth");
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return {
-    __esModule: true,
-    ...original,
-    isAuthenticated(req: NextApiRequest) {
-      return req.headers.authorization === authorizationHeaderValue;
-    },
-    isAuthorized(req: NextApiRequest) {
-      return req.headers["x-user-role"] === xUserRoleHeaderValue;
-    },
-  };
-});
+const testAuthenticationMethod: AuthenticationMethod = {
+  securityScheme: "undocumented",
+  isAuthenticated(req: NextApiRequest) {
+    return req.headers.authorization === authorizationHeaderValue;
+  },
+};
 
 function makeDummyEndpoint({
-  authenticated,
+  authentication,
   method,
 }: {
-  authenticated: boolean;
+  authentication: AuthenticationMethod | null;
   method: RouteConfig["method"];
 }): Endpoint {
   return {
-    authenticated,
+    authentication,
     docs: {
       method,
       path: "/api/v1/some/path",
@@ -97,7 +88,7 @@ describe("API core", () => {
       endpoints: {
         GET: makeDummyEndpoint({
           // OPTIONS should work even if authentication is required
-          authenticated: true,
+          authentication: testAuthenticationMethod,
           method: "get",
         }),
       },
@@ -108,32 +99,32 @@ describe("API core", () => {
         // OPTIONS should work even if authentication is required
         HEAD: makeDummyEndpoint({
           // OPTIONS should work even if authentication is required
-          authenticated: true,
+          authentication: testAuthenticationMethod,
           method: "head",
         }),
         GET: makeDummyEndpoint({
           // OPTIONS should work even if authentication is required
-          authenticated: true,
+          authentication: testAuthenticationMethod,
           method: "get",
         }),
         POST: makeDummyEndpoint({
           // OPTIONS should work even if authentication is required
-          authenticated: true,
+          authentication: testAuthenticationMethod,
           method: "post",
         }),
         PUT: makeDummyEndpoint({
           // OPTIONS should work even if authentication is required
-          authenticated: true,
+          authentication: testAuthenticationMethod,
           method: "put",
         }),
         DELETE: makeDummyEndpoint({
           // OPTIONS should work even if authentication is required
-          authenticated: true,
+          authentication: testAuthenticationMethod,
           method: "delete",
         }),
         PATCH: makeDummyEndpoint({
           // OPTIONS should work even if authentication is required
-          authenticated: true,
+          authentication: testAuthenticationMethod,
           method: "patch",
         }),
       },
@@ -170,7 +161,7 @@ describe("API core", () => {
     //#region arrange
     const handler = defineEndpoints({
       GET: makeDummyEndpoint({
-        authenticated: true,
+        authentication: testAuthenticationMethod,
         method: "get",
       }),
     });
@@ -198,7 +189,7 @@ describe("API core", () => {
     //#region arrange
     const handler = defineEndpoints({
       GET: makeDummyEndpoint({
-        authenticated: true,
+        authentication: testAuthenticationMethod,
         method: "get",
       }),
     });
@@ -226,7 +217,7 @@ describe("API core", () => {
     //#region arrange
     const handler = defineEndpoints({
       GET: makeDummyEndpoint({
-        authenticated: true,
+        authentication: testAuthenticationMethod,
         method: "get",
       }),
     });
@@ -251,69 +242,6 @@ describe("API core", () => {
     //#endregion
   });
 
-  test("returns status 403 when accessing a protected resource without authorization", async () => {
-    //#region arrange
-    const handler = defineEndpoints({
-      GET: makeDummyEndpoint({
-        authenticated: true,
-        method: "get",
-      }),
-    });
-    const {
-      req,
-      res,
-    }: {
-      req: Parameters<typeof handler>[0];
-      res: Parameters<typeof handler>[1];
-    } = createMocks({
-      method: "GET",
-      headers: {
-        authorization: authorizationHeaderValue,
-      },
-    });
-    //#endregion
-
-    //#region act
-    await handler(req, res);
-    //#endregion
-
-    //#region assert
-    expect(res.statusCode).toBe(403);
-    //#endregion
-  });
-
-  test("returns status 403 when accessing a protected resource with invalid authorization", async () => {
-    //#region arrange
-    const handler = defineEndpoints({
-      GET: makeDummyEndpoint({
-        authenticated: true,
-        method: "get",
-      }),
-    });
-    const {
-      req,
-      res,
-    }: {
-      req: Parameters<typeof handler>[0];
-      res: Parameters<typeof handler>[1];
-    } = createMocks({
-      method: "GET",
-      headers: {
-        authorization: authorizationHeaderValue,
-        "x-user-role": "aRoleWithoutAccess",
-      },
-    });
-    //#endregion
-
-    //#region act
-    await handler(req, res);
-    //#endregion
-
-    //#region assert
-    expect(res.statusCode).toBe(403);
-    //#endregion
-  });
-
   test("executes handler when accessing a protected resource with valid credentials", async () => {
     //#region arrange
     const mockHandler = jest.fn((_, res: NextApiResponse) => {
@@ -322,7 +250,7 @@ describe("API core", () => {
     });
     const handler = defineEndpoints({
       GET: {
-        authenticated: true,
+        authentication: testAuthenticationMethod,
         docs: {
           method: "get",
           path: "/api/v1/some/path",
@@ -345,7 +273,6 @@ describe("API core", () => {
       method: "GET",
       headers: {
         authorization: authorizationHeaderValue,
-        "x-user-role": xUserRoleHeaderValue,
       },
     });
     //#endregion
