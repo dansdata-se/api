@@ -60,6 +60,10 @@ export default defineEndpoints({
           let model: ProfileModel | null;
           let dto: ProfileDto | null;
           switch (type) {
+            case null:
+              model = null;
+              dto = null;
+              break;
             case ProfileType.individual:
               model = await IndividualDao.getById(id);
               dto = model ? mapIndividualModelToDto(model) : null;
@@ -74,6 +78,7 @@ export default defineEndpoints({
               break;
             default:
               throw new Error(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `Profile type '${type}' has not been implemented`
               );
           }
