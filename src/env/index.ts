@@ -1,4 +1,4 @@
-import { envsafe, str, url } from "envsafe";
+import { envsafe, num, str, url } from "envsafe";
 
 /**
  * Used for environment variables representing e.g. passwords or other
@@ -40,9 +40,13 @@ export default envsafe({
     default: "info",
     choices: ["trace", "debug", "info", "warn", "error", "fatal", "silent"],
   }),
+  REQUEST_LOG_RETENTION_DAYS: num({ default: 90 }),
 
   // API authentication
   PLACEHOLDER_AUTH_KEY: str({ devDefault: "mysuperstrongauthkey" }),
+
+  // Vercel cron
+  CRON_SECRET: str({ devDefault: "vercelcron" }),
 
   // Cloudflare images
   CLOUDFLARE_ACCOUNT_HASH: str({ devDefault: ENVVAR_UNSET }),

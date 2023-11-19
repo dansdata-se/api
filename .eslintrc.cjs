@@ -32,6 +32,12 @@ module.exports = {
             message:
               'Use `import z from "@/api/zod"` instead for consistent extensions.',
           },
+          {
+            name: "dayjs",
+            importNames: ["default"],
+            message:
+              'Use `import dayjs from "@/dayjs"` instead for consistent extensions.',
+          },
         ],
       },
     ],
