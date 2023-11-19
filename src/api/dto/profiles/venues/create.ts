@@ -3,6 +3,7 @@ import { BaseCreateProfileDtoSchema } from "@/api/dto/profiles/base/create";
 import { BaseProfileDtoSchema } from "@/api/dto/profiles/base/profile";
 import { registry } from "@/api/registry";
 import z from "@/api/zod";
+import { ProfileType } from "@prisma/client";
 
 export type CreateVenueDto = z.infer<typeof CreateVenueDtoSchema>;
 export const CreateVenueDtoSchema = registry.register(
@@ -43,5 +44,5 @@ cannot be an ancestor or descendent of itself).
 `,
         }),
     })
-  )
+  ).setKey("type", z.literal(ProfileType.venue))
 );

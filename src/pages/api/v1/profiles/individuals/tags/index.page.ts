@@ -13,7 +13,7 @@ export default defineEndpoints({
     docs: {
       method: "get",
       path: "/api/v1/profiles/individuals/tags/",
-      tags: ["Profiles", "Individuals"],
+      tags: ["Individuals"],
       summary: "List possible individual tags",
       responses: {
         [StatusCodes.success.ok]: {

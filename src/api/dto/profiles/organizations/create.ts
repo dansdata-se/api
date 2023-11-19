@@ -1,7 +1,7 @@
 import { BaseCreateProfileDtoSchema } from "@/api/dto/profiles/base/create";
 import { registry } from "@/api/registry";
 import z from "@/api/zod";
-import { OrganizationTag } from "@prisma/client";
+import { OrganizationTag, ProfileType } from "@prisma/client";
 
 export type CreateOrganizationDto = z.infer<typeof CreateOrganizationDtoSchema>;
 export const CreateOrganizationDtoSchema = registry.register(
@@ -51,5 +51,5 @@ export const CreateOrganizationDtoSchema = registry.register(
             "A list of individuals that are members of this organization.",
         }),
     })
-  )
+  ).setKey("type", z.literal(ProfileType.organization))
 );
