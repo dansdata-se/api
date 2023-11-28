@@ -11,10 +11,10 @@ const lock = new AsyncLock();
 /**
  * Creates a single test database instance to be used by all tests in this {@link describe}
  */
-export function withTestDatabaseForAll(): {
+export function withTestDatabaseForAll({ enableQueryLogging = false } = {}): {
   get value(): StartedPostgreSqlContainer;
 } {
-  const testDbController = withTestDatabase();
+  const testDbController = withTestDatabase({ enableQueryLogging });
   let dbContainer: StartedPostgreSqlContainer;
   beforeAll(
     async () => (dbContainer = await testDbController.before()),
@@ -31,10 +31,10 @@ export function withTestDatabaseForAll(): {
 /**
  * Creates one test database instance per test to be used in this {@link describe}
  */
-export function withTestDatabaseForEach(): {
+export function withTestDatabaseForEach({ enableQueryLogging = false } = {}): {
   get value(): StartedPostgreSqlContainer;
 } {
-  const testDbController = withTestDatabase();
+  const testDbController = withTestDatabase({ enableQueryLogging });
   let dbContainer: StartedPostgreSqlContainer;
   beforeEach(
     async () => (dbContainer = await testDbController.before()),
@@ -48,7 +48,7 @@ export function withTestDatabaseForEach(): {
   };
 }
 
-function withTestDatabase(): {
+function withTestDatabase({ enableQueryLogging = false } = {}): {
   before(this: void): Promise<StartedPostgreSqlContainer>;
   after(this: void): Promise<void>;
 } {
@@ -61,7 +61,10 @@ function withTestDatabase(): {
         ).start();
         await applyDbMigrations(dbContainer.getConnectionUri());
         dbTesting.overridePrismaClient(
-          dbTesting.createPrismaClient(dbContainer.getConnectionUri())
+          dbTesting.createPrismaClient({
+            connectionString: dbContainer.getConnectionUri(),
+            enableQueryLogging,
+          })
         );
         return dbContainer;
       } catch {

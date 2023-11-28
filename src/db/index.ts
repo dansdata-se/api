@@ -7,15 +7,27 @@ import env from "@/env";
 import { PrismaClient } from "@prisma/client";
 
 export type DbClient = ReturnType<typeof createPrismaClient>;
-function createPrismaClient(
-  connectionString: string = env.POSTGRES_PRISMA_URL
-) {
+function createPrismaClient({
+  connectionString = env.POSTGRES_PRISMA_URL,
+  enableQueryLogging = false,
+}: {
+  connectionString?: string;
+  enableQueryLogging?: boolean;
+} = {}) {
   const prismaClient = new PrismaClient({
     datasources: {
       db: {
         url: connectionString,
       },
     },
+    log: enableQueryLogging
+      ? [
+          {
+            emit: "stdout",
+            level: "query",
+          },
+        ]
+      : undefined,
   });
   return prismaClient.$extends({
     model: {
