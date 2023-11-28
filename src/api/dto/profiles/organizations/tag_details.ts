@@ -11,14 +11,19 @@ export const OrganizationTagDetailsDtoSchema = registry.register(
     tag: z.nativeEnum(OrganizationTag).openapi({
       example: OrganizationTag.educator,
     }),
-    label: z.string().openapi({
-      description: "Human readable label (in Swedish) for this tag",
-      example: "Utbildare",
-    }),
-    description: z.string().openapi({
-      description:
-        "Human readable description (in Swedish) of when the tag is applicable",
-      example: "Företag eller förening som erbjuder dansutbildning",
-    }),
+    label: z
+      .string()
+      .describe("Human readable label (in Swedish) for this tag")
+      .openapi({
+        example: "Utbildare",
+      }),
+    description: z
+      .string()
+      .describe(
+        "Human readable description (in Swedish) of when the tag is applicable"
+      )
+      .openapi({
+        example: "Företag eller förening som erbjuder dansutbildning",
+      }),
   })
 );

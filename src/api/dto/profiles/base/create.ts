@@ -14,10 +14,9 @@ export const BaseCreateProfileDtoSchema = z.object({
     })
     .optional()
     .default([])
-    .openapi({
-      description:
-        "URL(s) associated with this profile, such as Facebook or Spotify page, webshop, website, etc..",
-    }),
+    .describe(
+      "URL(s) associated with this profile, such as Facebook or Spotify page, webshop, website, etc.."
+    ),
   images: z.object({
     coverId: ImageDtoSchema.shape.id.nullable(),
     posterId: ImageDtoSchema.shape.id.nullable(),

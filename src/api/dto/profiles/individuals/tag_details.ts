@@ -11,14 +11,19 @@ export const IndividualTagDetailsDtoSchema = registry.register(
     tag: z.nativeEnum(IndividualTag).openapi({
       example: IndividualTag.musician,
     }),
-    label: z.string().openapi({
-      description: "Human readable label (in Swedish) for this tag",
-      example: "Musiker",
-    }),
-    description: z.string().openapi({
-      description:
-        "Human readable description (in Swedish) of when the tag is applicable",
-      example: "Någon som utövar musik, med eller utan instrument",
-    }),
+    label: z
+      .string()
+      .describe("Human readable label (in Swedish) for this tag")
+      .openapi({
+        example: "Musiker",
+      }),
+    description: z
+      .string()
+      .describe(
+        "Human readable description (in Swedish) of when the tag is applicable"
+      )
+      .openapi({
+        example: "Någon som utövar musik, med eller utan instrument",
+      }),
   })
 );

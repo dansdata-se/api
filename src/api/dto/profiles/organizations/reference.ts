@@ -11,10 +11,11 @@ export const OrganizationReferenceDtoSchema = registry.register(
   BaseProfileReferenceDtoSchema.merge(
     z
       .object({
-        tags: z.array(z.nativeEnum(OrganizationTag)).openapi({
-          description:
-            "A set of tags describing this organization and allowing API users to easier find it using filters.",
-        }),
+        tags: z
+          .array(z.nativeEnum(OrganizationTag))
+          .describe(
+            "A set of tags describing this organization and allowing API users to easier find it using filters."
+          ),
       })
       .setKey("type", z.literal(ProfileType.organization))
   )

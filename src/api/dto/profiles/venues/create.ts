@@ -13,8 +13,8 @@ export const CreateVenueDtoSchema = registry.register(
       coords: CoordsDtoSchema,
       permanentlyClosed: z
         .boolean()
-        .openapi({
-          description: `Whether the venue is permanently closed.
+        .describe(
+          `Whether the venue is permanently closed.
 
 A venue may be permanently closed for any number of reasons,
 including - but not limited to - being demolished or converted for
@@ -23,16 +23,14 @@ typically not expected to open again, nor to be used for future events.
 
 For temporary closures, such as renovation work, this field is
 expected to be \`false\`.
-`,
-        })
+`
+        )
         .optional()
         .default(false),
       parentId: BaseProfileDtoSchema.shape.id
         .optional()
         .nullable()
-        .default(null)
-        .openapi({
-          description: `Id of this venue's parent venue.
+        .default(null).describe(`Id of this venue's parent venue.
 
 The parent venue refers to the closest logical ancestor of this venue. For example,
 the parent of "Room 301" might be "Floor 3", which in turn might have "The Library" as
@@ -41,8 +39,7 @@ its parent.
 Note that the number of levels in this hierarchy is not restricted. Also, 
 the same venue must never appear twice in a given venue hierarchy (i.e., a venue
 cannot be an ancestor or descendent of itself).
-`,
-        }),
+`),
     })
   ).setKey("type", z.literal(ProfileType.venue))
 );

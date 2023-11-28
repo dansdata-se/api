@@ -38,16 +38,16 @@ export const ErrorDtoSchema = registry.register(
   "ErrorDto",
   z
     .object({
-      code: z.nativeEnum(ErrorCode).openapi({
-        description:
-          "Error code for the specific error. Can be used to supply the user with a localized message.",
-      }),
-      message: z.string().openapi({
-        description:
-          "More details (where available). Primarily aimed at developers.",
-      }),
+      code: z
+        .nativeEnum(ErrorCode)
+        .describe(
+          "Error code for the specific error. Can be used to supply the user with a localized message."
+        ),
+      message: z
+        .string()
+        .describe(
+          "More details (where available). Primarily aimed at developers."
+        ),
     })
-    .openapi({
-      description: "Error object returned for 4xx and 5xx responses.",
-    })
+    .describe("Error object returned for 4xx and 5xx responses.")
 );

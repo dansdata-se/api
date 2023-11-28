@@ -25,9 +25,7 @@ import { ProfileType } from "@prisma/client";
 import { NextApiResponse } from "next";
 
 const pathParametersSchema = z.object({
-  id: BaseProfileDtoSchema.shape.id.openapi({
-    description: "Profile ID",
-  }),
+  id: BaseProfileDtoSchema.shape.id.describe("Profile ID"),
 });
 
 export default defineEndpoints({

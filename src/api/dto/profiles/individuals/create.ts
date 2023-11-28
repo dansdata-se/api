@@ -13,10 +13,9 @@ export const CreateIndividualDtoSchema = registry.register(
         .refine((items) => new Set(items).size === items.length, {
           message: "Must be an array of unique tags",
         })
-        .openapi({
-          description:
-            "A set of tags describing this individual and allowing API users to easier find them using filters.",
-        }),
+        .describe(
+          "A set of tags describing this individual and allowing API users to easier find them using filters."
+        ),
       organizations: z
         .array(
           z.object({
@@ -26,8 +25,8 @@ export const CreateIndividualDtoSchema = registry.register(
               .trim()
               .min(1)
               .max(100)
+              .describe("The individual's role within the organization.")
               .openapi({
-                description: "The individual's role within the organization.",
                 examples: [
                   "Sångare",
                   "Keyboard och sång",
@@ -46,10 +45,9 @@ export const CreateIndividualDtoSchema = registry.register(
         )
         .optional()
         .default([])
-        .openapi({
-          description:
-            "A list of organizations this individual is affiliated with.",
-        }),
+        .describe(
+          "A list of organizations this individual is affiliated with."
+        ),
     })
   ).setKey("type", z.literal(ProfileType.individual))
 );

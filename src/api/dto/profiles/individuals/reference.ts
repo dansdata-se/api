@@ -10,10 +10,11 @@ export const IndividualReferenceDtoSchema = registry.register(
   "IndividualReferenceDto",
   BaseProfileReferenceDtoSchema.merge(
     z.object({
-      tags: z.array(z.nativeEnum(IndividualTag)).openapi({
-        description:
-          "A set of tags describing this individual and allowing API users to easier find them using filters.",
-      }),
+      tags: z
+        .array(z.nativeEnum(IndividualTag))
+        .describe(
+          "A set of tags describing this individual and allowing API users to easier find them using filters."
+        ),
     })
   ).setKey("type", z.literal(ProfileType.individual))
 );

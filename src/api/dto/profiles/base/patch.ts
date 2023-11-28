@@ -8,36 +8,29 @@ export const BasePatchProfileDtoSchema = z.object({
   links: BaseCreateProfileDtoSchema.shape.links.optional(),
   images: z
     .object({
-      coverId: BaseCreateProfileDtoSchema.shape.images.shape.coverId
-        .optional()
-        .openapi({
-          description: `Id of the image to use as the cover image.
+      coverId: BaseCreateProfileDtoSchema.shape.images.shape.coverId.optional()
+        .describe(`Id of the image to use as the cover image.
 
 Special values:
 * \`null\`: unlinks any existing image.
 * field omitted: no change to the currently linked image.
-`,
-        }),
-      posterId: BaseCreateProfileDtoSchema.shape.images.shape.posterId
-        .optional()
-        .openapi({
-          description: `Id of the image to use as the cover image.
+`),
+      posterId:
+        BaseCreateProfileDtoSchema.shape.images.shape.posterId.optional()
+          .describe(`Id of the image to use as the cover image.
   
   Special values:
   * \`null\`: unlinks any existing image.
   * field omitted: no change to the currently linked image.
-  `,
-        }),
-      squareId: BaseCreateProfileDtoSchema.shape.images.shape.squareId
-        .optional()
-        .openapi({
-          description: `Id of the image to use as the cover image.
+  `),
+      squareId:
+        BaseCreateProfileDtoSchema.shape.images.shape.squareId.optional()
+          .describe(`Id of the image to use as the cover image.
   
   Special values:
   * \`null\`: unlinks any existing image.
   * field omitted: no change to the currently linked image.
-  `,
-        }),
+  `),
     })
     .optional(),
 });

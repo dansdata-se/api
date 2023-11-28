@@ -11,8 +11,8 @@ export const VenueReferenceDtoSchema = registry.register(
     z
       .object({
         coords: CoordsDtoSchema,
-        permanentlyClosed: z.boolean().openapi({
-          description: `Whether the venue is permanently closed.
+        permanentlyClosed: z.boolean()
+          .describe(`Whether the venue is permanently closed.
 
 A venue may be permanently closed for any number of reasons,
 including - but not limited to - being demolished or converted for
@@ -21,8 +21,7 @@ typically not expected to open again, nor to be used for future events.
 
 For temporary closures, such as renovation work, this field is
 expected to be \`false\`.
-`,
-        }),
+`),
       })
       .setKey("type", z.literal(ProfileType.venue))
   )
