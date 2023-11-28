@@ -87,7 +87,8 @@ function withTestDatabase({ enableQueryLogging = false } = {}): {
           })
         );
         return dbContainer;
-      } catch {
+      } catch (e) {
+        console.error(e);
         // Jest does not stop the test automatically if there's an exception in beforeEach.
         // Use process.exit as a workaround.
         // https://github.com/jestjs/jest/issues/2713
