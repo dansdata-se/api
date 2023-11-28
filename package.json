@@ -20,7 +20,7 @@
     "dev:db:studio": "ts-node src/__build__/load_envvars.ts prisma studio"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^6.2.0",
+    "@asteasolutions/zod-to-openapi": "^6.3.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "^5.5.2",
     "@tailwindcss/typography": "^0.5.10",
