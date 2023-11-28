@@ -89,7 +89,7 @@ describe("Base profiles manual SQL", () => {
           ] as const
       )
       // Ids are used as a secondary sort order to ensure consistent results
-      .sort(([idA], [idB]) => idA.localeCompare(idB));
+      .sort(([idA], [idB]) => idA.localeCompare(idB, "sv-SE"));
     await db.$executeRaw`
       INSERT INTO profiles.profiles(id, type, name, description)
       VALUES ${Prisma.join(

@@ -1,0 +1,7 @@
+CREATE DATABASE
+  dansdata
+WITH
+  ENCODING 'UTF8'
+  LOCALE_PROVIDER icu
+  ICU_LOCALE "sv-SE"
+  TEMPLATE template0;

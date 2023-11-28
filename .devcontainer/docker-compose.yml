@@ -11,12 +11,9 @@ services:
       - dansdata-net
 
   api-db:
-    image: postgis/postgis:15-master
+    build:
+      context: ../database
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: default
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: verceldb
     networks:
       - dansdata-net
     volumes:

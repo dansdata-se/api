@@ -9,7 +9,7 @@
       "port": 5432,
       "driver": "PostgreSQL",
       "name": "Dansdata API Database",
-      "database": "verceldb",
+      "database": "dansdata",
       "username": "default",
       "password": "postgres"
     }

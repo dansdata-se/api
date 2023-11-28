@@ -54,18 +54,18 @@ export default envsafe({
   CLOUDFLARE_API_TOKEN: str({ devDefault: ENVVAR_UNSET }),
 
   // Database
-  POSTGRES_DATABASE: str({ devDefault: "verceldb" }),
+  POSTGRES_DATABASE: str({ devDefault: "dansdata" }),
   POSTGRES_HOST: str({ devDefault: "api-db" }),
   POSTGRES_PASSWORD: str({ devDefault: "postgres" }),
   POSTGRES_PRISMA_URL: url({
     devDefault:
-      "postgres://default:postgres@api-db:5432/verceldb?pgbouncer=true&connect_timeout=15",
+      "postgres://default:postgres@api-db:5432/dansdata?pgbouncer=true&connect_timeout=15",
   }),
   POSTGRES_URL_NON_POOLING: url({
-    devDefault: "postgres://default:postgres@api-db:5432/verceldb",
+    devDefault: "postgres://default:postgres@api-db:5432/dansdata",
   }),
   POSTGRES_URL: url({
-    devDefault: "postgres://default:postgres@api-db:5432/verceldb",
+    devDefault: "postgres://default:postgres@api-db:5432/dansdata",
   }),
   POSTGRES_USER: str({ devDefault: "default" }),
 

@@ -1,10 +1,9 @@
 import { exportedForTesting as dbTesting, getDbClient } from "@/db";
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from "@testcontainers/postgresql";
+import { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import AsyncLock from "async-lock";
 import { spawn } from "child_process";
+import path from "path";
+import { GenericContainer, Wait } from "testcontainers";
 
 const lock = new AsyncLock();
 
@@ -56,9 +55,30 @@ function withTestDatabase({ enableQueryLogging = false } = {}): {
   return {
     async before(this: void) {
       try {
-        dbContainer = await new PostgreSqlContainer(
-          "postgis/postgis:15-master"
-        ).start();
+        dbContainer = new StartedPostgreSqlContainer(
+          /*
+           * This section is adapted from
+           * https://github.com/testcontainers/testcontainers-node/blob/9941583b2627df93d4e579426e236da5ff2e127f/packages/modules/postgresql/src/postgresql-container.ts#L29-L39
+           */
+          await (
+            await GenericContainer.fromDockerfile(
+              path.join(__dirname, "../../../database/")
+            ).build("dansdata-test-db", { deleteOnExit: false })
+          )
+            .withExposedPorts(5432)
+            .withWaitStrategy(
+              Wait.forLogMessage(
+                /.*database system is ready to accept connections.*/,
+                2
+              )
+            )
+            .withStartupTimeout(120_000)
+            .start(),
+          "dansdata",
+          "default",
+          "postgres"
+        );
+
         await applyDbMigrations(dbContainer.getConnectionUri());
         dbTesting.overridePrismaClient(
           dbTesting.createPrismaClient({
