@@ -1,9 +1,12 @@
 import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { OrganizationDao } from "@/db/dao/profiles/organization";
+import env from "@/env";
+import { KeyPagedDataModel } from "@/model/pagination";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { CreateIndividualModel } from "@/model/profiles/individuals/create";
+import { IndividualFilterModel } from "@/model/profiles/individuals/filter";
 import { PatchIndividualModel } from "@/model/profiles/individuals/patch";
 import { IndividualModel } from "@/model/profiles/individuals/profile";
 import { IndividualReferenceModel } from "@/model/profiles/individuals/reference";
@@ -168,6 +171,77 @@ export const IndividualDao = {
         .filter(hasIndividualProfileType)
         .map(expandBaseModelToReference)
     );
+  },
+  /**
+   * Retrieve a page of profile references from the full dataset of individuals.
+   *
+   * The dataset is sorted in alphabetical order.
+   *
+   * Profile references are used when we need to refer to a profile without this
+   * reference including further references to other profiles and so forth.
+   *
+   * Profile references typically contain just enough data for a client to
+   * render a nice looking link for end users without having to look up the full
+   * profile first.
+   */
+  async getManyReferences(
+    filterModel: IndividualFilterModel
+  ): Promise<
+    KeyPagedDataModel<IndividualReferenceModel, IndividualReferenceModel["id"]>
+  > {
+    return await getDbClient()
+      .individualEntity.findMany({
+        cursor: filterModel.pageKey
+          ? {
+              profileId: filterModel.pageKey,
+            }
+          : undefined,
+        where: {
+          tags: filterModel.tags.size
+            ? {
+                hasSome: Array.from(filterModel.tags),
+              }
+            : undefined,
+          organizations: filterModel.organizationIds.size
+            ? {
+                some: {
+                  organizationId: {
+                    in: Array.from(filterModel.organizationIds),
+                  },
+                },
+              }
+            : undefined,
+        },
+        take: env.RESULT_PAGE_SIZE + 1,
+        orderBy: [
+          {
+            profile: {
+              name: "asc",
+            },
+          },
+          {
+            profile: {
+              id: "asc",
+            },
+          },
+        ],
+        select: {
+          profileId: true,
+        },
+      })
+      .then((results) => results.map((it) => it.profileId))
+      .then(async (ids) => {
+        const data = await Promise.all(
+          ids
+            .slice(0, env.RESULT_PAGE_SIZE)
+            .flatMap((id) => this.getReferenceById(id))
+        ).then((refs) => refs.filter(isNonNull));
+        const nextPageKey = ids.at(env.RESULT_PAGE_SIZE) ?? null;
+        return {
+          data,
+          nextPageKey,
+        };
+      });
   },
   /**
    * Retrieve a list of individual tags with human-readable label and description

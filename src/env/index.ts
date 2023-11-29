@@ -34,6 +34,9 @@ export const ENVVAR_UNSET = "{unset_envvar}";
 // ```
 // However, this does not work if NODE_ENV is loaded via envsafe.
 export default envsafe({
+  // General Settings
+  RESULT_PAGE_SIZE: num({ default: 30 }),
+
   // Logging
   LOG_LEVEL: str({
     devDefault: "debug",
