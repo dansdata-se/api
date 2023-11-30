@@ -20,7 +20,7 @@
     "typeRoots": ["./node_modules/@types", "./src/@types"]
   },
   "ts-node": {
-    "esm": true,
+    "esm": false,
     "compilerOptions": {
       "module": "nodenext"
     },
