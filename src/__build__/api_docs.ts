@@ -132,6 +132,15 @@ Request volumes that affect our ability to provide data freely may be limited or
 
 Please contact us if your application(s) needs to make heavy use of the API to discuss options and prevent interruptions.
 
+### Cache Optimization
+
+We use a few different strategies to optimize the number of cache hits. Do not be surprised if your request receives a 301 redirect!
+
+For example:
+* Request parameter values are lower-cased.
+* Request parameters are sorted in alphabetical order.
+* Coordinates (\`lat\`, \`lng\`) in query parameters are rewritten to 3 decimal places of precision (~110 m).
+
 ### Privacy
 
 See the Dansdata [Privacy Policy](https://dansdata.se/privacy).
