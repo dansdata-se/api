@@ -34,18 +34,14 @@ export default function DocumentationPage() {
       </Head>
       <div className="flex min-h-full flex-col">
         <header></header>
-        <main className="grow px-4 py-8">
-          {/* Swagger does not support dark mode */}
-          <div
-            data-theme="light"
-            className="mockup-window border border-outline shadow-md"
-          >
+        <main className="container grow py-8">
+          <div className="mockup-window border border-outline bg-base-100 shadow-md dark:border-none dark:bg-base-300">
             <div className="px-4 pb-4">
               <SwaggerUI url="/api/v1/dansdata.api.json" />
             </div>
           </div>
         </main>
-        <footer className="footer items-center bg-neutral p-10 text-neutral-content">
+        <footer className="dark:base-content footer items-center bg-base-100 p-10 text-base dark:bg-base-300">
           <div>
             <span className="footer-title">Dansdata</span>
             <a
@@ -97,7 +93,7 @@ export default function DocumentationPage() {
             </a>
           </div>
         </footer>
-        <footer className="footer border-t border-outline bg-neutral px-10 py-4 text-neutral-content">
+        <footer className="dark:base-content footer border-t border-outline bg-neutral px-10 py-4 text-neutral-content dark:bg-base-300">
           <div className="grid-flow-col items-center">
             <div className="grid grid-flow-col items-center gap-4">
               <Image

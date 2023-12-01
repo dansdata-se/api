@@ -7,6 +7,16 @@ module.exports = {
         outline: "rgba(var(--color-outline), <alpha-value>)",
       },
     },
+    container: {
+      center: true,
+      padding: {
+        DEFAULT: "1rem",
+        sm: "2rem",
+        lg: "4rem",
+        xl: "5rem",
+        "2xl": "6rem",
+      },
+    },
     fontFamily: {
       brand: ["var(--font-norican)"],
       sans: ["var(--font-roboto-flex)"],
@@ -34,6 +44,8 @@ module.exports = {
           accent: "#5DDBBC",
           neutral: "#3F484B",
           "base-100": "#001F25",
+          "base-200": "#001114",
+          "base-300": "#00080a",
           info: "#52D7F0",
           success: "#006b58",
           warning: "#FFF5AD",

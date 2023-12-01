@@ -21,10 +21,20 @@ https://stackoverflow.com/a/17555766/1137077
     @apply h-full;
   }
   body {
-    @apply h-full min-h-full;
+    @apply h-full min-h-full bg-primary dark:bg-base-100;
   }
   #__next {
-    @apply h-full;
+    @apply h-full min-h-full;
+  }
+
+  /* Poor man's dark mode
+   * https://github.com/swagger-api/swagger-ui/issues/5327#issuecomment-742375520
+   */
+  .swagger-ui {
+    @apply dark:hue-rotate-180 dark:invert-[92%];
+  }
+  .swagger-ui .microlight {
+    @apply dark:hue-rotate-180 dark:invert;
   }
 }
 
