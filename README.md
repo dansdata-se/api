@@ -46,8 +46,7 @@ Unit tests can be run using
 $ npm run test:unit
 ```
 
-To run integration tests, you need to create a `.env.test.local` file at the project root (using
-the same variables as `.env.development.local`). These tests can then be executing using
+Integration tests can be run using
 
 ```
 $ npm run test:integration
