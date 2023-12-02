@@ -1,9 +1,12 @@
 import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
+import env from "@/env";
+import { KeyPagedDataModel } from "@/model/pagination";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { CreateOrganizationModel } from "@/model/profiles/organizations/create";
+import { OrganizationFilterModel } from "@/model/profiles/organizations/filter";
 import { PatchOrganizationModel } from "@/model/profiles/organizations/patch";
 import { OrganizationModel } from "@/model/profiles/organizations/profile";
 import { OrganizationReferenceModel } from "@/model/profiles/organizations/reference";
@@ -172,6 +175,80 @@ export const OrganizationDao = {
         .filter(hasOrganizationProfileType)
         .map(expandBaseModelToReference)
     );
+  },
+  /**
+   * Retrieve a page of profile references from the full dataset of organizations.
+   *
+   * The dataset is sorted in alphabetical order.
+   *
+   * Profile references are used when we need to refer to a profile without this
+   * reference including further references to other profiles and so forth.
+   *
+   * Profile references typically contain just enough data for a client to
+   * render a nice looking link for end users without having to look up the full
+   * profile first.
+   */
+  async getManyReferences(
+    filterModel: OrganizationFilterModel
+  ): Promise<
+    KeyPagedDataModel<
+      OrganizationReferenceModel,
+      OrganizationReferenceModel["id"]
+    >
+  > {
+    return await getDbClient()
+      .organizationEntity.findMany({
+        cursor: filterModel.pageKey
+          ? {
+              profileId: filterModel.pageKey,
+            }
+          : undefined,
+        where: {
+          tags: filterModel.tags.size
+            ? {
+                hasSome: Array.from(filterModel.tags),
+              }
+            : undefined,
+          members: filterModel.memberIds.size
+            ? {
+                some: {
+                  individualId: {
+                    in: Array.from(filterModel.memberIds),
+                  },
+                },
+              }
+            : undefined,
+        },
+        take: env.RESULT_PAGE_SIZE + 1,
+        orderBy: [
+          {
+            profile: {
+              name: "asc",
+            },
+          },
+          {
+            profile: {
+              id: "asc",
+            },
+          },
+        ],
+        select: {
+          profileId: true,
+        },
+      })
+      .then((results) => results.map((it) => it.profileId))
+      .then(async (ids) => {
+        const data = await Promise.all(
+          ids
+            .slice(0, env.RESULT_PAGE_SIZE)
+            .flatMap((id) => this.getReferenceById(id))
+        ).then((refs) => refs.filter(isNonNull));
+        const nextPageKey = ids.at(env.RESULT_PAGE_SIZE) ?? null;
+        return {
+          data,
+          nextPageKey,
+        };
+      });
   },
   /**
    * Retrieve a list of organization tags with human-readable label and description

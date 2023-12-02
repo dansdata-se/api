@@ -11,6 +11,7 @@ import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { OrganizationDao } from "@/db/dao/profiles/organization";
 import { ImageDao } from "@/db/dao/storage/image";
+import env from "@/env";
 import { CreateIndividualModel } from "@/model/profiles/individuals/create";
 import { CreateOrganizationModel } from "@/model/profiles/organizations/create";
 import { PatchOrganizationModel } from "@/model/profiles/organizations/patch";
@@ -241,6 +242,107 @@ describe("OrganizationDao integration tests", () => {
       },
       tags: createModel.tags,
     });
+  });
+
+  test.each([
+    { count: 0, pages: 0 },
+    { count: 1, pages: 1 },
+    { count: env.RESULT_PAGE_SIZE - 1, pages: 1 },
+    { count: env.RESULT_PAGE_SIZE, pages: 1 },
+    { count: env.RESULT_PAGE_SIZE + 1, pages: 2 },
+    { count: Math.floor(env.RESULT_PAGE_SIZE * 2.6), pages: 3 },
+    { count: env.RESULT_PAGE_SIZE * 3, pages: 3 },
+  ])(
+    "list $count profiles (requiring $pages pages) without filtering",
+    async ({ count, pages }) => {
+      // Arrange
+      for (let i = 0; i < count; i++) {
+        await OrganizationDao.create(
+          generateCreateOrganizationModel({
+            images: {
+              coverId: null,
+              posterId: null,
+              squareId: null,
+            },
+            members: [],
+          })
+        );
+      }
+
+      for (
+        let pageIndex = 0, previousPageKey = null;
+        pageIndex < Math.max(pages, 1);
+        pageIndex++
+      ) {
+        // Act
+        const page = await OrganizationDao.getManyReferences({
+          memberIds: new Set([]),
+          tags: new Set([]),
+          pageKey: previousPageKey,
+        });
+
+        // Assert
+        expect(page.data).toHaveLength(
+          Math.min(
+            env.RESULT_PAGE_SIZE,
+            Math.max(0, count - env.RESULT_PAGE_SIZE * pageIndex)
+          )
+        );
+        if (pageIndex > 0) {
+          expect(previousPageKey).toEqual(page.data[0].id);
+        }
+        if (pageIndex + 1 < pages) {
+          expect(page.nextPageKey).not.toBeNull();
+        } else {
+          expect(page.nextPageKey).toBeNull();
+        }
+
+        previousPageKey = page.nextPageKey;
+      }
+    }
+  );
+
+  test("getManyReferences sorts names as expected in a swedish locale", async () => {
+    // Arrange
+    const unsortedNames = ["Örjan", "Åsa", "Britt", "Niklas", "Ängla", "Per"];
+    const sortedNames = ["Britt", "Niklas", "Per", "Åsa", "Ängla", "Örjan"];
+    for (const name of unsortedNames) {
+      await OrganizationDao.create(
+        generateCreateOrganizationModel({
+          name,
+          images: {
+            coverId: null,
+            posterId: null,
+            squareId: null,
+          },
+          members: [],
+        })
+      );
+    }
+
+    // Act
+    const retrievedNames: string[] = [];
+    for (
+      let firstIteration = true, previousPageKey = null;
+      firstIteration || previousPageKey !== null;
+      firstIteration = false
+    ) {
+      // Act
+      const page = await OrganizationDao.getManyReferences({
+        memberIds: new Set([]),
+        tags: new Set([]),
+        pageKey: previousPageKey,
+      });
+      // Sanity check to avoid infinite loop
+      expect(page.data).not.toHaveLength(0);
+
+      retrievedNames.push(...page.data.map((it) => it.name));
+
+      previousPageKey = page.nextPageKey;
+    }
+
+    // Assert
+    expect(retrievedNames).toEqual(sortedNames);
   });
 
   test("create and patch full organization profile", async () => {
