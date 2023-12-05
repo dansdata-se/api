@@ -129,15 +129,17 @@ model VenueEntity {
   coords            Unsupported("geography(Point, 4326)")
   permanentlyClosed Boolean                               @default(false) @map("permanently_closed")
   eventSlots        EventSlotEntity[]
-  ancestors         VenueParentEntity[]                   @relation("ancestors")
-  descendents       VenueParentEntity[]                   @relation("descendents")
+  ancestors         VenueTreeEntity[]                     @relation("ancestors")
+  descendents       VenueTreeEntity[]                     @relation("descendents")
+  asRootNode        VenueTreeRootEntity?
+  asLeafNode        VenueTreeLeafEntity?
 
   @@index([coords], type: Gist)
   @@map("venues")
   @@schema("profiles")
 }
 
-view VenueParentEntity {
+view VenueTreeEntity {
   child    VenueEntity @relation("ancestors", fields: [childId], references: [profileId])
   childId  String      @map("child_id")
   parent   VenueEntity @relation("descendents", fields: [parentId], references: [profileId])
@@ -148,7 +150,25 @@ view VenueParentEntity {
   @@index([childId])
   @@index([parentId])
   @@index([distance])
-  @@map("venue_parents")
+  @@map("venue_tree")
+  @@schema("profiles")
+}
+
+view VenueTreeRootEntity {
+  venue   VenueEntity @relation(fields: [venueId], references: [profileId])
+  venueId String      @map("venue_id")
+
+  @@unique([venueId])
+  @@map("venue_tree_root_nodes")
+  @@schema("profiles")
+}
+
+view VenueTreeLeafEntity {
+  venue   VenueEntity @relation(fields: [venueId], references: [profileId])
+  venueId String      @map("venue_id")
+
+  @@unique([venueId])
+  @@map("venue_tree_leaf_nodes")
   @@schema("profiles")
 }
 

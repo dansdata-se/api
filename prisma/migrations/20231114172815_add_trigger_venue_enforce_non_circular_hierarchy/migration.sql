@@ -1,5 +1,5 @@
-DROP MATERIALIZED VIEW IF EXISTS "profiles"."venue_parents";
-CREATE MATERIALIZED VIEW "profiles"."venue_parents"(child_id, parent_id, distance) AS (
+DROP MATERIALIZED VIEW IF EXISTS "profiles"."venue_tree";
+CREATE MATERIALIZED VIEW "profiles"."venue_tree"(child_id, parent_id, distance) AS (
   WITH RECURSIVE parent_query AS (
     SELECT
       profile_id AS child_id,
@@ -19,23 +19,47 @@ CREATE MATERIALIZED VIEW "profiles"."venue_parents"(child_id, parent_id, distanc
   SELECT child_id, parent_id, distance
   FROM parent_query
 );
-CREATE UNIQUE INDEX "venue_parents_child_parent_idx" ON "profiles"."venue_parents"(child_id, parent_id);
-CREATE INDEX "venue_parents_child_idx" ON "profiles"."venue_parents"(child_id);
-CREATE INDEX "venue_parents_parent_idx" ON "profiles"."venue_parents"(parent_id);
-CREATE INDEX "venue_distance_idx" ON "profiles"."venue_parents"(distance);
+CREATE UNIQUE INDEX "venue_tree_child_parent_idx" ON "profiles"."venue_tree"(child_id, parent_id);
+CREATE INDEX "venue_tree_child_idx" ON "profiles"."venue_tree"(child_id);
+CREATE INDEX "venue_tree_parent_idx" ON "profiles"."venue_tree"(parent_id);
+CREATE INDEX "venue_distance_idx" ON "profiles"."venue_tree"(distance);
 
-CREATE OR REPLACE FUNCTION "profiles"."trigger_func_refresh_venue_parents"() 
+DROP MATERIALIZED VIEW IF EXISTS "profiles"."venue_tree_root_nodes";
+CREATE MATERIALIZED VIEW "profiles"."venue_tree_root_nodes"(venue_id) AS (
+  SELECT profile_id AS venue_id
+  FROM profiles.venues
+  WHERE profile_id NOT IN (
+    SELECT child_id
+    FROM profiles.venue_tree
+  )
+);
+CREATE UNIQUE INDEX "venue_tree_root_nodes_venue_id_idx" ON "profiles"."venue_tree_root_nodes"(venue_id);
+
+DROP MATERIALIZED VIEW IF EXISTS "profiles"."venue_tree_leaf_nodes";
+CREATE MATERIALIZED VIEW "profiles"."venue_tree_leaf_nodes"(venue_id) AS (
+  SELECT profile_id AS venue_id
+  FROM profiles.venues
+  WHERE profile_id NOT IN (
+    SELECT parent_id
+    FROM profiles.venue_tree
+  )
+);
+CREATE UNIQUE INDEX "venue_tree_leaf_nodes_venue_id_idx" ON "profiles"."venue_tree_leaf_nodes"(venue_id);
+
+CREATE OR REPLACE FUNCTION "profiles"."trigger_func_refresh_venue_tree"() 
   RETURNS TRIGGER 
   VOLATILE
   PARALLEL UNSAFE
 AS $$
 BEGIN
-  REFRESH MATERIALIZED VIEW "profiles"."venue_parents";
+  REFRESH MATERIALIZED VIEW "profiles"."venue_tree";
+  REFRESH MATERIALIZED VIEW "profiles"."venue_tree_root_nodes";
+  REFRESH MATERIALIZED VIEW "profiles"."venue_tree_leaf_nodes";
   RETURN NULL;
 END;
 $$ LANGUAGE PLPGSQL;
 
-CREATE OR REPLACE TRIGGER "refresh_venue_parents" 
+CREATE OR REPLACE TRIGGER "refresh_venue_tree" 
   AFTER
     INSERT
       OR UPDATE OF "parent_id"
@@ -43,7 +67,7 @@ CREATE OR REPLACE TRIGGER "refresh_venue_parents"
       OR TRUNCATE
   ON "profiles"."venues"
   FOR EACH STATEMENT
-  EXECUTE FUNCTION "profiles"."trigger_func_refresh_venue_parents"();
+  EXECUTE FUNCTION "profiles"."trigger_func_refresh_venue_tree"();
 
 CREATE OR REPLACE FUNCTION "profiles"."trigger_func_venue_enforce_non_circular_hierarchy"() 
   RETURNS TRIGGER 
@@ -53,7 +77,7 @@ AS $$
 BEGIN
   IF NEW.profile_id = NEW.parent_id OR EXISTS(
     SELECT *
-    FROM "profiles"."venue_parents"
+    FROM "profiles"."venue_tree"
     WHERE NEW.parent_id = child_id
       AND NEW.profile_id = parent_id
   ) THEN
