@@ -10,8 +10,8 @@
       "driver": "PostgreSQL",
       "name": "Dansdata API Database",
       "database": "dansdata",
-      "username": "default",
-      "password": "postgres"
+      "username": "postgres",
+      "password": "password"
     }
   ],
   "jest.runMode": "on-demand",

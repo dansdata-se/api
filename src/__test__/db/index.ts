@@ -75,8 +75,8 @@ function withTestDatabase({ enableQueryLogging = false } = {}): {
             .withStartupTimeout(120_000)
             .start(),
           "dansdata",
-          "default",
-          "postgres"
+          "postgres",
+          "password"
         );
 
         await applyDbMigrations(dbContainer.getConnectionUri());

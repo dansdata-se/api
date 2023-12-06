@@ -1,25 +1,23 @@
 # Note: This Dockerfile is used by
 # the devcontainer AND by integration tests
 
-FROM postgis/postgis:15-master
+FROM supabase/postgres:orioledb-15.1.0.137_amd64
 
-# Step 1: Recreate zero state of the production environment
-# (i.e. as created by vercel)
-
-ENV LC_COLLATE C
-ENV LC_CTYPE C
-ENV LC_MESSAGES=""
-ENV LC_MONETARY C
-ENV LC_NUMERIC C
-ENV LC_TIME C
-
-ENV POSTGRES_USER=default
-ENV POSTGRES_DB=verceldb
 # Simple password for local development
-ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_PASSWORD=password
 
 # Step 2: Apply our manual modifications, allowing migrations to be applied
 # (this could also be considered a zero state of the production environment,
-# but it includes some manual sql that is specific to the vercel environment).
+# but it includes some manual sql that is specific to the supabase environment).
 
 ADD init /docker-entrypoint-initdb.d/
+
+# Workaround for
+#     "root" execution of the PostgreSQL server is not permitted.
+#     The server must be started under an unprivileged user ID to prevent
+#     possible system security compromise.  See the documentation for
+#     more information on how to properly start the server.
+# USER postgres
+
+EXPOSE 5432
+CMD [ "postgres", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
