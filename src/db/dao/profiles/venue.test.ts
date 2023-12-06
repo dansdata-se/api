@@ -11,6 +11,7 @@ import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { IndividualDao } from "@/db/dao/profiles/individual";
 import { VenueDao } from "@/db/dao/profiles/venue";
 import { ImageDao } from "@/db/dao/storage/image";
+import env from "@/env";
 import { mapVenueModelToReferenceModel } from "@/mapping/profiles/venues/profile";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { CreateIndividualModel } from "@/model/profiles/individuals/create";
@@ -267,6 +268,101 @@ describe("VenueDao integration tests", () => {
         square: null,
       },
     });
+  });
+
+  test.each([
+    0,
+    1,
+    env.RESULT_PAGE_SIZE - 1,
+    env.RESULT_PAGE_SIZE,
+    env.RESULT_PAGE_SIZE + 1,
+    Math.floor(env.RESULT_PAGE_SIZE * 2.6),
+    env.RESULT_PAGE_SIZE * 3,
+  ])(
+    "getManyReferences paginates %s profiles (with minimal filters) correctly",
+    async (profileCount) => {
+      // Arrange
+      const pageCount = Math.ceil(profileCount / env.RESULT_PAGE_SIZE);
+      for (let i = 0; i < profileCount; i++) {
+        await VenueDao.create(generateCreateVenueModel());
+      }
+
+      for (
+        let pageIndex = 0, pageKey = null;
+        pageIndex < Math.max(pageCount, 1);
+        pageIndex++
+      ) {
+        // Act
+        const page = await VenueDao.getManyReferences({
+          near: null,
+          nameQuery: null,
+          level: "any",
+          includePermanentlyClosed: true,
+          pageKey,
+        });
+
+        // Assert
+        expect(page.data).toHaveLength(
+          Math.min(
+            env.RESULT_PAGE_SIZE,
+            Math.max(0, profileCount - env.RESULT_PAGE_SIZE * pageIndex)
+          )
+        );
+        if (pageIndex > 0) {
+          expect(pageKey).toEqual(page.data[0].id);
+        }
+        if (pageIndex + 1 < pageCount) {
+          expect(page.nextPageKey).not.toBeNull();
+        } else {
+          expect(page.nextPageKey).toBeNull();
+        }
+
+        pageKey = page.nextPageKey;
+      }
+    }
+  );
+
+  // This currently depends on our database backend.
+  // However, by ensuring our testing environment matches what we would expect,
+  // we can also be fairly confident about what steps to take to ensure the production
+  // environment does what we expect as well.
+  test("getManyReferences sorts names as expected in a swedish locale", async () => {
+    // Arrange
+    const unsortedNames = ["Örjan", "Åsa", "Britt", "Niklas", "Ängla", "Per"];
+    const sortedNames = ["Britt", "Niklas", "Per", "Åsa", "Ängla", "Örjan"];
+    for (const name of unsortedNames) {
+      await VenueDao.create(
+        generateCreateVenueModel({
+          name,
+        })
+      );
+    }
+
+    // Act
+    const retrievedNames: string[] = [];
+    for (
+      let firstIteration = true, previousPageKey = null;
+      firstIteration || previousPageKey !== null;
+      firstIteration = false
+    ) {
+      // Act
+      const page = await VenueDao.getManyReferences({
+        near: null,
+        nameQuery: null,
+        level: "any",
+        includePermanentlyClosed: true,
+        pageKey: previousPageKey,
+      });
+      // Sanity check to avoid infinite loop
+      expect(page.data).not.toHaveLength(0);
+
+      retrievedNames.push(...page.data.map((it) => it.name));
+
+      previousPageKey = page.nextPageKey;
+    }
+
+    // Assert
+    expect(retrievedNames).toEqual(sortedNames);
   });
 
   test("create and patch full venue profile", async () => {

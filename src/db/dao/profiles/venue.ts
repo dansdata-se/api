@@ -1,8 +1,11 @@
 import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
+import env from "@/env";
+import { KeyPagedDataModel } from "@/model/pagination";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
+import { VenueFilterModel } from "@/model/profiles/venues/filter";
 import { PatchVenueModel } from "@/model/profiles/venues/patch";
 import { VenueModel } from "@/model/profiles/venues/profile";
 import { VenueReferenceModel } from "@/model/profiles/venues/reference";
@@ -127,6 +130,46 @@ export const VenueDao = {
     if (baseModel === null) return null;
     if (!hasVenueProfileType(baseModel)) return null;
     return expandBaseModelToReference(baseModel);
+  },
+  /**
+   * Retrieve a page of venue references from the full dataset of venues.
+   *
+   * The dataset is sorted (in descending order of precedence) by:
+   * * name similarity
+   * * distance
+   * * name
+   * * id
+   *
+   * Profile references are used when we need to refer to a profile without this
+   * reference including further references to other profiles and so forth.
+   *
+   * Profile references typically contain just enough data for a client to
+   * render a nice looking link for end users without having to look up the full
+   * profile first.
+   */
+  async getManyReferences(
+    filterModel: VenueFilterModel
+  ): Promise<
+    KeyPagedDataModel<VenueReferenceModel, VenueReferenceModel["id"]>
+  > {
+    return await getDbClient()
+      .venueEntity.findManyByFilter(filterModel)
+      .then((results) => results.map((it) => it.profileId))
+      .then(async (ids) => {
+        const data = await Promise.all(
+          ids
+            .slice(0, env.RESULT_PAGE_SIZE)
+            .flatMap((id) => this.getReferenceById(id))
+        )
+          // If we get null, the profile was likely deleted since our initial query.
+          // Silently ignore this.
+          .then((refs) => refs.filter(isNonNull));
+        const nextPageKey = ids.at(env.RESULT_PAGE_SIZE) ?? null;
+        return {
+          data,
+          nextPageKey,
+        };
+      });
   },
 };
 
