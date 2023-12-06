@@ -54,6 +54,7 @@ function withTestDatabase({ enableQueryLogging = false } = {}): {
   let dbContainer: StartedPostgreSqlContainer;
   return {
     async before(this: void) {
+      let containerLogs = "";
       try {
         dbContainer = new StartedPostgreSqlContainer(
           /*
@@ -73,12 +74,19 @@ function withTestDatabase({ enableQueryLogging = false } = {}): {
               )
             )
             .withStartupTimeout(120_000)
+            .withLogConsumer((logStream) => {
+              logStream.on("data", (line) => (containerLogs += line));
+              logStream.on("err", (line) => (containerLogs += line));
+            })
             .start(),
           "dansdata",
           "postgres",
           "password"
         );
 
+        console.debug(
+          "Testcontainer connection uri: " + dbContainer.getConnectionUri()
+        );
         await applyDbMigrations(dbContainer.getConnectionUri());
         dbTesting.overridePrismaClient(
           dbTesting.createPrismaClient({
@@ -89,6 +97,7 @@ function withTestDatabase({ enableQueryLogging = false } = {}): {
         return dbContainer;
       } catch (e) {
         console.error(e);
+        console.debug("== Testcontainer logs ==\n\n" + containerLogs);
         // Jest does not stop the test automatically if there's an exception in beforeEach.
         // Use process.exit as a workaround.
         // https://github.com/jestjs/jest/issues/2713
