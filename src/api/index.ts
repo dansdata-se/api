@@ -53,49 +53,83 @@ export function defineEndpoints(
 }
 
 const buildRequestHandler = (endpoints: Partial<Endpoints>) =>
-  withResponseLogger(
-    withCorsHeaders(async (req: NextApiRequest, res: NextApiResponse) => {
-      // Fallback if no endpoints are registered
-      if (Object.keys(endpoints).length === 0) {
-        res.status(StatusCodes.clientError.notFound).json({
-          code: ErrorCode.notFound,
-          message: "The requested resource does not exist.",
-        });
-        return;
-      }
-
-      const endpoint = endpoints[req.method as keyof typeof endpoints] ?? null;
-
-      if (endpoint) {
-        const handler = wrapEndpointWithMiddleware(endpoint, endpoints);
-        await handler(req, res);
-      } else if (req.method === "OPTIONS") {
-        res.setHeader(
-          "Allow",
-          Object.entries({
-            OPTIONS: true,
-            HEAD: endpoints.HEAD !== undefined,
-            GET: endpoints.GET !== undefined,
-            POST: endpoints.POST !== undefined,
-            PUT: endpoints.PUT !== undefined,
-            DELETE: endpoints.DELETE !== undefined,
-            PATCH: endpoints.PATCH !== undefined,
-          })
-            .filter(([, isAllowed]) => isAllowed)
-            .map(([header]) => header)
-            .join(", ")
-        );
-        res.status(StatusCodes.success.noContent).end();
-      } else {
-        (res as NextApiResponse<ErrorDto>)
-          .status(StatusCodes.clientError.methodNotAllowed)
-          .json({
-            code: ErrorCode.httpMethodNotAllowed,
-            message: "HTTP method not allowed.",
+  withAwaitedCompletion(
+    withResponseLogger(
+      withCorsHeaders(async (req: NextApiRequest, res: NextApiResponse) => {
+        // Fallback if no endpoints are registered
+        if (Object.keys(endpoints).length === 0) {
+          res.status(StatusCodes.clientError.notFound).json({
+            code: ErrorCode.notFound,
+            message: "The requested resource does not exist.",
           });
-      }
-    })
+          return;
+        }
+
+        const endpoint =
+          endpoints[req.method as keyof typeof endpoints] ?? null;
+
+        if (endpoint) {
+          const handler = wrapEndpointWithMiddleware(endpoint, endpoints);
+          await handler(req, res);
+        } else if (req.method === "OPTIONS") {
+          res.setHeader(
+            "Allow",
+            Object.entries({
+              OPTIONS: true,
+              HEAD: endpoints.HEAD !== undefined,
+              GET: endpoints.GET !== undefined,
+              POST: endpoints.POST !== undefined,
+              PUT: endpoints.PUT !== undefined,
+              DELETE: endpoints.DELETE !== undefined,
+              PATCH: endpoints.PATCH !== undefined,
+            })
+              .filter(([, isAllowed]) => isAllowed)
+              .map(([header]) => header)
+              .join(", ")
+          );
+          res.status(StatusCodes.success.noContent).end();
+        } else {
+          (res as NextApiResponse<ErrorDto>)
+            .status(StatusCodes.clientError.methodNotAllowed)
+            .json({
+              code: ErrorCode.httpMethodNotAllowed,
+              message: "HTTP method not allowed.",
+            });
+        }
+      })
+    )
   );
+
+/**
+ * Await handler completion before returning http response.
+ *
+ * Vercel stops execution as soon as a result is written to the {@link NextApiResponse}
+ * (see also https://github.com/vercel/next.js/discussions/14077). This causes
+ * after-request work, such as logging, to be flaky at best.
+ *
+ * This function works around the problem by trapping the response just before being sent
+ * and holding it until all other handlers have completed.
+ */
+const withAwaitedCompletion =
+  (handler: ApiRequestHandler): ApiRequestHandler =>
+  async (req, res) => {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const originalEnd = res.end;
+
+    let endArgs: unknown = undefined;
+
+    // @ts-expect-error TypeScript does not like the "unknown"s here
+    res.end = (...args) => (endArgs = args);
+
+    await handler(req, res);
+
+    if (endArgs === undefined) {
+      originalEnd.apply(res);
+    } else {
+      // @ts-expect-error TypeScript infers an incorrect type for endArgs
+      originalEnd.apply(res, endArgs);
+    }
+  };
 
 /**
  * Logs requests and the responses they produce
