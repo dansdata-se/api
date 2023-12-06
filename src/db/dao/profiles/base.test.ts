@@ -17,6 +17,7 @@ import { BasePatchProfileModel } from "@/model/profiles/base/patch";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
 import { faker } from "@faker-js/faker";
+import cuid2 from "@paralleldrive/cuid2";
 import { ProfileType } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import fetch from "jest-fetch-mock";
@@ -183,8 +184,7 @@ describe("BaseProfileDao integration tests", () => {
 
     // Act
     const promise = BaseProfileDao.patch(
-      generateBasePatchProfileModel({
-        id: profileId,
+      generateBasePatchProfileModel(profileId, {
         type: ProfileType.organization,
       })
     );
@@ -223,13 +223,16 @@ describe("BaseProfileDao integration tests", () => {
         squareId: squareImageId,
       },
     });
-    const patchModel: BasePatchProfileModel = generateBasePatchProfileModel({
-      type: createModel.type,
-      images: {
-        coverId: coverImageId,
-        posterId: null,
-      },
-    });
+    const patchModel: BasePatchProfileModel = generateBasePatchProfileModel(
+      cuid2.createId(),
+      {
+        type: createModel.type,
+        images: {
+          coverId: coverImageId,
+          posterId: null,
+        },
+      }
+    );
 
     // Act
     const profileId = await BaseProfileDao.create(createModel);
@@ -295,14 +298,15 @@ describe("BaseProfileDao integration tests", () => {
           },
         });
       const profileId = await BaseProfileDao.create(createModel);
-      const patchModel: BasePatchProfileModel = generateBasePatchProfileModel({
-        id: profileId,
-        type: createModel.type,
-        links: Array.from({ length: patchedLinkCount }).map(() =>
-          generateLinkModel()
-        ),
-        images: {},
-      });
+      const patchModel: BasePatchProfileModel = generateBasePatchProfileModel(
+        profileId,
+        {
+          type: createModel.type,
+          links: Array.from({ length: patchedLinkCount }).map(() =>
+            generateLinkModel()
+          ),
+        }
+      );
 
       // Act
       await BaseProfileDao.patch(patchModel);

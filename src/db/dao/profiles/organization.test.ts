@@ -18,6 +18,7 @@ import { PatchOrganizationModel } from "@/model/profiles/organizations/patch";
 import { OrganizationModel } from "@/model/profiles/organizations/profile";
 import { OrganizationReferenceModel } from "@/model/profiles/organizations/reference";
 import { faker } from "@faker-js/faker";
+import cuid2 from "@paralleldrive/cuid2";
 import fetch from "jest-fetch-mock";
 
 describe("OrganizationDao integration tests", () => {
@@ -39,14 +40,7 @@ describe("OrganizationDao integration tests", () => {
 
   test("getById returns null for profile where type != organization", async () => {
     // Arrange
-    const createModel: CreateIndividualModel = generateCreateIndividualModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      organizations: [],
-    });
+    const createModel: CreateIndividualModel = generateCreateIndividualModel();
     const individual = await IndividualDao.create(createModel);
 
     // Act
@@ -75,7 +69,6 @@ describe("OrganizationDao integration tests", () => {
           posterId: null,
           squareId: squareImageId,
         },
-        organizations: [],
       });
     const individual1Model = await IndividualDao.create(createIndividual1Model);
     const createIndividual2Model: CreateIndividualModel =
@@ -85,16 +78,10 @@ describe("OrganizationDao integration tests", () => {
           posterId: posterImageId,
           squareId: squareImageId,
         },
-        organizations: [],
       });
     const individual2Model = await IndividualDao.create(createIndividual2Model);
     const createModel: CreateOrganizationModel =
       generateCreateOrganizationModel({
-        images: {
-          coverId: null,
-          posterId: null,
-          squareId: null,
-        },
         members: [
           {
             individualId: individual1Model.id,
@@ -179,14 +166,7 @@ describe("OrganizationDao integration tests", () => {
 
   test("getReferenceById returns null for profile where type != organization", async () => {
     // Arrange
-    const createModel: CreateIndividualModel = generateCreateIndividualModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      organizations: [],
-    });
+    const createModel: CreateIndividualModel = generateCreateIndividualModel();
     const individual = await IndividualDao.create(createModel);
 
     // Act
@@ -202,14 +182,7 @@ describe("OrganizationDao integration tests", () => {
   test("getReferenceById resolves profile reference", async () => {
     // Arrange
     const createModel: CreateOrganizationModel =
-      generateCreateOrganizationModel({
-        images: {
-          coverId: null,
-          posterId: null,
-          squareId: null,
-        },
-        members: [],
-      });
+      generateCreateOrganizationModel();
 
     // Act
     const createdProfile = await OrganizationDao.create(createModel);
@@ -257,16 +230,7 @@ describe("OrganizationDao integration tests", () => {
     async ({ count, pages }) => {
       // Arrange
       for (let i = 0; i < count; i++) {
-        await OrganizationDao.create(
-          generateCreateOrganizationModel({
-            images: {
-              coverId: null,
-              posterId: null,
-              squareId: null,
-            },
-            members: [],
-          })
-        );
+        await OrganizationDao.create(generateCreateOrganizationModel());
       }
 
       for (
@@ -310,12 +274,6 @@ describe("OrganizationDao integration tests", () => {
       await OrganizationDao.create(
         generateCreateOrganizationModel({
           name,
-          images: {
-            coverId: null,
-            posterId: null,
-            squareId: null,
-          },
-          members: [],
         })
       );
     }
@@ -348,18 +306,10 @@ describe("OrganizationDao integration tests", () => {
   test("create and patch full organization profile", async () => {
     // Arrange
     const createModel: CreateOrganizationModel =
-      generateCreateOrganizationModel({
-        images: {
-          coverId: null,
-          posterId: null,
-          squareId: null,
-        },
-        members: [],
-      });
-    const patchModel: PatchOrganizationModel = generatePatchOrganizationModel({
-      images: {},
-      members: [],
-    });
+      generateCreateOrganizationModel();
+    const patchModel: PatchOrganizationModel = generatePatchOrganizationModel(
+      cuid2.createId()
+    );
 
     // Act
     const createdProfile = await OrganizationDao.create(createModel);
@@ -404,48 +354,22 @@ describe("OrganizationDao integration tests", () => {
     async (patchedMemberCount) => {
       // Arrange
       const createIndividual1Model: CreateIndividualModel =
-        generateCreateIndividualModel({
-          images: {
-            coverId: null,
-            posterId: null,
-            squareId: null,
-          },
-          organizations: [],
-        });
+        generateCreateIndividualModel();
       const individual1Model = await IndividualDao.create(
         createIndividual1Model
       );
       const createIndividual2Model: CreateIndividualModel =
-        generateCreateIndividualModel({
-          images: {
-            coverId: null,
-            posterId: null,
-            squareId: null,
-          },
-          organizations: [],
-        });
+        generateCreateIndividualModel();
       const individual2Model = await IndividualDao.create(
         createIndividual2Model
       );
       const createIndividual3Model: CreateIndividualModel =
-        generateCreateIndividualModel({
-          images: {
-            coverId: null,
-            posterId: null,
-            squareId: null,
-          },
-          organizations: [],
-        });
+        generateCreateIndividualModel();
       const individual3Model = await IndividualDao.create(
         createIndividual3Model
       );
       const createModel: CreateOrganizationModel =
         generateCreateOrganizationModel({
-          images: {
-            coverId: null,
-            posterId: null,
-            squareId: null,
-          },
           members: [
             {
               individualId: individual1Model.id,
@@ -469,9 +393,8 @@ describe("OrganizationDao integration tests", () => {
         individual3Model,
       ]);
       const patchModel: PatchOrganizationModel = generatePatchOrganizationModel(
+        createdModel.id,
         {
-          id: createdModel.id,
-          images: {},
           members: Array.from({
             length: patchedMemberCount,
           }).map((_, i) => ({

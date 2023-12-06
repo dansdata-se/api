@@ -18,6 +18,7 @@ import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { PatchVenueModel } from "@/model/profiles/venues/patch";
 import { VenueModel } from "@/model/profiles/venues/profile";
 import { VenueReferenceModel } from "@/model/profiles/venues/reference";
+import cuid2 from "@paralleldrive/cuid2";
 import fetch from "jest-fetch-mock";
 
 describe("VenueDao integration tests", () => {
@@ -37,14 +38,7 @@ describe("VenueDao integration tests", () => {
 
   test("getById returns null for profile where type != venue", async () => {
     // Arrange
-    const createModel: CreateIndividualModel = generateCreateIndividualModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      organizations: [],
-    });
+    const createModel: CreateIndividualModel = generateCreateIndividualModel();
     const individual = await IndividualDao.create(createModel);
 
     // Act
@@ -72,7 +66,6 @@ describe("VenueDao integration tests", () => {
         posterId: posterImageId,
         squareId: squareImageId,
       },
-      parentId: null,
     });
     const venueLevel2CreateModel1: CreateVenueModel = generateCreateVenueModel({
       images: {
@@ -88,13 +81,7 @@ describe("VenueDao integration tests", () => {
         squareId: null,
       },
     });
-    const venueLevel3CreateModel: CreateVenueModel = generateCreateVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-    });
+    const venueLevel3CreateModel: CreateVenueModel = generateCreateVenueModel();
 
     // Act
     const venueLevel1Created = await VenueDao.create(venueLevel1CreateModel);
@@ -230,14 +217,7 @@ describe("VenueDao integration tests", () => {
 
   test("getReferenceById returns null for profile where type != venue", async () => {
     // Arrange
-    const createModel: CreateIndividualModel = generateCreateIndividualModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      organizations: [],
-    });
+    const createModel: CreateIndividualModel = generateCreateIndividualModel();
     const individual = await IndividualDao.create(createModel);
 
     // Act
@@ -252,14 +232,7 @@ describe("VenueDao integration tests", () => {
 
   test("getReferenceById resolves profile reference", async () => {
     // Arrange
-    const createModel: CreateVenueModel = generateCreateVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      parentId: null,
-    });
+    const createModel: CreateVenueModel = generateCreateVenueModel();
 
     // Act
     const createdProfile = await VenueDao.create(createModel);
@@ -298,39 +271,15 @@ describe("VenueDao integration tests", () => {
 
   test("create and patch full venue profile", async () => {
     // Arrange
-    const venueLevel1CreateModel: CreateVenueModel = generateCreateVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      parentId: null,
-    });
-    const venueLevel2CreateModel: CreateVenueModel = generateCreateVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      parentId: null,
-    });
+    const venueLevel1CreateModel: CreateVenueModel = generateCreateVenueModel();
+    const venueLevel2CreateModel: CreateVenueModel = generateCreateVenueModel();
 
-    const venueLevel1PatchModel: PatchVenueModel = generatePatchVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      parentId: null,
-    });
-    const venueLevel2PatchModel: PatchVenueModel = generatePatchVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      parentId: null,
-    });
+    const venueLevel1PatchModel: PatchVenueModel = generatePatchVenueModel(
+      cuid2.createId()
+    );
+    const venueLevel2PatchModel: PatchVenueModel = generatePatchVenueModel(
+      cuid2.createId()
+    );
 
     // Act
     const venueLevel1Created = await VenueDao.create(venueLevel1CreateModel);

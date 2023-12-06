@@ -69,11 +69,6 @@ describe("Venue hierarchy constraints", () => {
       const models: VenueModel[] = [];
       for (let i = 0; i < count; i++) {
         const createModel = generateCreateVenueModel({
-          images: {
-            coverId: null,
-            posterId: null,
-            squareId: null,
-          },
           parentId: models.at(-1)?.id ?? null,
         });
         models.push(await VenueDao.create(createModel));
@@ -97,16 +92,7 @@ describe("Venues manual SQL", () => {
 
   test("update coords field", async () => {
     // Arrange
-    const model = await VenueDao.create(
-      generateCreateVenueModel({
-        images: {
-          coverId: null,
-          posterId: null,
-          squareId: null,
-        },
-        parentId: null,
-      })
-    );
+    const model = await VenueDao.create(generateCreateVenueModel());
     const newCoords = generateCoordsModel();
 
     // Act
@@ -129,12 +115,6 @@ describe("Venues manual SQL", () => {
     const model = await VenueDao.create(
       generateCreateVenueModel({
         permanentlyClosed: false,
-        images: {
-          coverId: null,
-          posterId: null,
-          squareId: null,
-        },
-        parentId: null,
       })
     );
 
@@ -155,26 +135,8 @@ describe("Venues manual SQL", () => {
 
   test("update parentId field", async () => {
     // Arrange
-    const model1 = await VenueDao.create(
-      generateCreateVenueModel({
-        images: {
-          coverId: null,
-          posterId: null,
-          squareId: null,
-        },
-        parentId: null,
-      })
-    );
-    const model2 = await VenueDao.create(
-      generateCreateVenueModel({
-        images: {
-          coverId: null,
-          posterId: null,
-          squareId: null,
-        },
-        parentId: null,
-      })
-    );
+    const model1 = await VenueDao.create(generateCreateVenueModel());
+    const model2 = await VenueDao.create(generateCreateVenueModel());
 
     // Act
     await getDbClient().venueEntity.update({
@@ -206,12 +168,6 @@ describe("Venues manual SQL", () => {
         lat: 58.41616195587502,
         lng: 15.625933242341707,
       },
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      parentId: null,
     });
 
     const linkoping = await VenueDao.create(createLinkoping);
@@ -237,35 +193,10 @@ describe("Venues manual SQL", () => {
     // Arrange
     const db = getDbClient();
 
-    const rootCreate = generateCreateVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-      parentId: null,
-    });
-    const sub1Create = generateCreateVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-    });
-    const sub2Create = generateCreateVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-    });
-    const leafCreate = generateCreateVenueModel({
-      images: {
-        coverId: null,
-        posterId: null,
-        squareId: null,
-      },
-    });
+    const rootCreate = generateCreateVenueModel();
+    const sub1Create = generateCreateVenueModel();
+    const sub2Create = generateCreateVenueModel();
+    const leafCreate = generateCreateVenueModel();
 
     const createTree = [rootCreate, sub1Create, sub2Create, leafCreate];
     const tree: VenueModel[] = [];
@@ -338,12 +269,6 @@ describe("Venues manual SQL", () => {
               lat: 58.4118163514212,
               lng: 15.619312724913462,
             },
-            images: {
-              coverId: null,
-              posterId: null,
-              squareId: null,
-            },
-            parentId: null,
           }),
         },
         {
@@ -354,12 +279,6 @@ describe("Venues manual SQL", () => {
               lat: 58.50563179706094,
               lng: 15.494221140260903,
             },
-            images: {
-              coverId: null,
-              posterId: null,
-              squareId: null,
-            },
-            parentId: null,
           }),
         },
         {
@@ -370,12 +289,6 @@ describe("Venues manual SQL", () => {
               lat: 58.55553782832458,
               lng: 15.305118297934813,
             },
-            images: {
-              coverId: null,
-              posterId: null,
-              squareId: null,
-            },
-            parentId: null,
           }),
         },
         {
@@ -386,12 +299,6 @@ describe("Venues manual SQL", () => {
               lat: 58.5776551226464,
               lng: 16.148422882592975,
             },
-            images: {
-              coverId: null,
-              posterId: null,
-              squareId: null,
-            },
-            parentId: null,
           }),
         },
         {
@@ -402,12 +309,6 @@ describe("Venues manual SQL", () => {
               lat: 57.7422407209703,
               lng: 15.792965255566815,
             },
-            images: {
-              coverId: null,
-              posterId: null,
-              squareId: null,
-            },
-            parentId: null,
           }),
         },
         {
@@ -418,12 +319,6 @@ describe("Venues manual SQL", () => {
               lat: 59.24684390768979,
               lng: 15.16925002256166,
             },
-            images: {
-              coverId: null,
-              posterId: null,
-              squareId: null,
-            },
-            parentId: null,
           }),
         },
         {
@@ -434,12 +329,6 @@ describe("Venues manual SQL", () => {
               lat: 57.78247783258018,
               lng: 14.141843832283167,
             },
-            images: {
-              coverId: null,
-              posterId: null,
-              squareId: null,
-            },
-            parentId: null,
           }),
         },
         {
@@ -450,12 +339,6 @@ describe("Venues manual SQL", () => {
               lat: 57.69483118235473,
               lng: 11.995524355564582,
             },
-            images: {
-              coverId: null,
-              posterId: null,
-              squareId: null,
-            },
-            parentId: null,
           }),
         },
       ];
