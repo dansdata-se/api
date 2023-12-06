@@ -4,7 +4,6 @@ import { BaseCreateProfileModel } from "@/model/profiles/base/create";
 import { BasePatchProfileModel } from "@/model/profiles/base/patch";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
-import { isNonNull } from "@/util/is_defined";
 import { ProfileType } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
@@ -204,30 +203,6 @@ export const BaseProfileDao = {
         square: entity.squareImage,
       }),
     };
-  },
-  /**
-   * Retrieve profile references matching a given profile name query
-   *
-   * Profile references are used when we need to refer to a profile without this
-   * reference including further references to other profiles and so forth.
-   *
-   * Profile references typically contain just enough data for a client to
-   * render a nice looking link for end users without having to look up the full
-   * profile first.
-   */
-  async getReferencesByNameQuery(
-    nameQuery: string,
-    limit: number,
-    offset: number
-  ): Promise<BaseProfileReferenceModel[]> {
-    const entities = await getDbClient().profileEntity.findIdsByNameQuery(
-      nameQuery,
-      limit,
-      offset
-    );
-    return await Promise.all(
-      entities.map(({ id }) => this.getReferenceById(id))
-    ).then((it) => it.filter(isNonNull));
   },
   /**
    * Retrieve the profile type given its id

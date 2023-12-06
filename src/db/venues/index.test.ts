@@ -8,9 +8,7 @@ import { generateCreateVenueModel } from "@/__test__/model/profiles/venues/creat
 import { getDbClient } from "@/db";
 import { VenueDao } from "@/db/dao/profiles/venue";
 import { mapVenueModelToReferenceModel } from "@/mapping/profiles/venues/profile";
-import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { VenueModel } from "@/model/profiles/venues/profile";
-import { faker } from "@faker-js/faker";
 import { ProfileType } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
@@ -246,119 +244,4 @@ describe("Venues manual SQL", () => {
       }))
     );
   });
-
-  test.each([0, 10, 1_000, 15_000, 50_000, 100_000, Infinity])(
-    "find venues within %s m of the origin",
-    async (maxDistance) => {
-      // Arrange
-      const db = getDbClient();
-      const origin = {
-        lat: 58.41616195587502,
-        lng: 15.625933242341707,
-      };
-      // Sorted by distance
-      const cities: {
-        distanceToOrigin: number;
-        createModel: CreateVenueModel;
-      }[] = [
-        {
-          distanceToOrigin: 618,
-          createModel: generateCreateVenueModel({
-            name: "Linköping",
-            coords: {
-              lat: 58.4118163514212,
-              lng: 15.619312724913462,
-            },
-          }),
-        },
-        {
-          distanceToOrigin: 12_556,
-          createModel: generateCreateVenueModel({
-            name: "Ljungsbro",
-            coords: {
-              lat: 58.50563179706094,
-              lng: 15.494221140260903,
-            },
-          }),
-        },
-        {
-          distanceToOrigin: 24_246,
-          createModel: generateCreateVenueModel({
-            name: "Borensberg",
-            coords: {
-              lat: 58.55553782832458,
-              lng: 15.305118297934813,
-            },
-          }),
-        },
-        {
-          distanceToOrigin: 35_272,
-          createModel: generateCreateVenueModel({
-            name: "Norrköping",
-            coords: {
-              lat: 58.5776551226464,
-              lng: 16.148422882592975,
-            },
-          }),
-        },
-        {
-          distanceToOrigin: 75_577,
-          createModel: generateCreateVenueModel({
-            name: "Södra Vi",
-            coords: {
-              lat: 57.7422407209703,
-              lng: 15.792965255566815,
-            },
-          }),
-        },
-        {
-          distanceToOrigin: 96_033,
-          createModel: generateCreateVenueModel({
-            name: "Örebro",
-            coords: {
-              lat: 59.24684390768979,
-              lng: 15.16925002256166,
-            },
-          }),
-        },
-        {
-          distanceToOrigin: 112_111,
-          createModel: generateCreateVenueModel({
-            name: "Jönköping",
-            coords: {
-              lat: 57.78247783258018,
-              lng: 14.141843832283167,
-            },
-          }),
-        },
-        {
-          distanceToOrigin: 228_116,
-          createModel: generateCreateVenueModel({
-            name: "Göteborg",
-            coords: {
-              lat: 57.69483118235473,
-              lng: 11.995524355564582,
-            },
-          }),
-        },
-      ];
-      // Randomize insertion order
-      for (const city of faker.helpers.shuffle(cities)) {
-        await VenueDao.create(city.createModel);
-      }
-
-      // Act
-      const result = await db.venueEntity.findIdsNear(origin, maxDistance);
-
-      // Assert
-      const expected = cities.filter((it) => it.distanceToOrigin < maxDistance);
-      if (maxDistance === Infinity) {
-        expect(expected.length).toBeGreaterThan(0);
-      }
-      expect(result).toHaveLength(expected.length);
-      expect(result.map((it) => it.distance)).toEqual(
-        expected.map((it) => it.distanceToOrigin)
-      );
-    }
-  );
 });

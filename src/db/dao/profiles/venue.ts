@@ -2,7 +2,6 @@ import { getDbClient } from "@/db";
 import { BaseProfileDao } from "@/db/dao/profiles/base";
 import { BaseProfileModel } from "@/model/profiles/base/profile";
 import { BaseProfileReferenceModel } from "@/model/profiles/base/reference";
-import { CoordsModel } from "@/model/profiles/coords";
 import { CreateVenueModel } from "@/model/profiles/venues/create";
 import { PatchVenueModel } from "@/model/profiles/venues/patch";
 import { VenueModel } from "@/model/profiles/venues/profile";
@@ -128,58 +127,6 @@ export const VenueDao = {
     if (baseModel === null) return null;
     if (!hasVenueProfileType(baseModel)) return null;
     return expandBaseModelToReference(baseModel);
-  },
-  /**
-   * Retrieve an individual reference by its id
-   *
-   * Profile references are used when we need to refer to a profile without this
-   * reference including further references to other profiles and so forth.
-   *
-   * Profile references typically contain just enough data for a client to
-   * render a nice looking link for end users without having to look up the full
-   * profile first.
-   */
-  async getReferenceByNameQuery(
-    nameQuery: string,
-    limit: number,
-    offset: number
-  ): Promise<VenueReferenceModel[]> {
-    return (
-      await Promise.all(
-        (
-          await BaseProfileDao.getReferencesByNameQuery(
-            nameQuery,
-            limit,
-            offset
-          )
-        )
-          .filter(isNonNull)
-          .filter(hasVenueProfileType)
-          .map(expandBaseModelToReference)
-      )
-    ).filter(isNonNull);
-  },
-  /**
-   * Retrieve a list of venues based on their proximity to given coordinates.
-   *
-   * Profile references are used when we need to refer to a profile without this
-   * reference including further references to other profiles and so forth.
-   *
-   * Profile references typically contain just enough data for a client to
-   * render a nice looking link for end users without having to look up the full
-   * profile first.
-   */
-  async getReferencesByProximity(
-    coords: CoordsModel,
-    maxDistance: number
-  ): Promise<VenueReferenceModel[]> {
-    return await getDbClient()
-      .venueEntity.findIdsNear(coords, maxDistance)
-      .then((idAndDistance) =>
-        idAndDistance.map((it) => this.getReferenceById(it.profileId))
-      )
-      .then((promises) => Promise.all(promises))
-      .then((entities) => entities.filter(isNonNull));
   },
 };
 

@@ -155,28 +155,6 @@ export const OrganizationDao = {
     return expandBaseModelToReference(baseModel);
   },
   /**
-   * Retrieve an individual reference by its id
-   *
-   * Profile references are used when we need to refer to a profile without this
-   * reference including further references to other profiles and so forth.
-   *
-   * Profile references typically contain just enough data for a client to
-   * render a nice looking link for end users without having to look up the full
-   * profile first.
-   */
-  async getReferenceByNameQuery(
-    nameQuery: string,
-    limit: number,
-    offset: number
-  ): Promise<OrganizationReferenceModel[]> {
-    return await Promise.all(
-      (await BaseProfileDao.getReferencesByNameQuery(nameQuery, limit, offset))
-        .filter(isNonNull)
-        .filter(hasOrganizationProfileType)
-        .map(expandBaseModelToReference)
-    );
-  },
-  /**
    * Retrieve a page of profile references from the full dataset of organizations.
    *
    * The dataset is sorted in alphabetical order.

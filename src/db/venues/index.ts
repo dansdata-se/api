@@ -63,61 +63,6 @@ export function buildVenueEntityModelExtends(prisma: PrismaClient) {
 
       await Promise.all(queries);
     },
-    /**
-     * Finds the ids of venues near a certain geographical location.
-     *
-     * The returned ids are sorted by distance.
-     */
-    async findIdsNear(
-      coords: CoordsModel,
-      maxDistance: number
-    ): Promise<
-      {
-        profileId: VenueEntity["profileId"];
-        /**
-         * The distance from the given coordinates in meters
-         */
-        distance: number;
-      }[]
-    > {
-      // Skip `WHERE ST_DWithin` for really large distance values.
-      // 2_000_000 = almost the size of Europe.
-      if (maxDistance >= 2_000_000) {
-        // The syntax highlighter does not support a line break here
-        // prettier-ignore
-        return await prisma.$queryRaw<{ profileId: VenueEntity["profileId"], distance: number }[]>`
-          SELECT
-            profile_id as "profileId",
-            ROUND(
-              ST_DistanceSphere(
-                coords::geometry,
-                ST_MakePoint(${coords.lng}, ${coords.lat})
-              )
-            ) as distance
-          FROM profiles.venues
-          ORDER BY distance ASC;
-        `;
-      }
-      // The syntax highlighter does not support a line break here
-      // prettier-ignore
-      return await prisma.$queryRaw<{ profileId: VenueEntity["profileId"], distance: number }[]>`
-        SELECT
-          profile_id as "profileId",
-          ROUND(
-            ST_DistanceSphere(
-              coords::geometry,
-              ST_MakePoint(${coords.lng}, ${coords.lat})
-            )
-          ) as distance
-        FROM profiles.venues
-        WHERE ST_DWithin(
-          coords,
-          ST_MakePoint(${coords.lng}, ${coords.lat}),
-          ${maxDistance}
-        )
-        ORDER BY distance ASC;
-      `;
-    },
   };
 }
 
