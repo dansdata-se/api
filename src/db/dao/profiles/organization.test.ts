@@ -218,54 +218,60 @@ describe("OrganizationDao integration tests", () => {
   });
 
   test.each([
-    { count: 0, pages: 0 },
-    { count: 1, pages: 1 },
-    { count: env.RESULT_PAGE_SIZE - 1, pages: 1 },
-    { count: env.RESULT_PAGE_SIZE, pages: 1 },
-    { count: env.RESULT_PAGE_SIZE + 1, pages: 2 },
-    { count: Math.floor(env.RESULT_PAGE_SIZE * 2.6), pages: 3 },
-    { count: env.RESULT_PAGE_SIZE * 3, pages: 3 },
+    0,
+    1,
+    env.RESULT_PAGE_SIZE - 1,
+    env.RESULT_PAGE_SIZE,
+    env.RESULT_PAGE_SIZE + 1,
+    Math.floor(env.RESULT_PAGE_SIZE * 2.6),
+    env.RESULT_PAGE_SIZE * 3,
   ])(
-    "list $count profiles (requiring $pages pages) without filtering",
-    async ({ count, pages }) => {
+    "getManyReferences paginates %s profiles (with minimal filters) correctly",
+    async (profileCount) => {
       // Arrange
-      for (let i = 0; i < count; i++) {
+      const pageCount = Math.ceil(profileCount / env.RESULT_PAGE_SIZE);
+      for (let i = 0; i < profileCount; i++) {
         await OrganizationDao.create(generateCreateOrganizationModel());
       }
 
       for (
-        let pageIndex = 0, previousPageKey = null;
-        pageIndex < Math.max(pages, 1);
+        let pageIndex = 0, pageKey = null;
+        pageIndex < Math.max(pageCount, 1);
         pageIndex++
       ) {
         // Act
         const page = await OrganizationDao.getManyReferences({
-          memberIds: new Set([]),
-          tags: new Set([]),
-          pageKey: previousPageKey,
+          nameQuery: null,
+          tags: new Set(),
+          memberIds: new Set(),
+          pageKey,
         });
 
         // Assert
         expect(page.data).toHaveLength(
           Math.min(
             env.RESULT_PAGE_SIZE,
-            Math.max(0, count - env.RESULT_PAGE_SIZE * pageIndex)
+            Math.max(0, profileCount - env.RESULT_PAGE_SIZE * pageIndex)
           )
         );
         if (pageIndex > 0) {
-          expect(previousPageKey).toEqual(page.data[0].id);
+          expect(pageKey).toEqual(page.data[0].id);
         }
-        if (pageIndex + 1 < pages) {
+        if (pageIndex + 1 < pageCount) {
           expect(page.nextPageKey).not.toBeNull();
         } else {
           expect(page.nextPageKey).toBeNull();
         }
 
-        previousPageKey = page.nextPageKey;
+        pageKey = page.nextPageKey;
       }
     }
   );
 
+  // This currently depends on our database backend.
+  // However, by ensuring our testing environment matches what we would expect,
+  // we can also be fairly confident about what steps to take to ensure the production
+  // environment does what we expect as well.
   test("getManyReferences sorts names as expected in a swedish locale", async () => {
     // Arrange
     const unsortedNames = ["Örjan", "Åsa", "Britt", "Niklas", "Ängla", "Per"];
@@ -287,8 +293,9 @@ describe("OrganizationDao integration tests", () => {
     ) {
       // Act
       const page = await OrganizationDao.getManyReferences({
-        memberIds: new Set([]),
-        tags: new Set([]),
+        nameQuery: null,
+        tags: new Set(),
+        memberIds: new Set(),
         pageKey: previousPageKey,
       });
       // Sanity check to avoid infinite loop

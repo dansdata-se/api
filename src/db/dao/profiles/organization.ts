@@ -175,45 +175,7 @@ export const OrganizationDao = {
     >
   > {
     return await getDbClient()
-      .organizationEntity.findMany({
-        cursor: filterModel.pageKey
-          ? {
-              profileId: filterModel.pageKey,
-            }
-          : undefined,
-        where: {
-          tags: filterModel.tags.size
-            ? {
-                hasSome: Array.from(filterModel.tags),
-              }
-            : undefined,
-          members: filterModel.memberIds.size
-            ? {
-                some: {
-                  individualId: {
-                    in: Array.from(filterModel.memberIds),
-                  },
-                },
-              }
-            : undefined,
-        },
-        take: env.RESULT_PAGE_SIZE + 1,
-        orderBy: [
-          {
-            profile: {
-              name: "asc",
-            },
-          },
-          {
-            profile: {
-              id: "asc",
-            },
-          },
-        ],
-        select: {
-          profileId: true,
-        },
-      })
+      .organizationEntity.findManyByFilter(filterModel)
       .then((results) => results.map((it) => it.profileId))
       .then(async (ids) => {
         const data = await Promise.all(

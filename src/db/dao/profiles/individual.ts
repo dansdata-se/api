@@ -168,45 +168,7 @@ export const IndividualDao = {
     KeyPagedDataModel<IndividualReferenceModel, IndividualReferenceModel["id"]>
   > {
     return await getDbClient()
-      .individualEntity.findMany({
-        cursor: filterModel.pageKey
-          ? {
-              profileId: filterModel.pageKey,
-            }
-          : undefined,
-        where: {
-          tags: filterModel.tags.size
-            ? {
-                hasSome: Array.from(filterModel.tags),
-              }
-            : undefined,
-          organizations: filterModel.organizationIds.size
-            ? {
-                some: {
-                  organizationId: {
-                    in: Array.from(filterModel.organizationIds),
-                  },
-                },
-              }
-            : undefined,
-        },
-        take: env.RESULT_PAGE_SIZE + 1,
-        orderBy: [
-          {
-            profile: {
-              name: "asc",
-            },
-          },
-          {
-            profile: {
-              id: "asc",
-            },
-          },
-        ],
-        select: {
-          profileId: true,
-        },
-      })
+      .individualEntity.findManyByFilter(filterModel)
       .then((results) => results.map((it) => it.profileId))
       .then(async (ids) => {
         const data = await Promise.all(

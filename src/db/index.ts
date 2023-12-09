@@ -1,3 +1,5 @@
+import { buildIndividualEntityModelExtends } from "@/db/individuals";
+import { buildOrganizationEntityModelExtends } from "@/db/organizations";
 import {
   buildVenueEntityModelExtends,
   buildVenueEntityResultExtends,
@@ -30,6 +32,8 @@ function createPrismaClient({
   });
   return prismaClient.$extends({
     model: {
+      individualEntity: buildIndividualEntityModelExtends(prismaClient),
+      organizationEntity: buildOrganizationEntityModelExtends(prismaClient),
       venueEntity: buildVenueEntityModelExtends(prismaClient),
     },
     result: {

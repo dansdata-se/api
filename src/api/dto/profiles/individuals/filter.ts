@@ -10,6 +10,14 @@ export const IndividualFilterParametersSchema = KeyPagedParametersSchema(
   BaseProfileReferenceDtoSchema.shape.id
 ).merge(
   z.object({
+    qName: z
+      .string()
+      .min(3)
+      .max(50)
+      .optional()
+      .describe(
+        "Name query.\n\n Limits the search to individuals with names similar to the given query."
+      ),
     tags: z
       .union([
         z.nativeEnum(IndividualTag),
@@ -22,7 +30,7 @@ export const IndividualFilterParametersSchema = KeyPagedParametersSchema(
         message: "Must be an array of unique tags",
       })
       .describe(
-        "A set of individual tags.\n\nAn individual matches this filter if it matches at least one of the listed tags."
+        "A set of individual tags.\n\nAn individual matches this filter only if it matches *all* of the listed tags."
       ),
     orgs: z
       .union([
@@ -36,7 +44,7 @@ export const IndividualFilterParametersSchema = KeyPagedParametersSchema(
         message: "Must be an array of unique ids",
       })
       .describe(
-        "A set of organization ids.\n\nAn individual matches this filter if it is a member of at least one of the listed organizations."
+        "A set of organization ids.\n\nAn individual matches this filter only if it is a member of *all* the listed organizations."
       ),
   })
 );
