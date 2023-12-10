@@ -13,34 +13,82 @@
 
 @layer base {
   /*
-Workaround to allow proper bottom positioning for fixed
-elements in mobile browsers with collapsing url bars:
-https://stackoverflow.com/a/17555766/1137077
-*/
-  html {
-    @apply h-full;
-  }
+   * Workaround to allow proper bottom positioning for fixed
+   * elements in mobile browsers with collapsing url bars:
+   * https://stackoverflow.com/a/17555766/1137077
+   */
+  :root,
+  html,
   body {
-    @apply h-full min-h-full bg-primary dark:bg-base-100;
+    @apply h-full min-h-full bg-base-200 text-base-content;
   }
   #__next {
     @apply h-full min-h-full;
   }
-
-  /* Poor man's dark mode
-   * https://github.com/swagger-api/swagger-ui/issues/5327#issuecomment-742375520
-   */
-  .swagger-ui {
-    @apply dark:hue-rotate-180 dark:invert-[92%];
-  }
-  .swagger-ui .microlight {
-    @apply dark:hue-rotate-180 dark:invert;
-  }
 }
 
 @layer components {
-  a {
-    @apply text-primary underline;
+  /* Custom dark mode based on poor man's dark mode
+   * https://github.com/swagger-api/swagger-ui/issues/5327#issuecomment-742375520
+   */
+  .swagger-ui {
+    @apply dark:hue-rotate-180 dark:invert;
+
+    .dialog-ux {
+      .backdrop-ux {
+        @apply bg-base-200/60 dark:hue-rotate-180 dark:invert;
+      }
+      .modal-ux {
+        /* Colors are inverted here in dark mode */
+        @apply shadow-lg dark:shadow-white;
+      }
+    }
+    .microlight {
+      @apply dark:hue-rotate-180 dark:invert;
+    }
+    .scheme-container {
+      @apply bg-[rgba(0,0,0,0)] shadow-none;
+    }
+    .info {
+      code {
+        @apply text-accent;
+      }
+      :not(.main) a,
+      a code {
+        @apply dark:hue-rotate-180 dark:invert;
+      }
+      a {
+        @apply text-primary;
+
+        &:hover {
+          @apply text-primary;
+          text-decoration: underline;
+        }
+        &:visited {
+          @apply text-primary;
+        }
+      }
+      .main {
+        @apply dark:hue-rotate-180 dark:invert;
+
+        .title {
+          @apply font-brand text-primary;
+
+          span {
+            @apply ms-2;
+
+            small {
+              @apply bg-accent text-accent-content;
+
+              /* OpenAPI schema version */
+              &.version-stamp {
+                display: none;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   ul {
@@ -49,5 +97,19 @@ https://stackoverflow.com/a/17555766/1137077
 
   ul:not(li > ul) {
     @apply my-[1em];
+  }
+
+  footer {
+    a {
+      @apply text-primary;
+
+      &:hover {
+        @apply text-primary;
+        text-decoration: underline;
+      }
+      &:visited {
+        @apply text-primary;
+      }
+    }
   }
 }

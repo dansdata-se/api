@@ -33,15 +33,10 @@ export default function DocumentationPage() {
         />
       </Head>
       <div className="flex min-h-full flex-col">
-        <header></header>
         <main className="container grow py-8">
-          <div className="mockup-window border border-outline bg-base-100 shadow-md dark:border-none dark:bg-base-300">
-            <div className="px-4 pb-4">
-              <SwaggerUI url="/api/v1/dansdata.api.json" />
-            </div>
-          </div>
+          <SwaggerUI url="/api/v1/dansdata.api.json" />
         </main>
-        <footer className="dark:base-content footer items-center bg-base-100 p-10 text-base dark:bg-base-300">
+        <footer className="footer items-center p-10">
           <div>
             <span className="footer-title">Dansdata</span>
             <a
@@ -93,7 +88,7 @@ export default function DocumentationPage() {
             </a>
           </div>
         </footer>
-        <footer className="dark:base-content footer border-t border-outline bg-neutral px-10 py-4 text-neutral-content dark:bg-base-300">
+        <footer className="footer border-t border-outline bg-base-300 px-10 py-4 text-base-content">
           <div className="grid-flow-col items-center">
             <div className="grid grid-flow-col items-center gap-4">
               <Image
@@ -104,7 +99,7 @@ export default function DocumentationPage() {
                 width={50}
               />
               <p>
-                <span className="font-brand text-xl text-primary">
+                <span className="font-brand text-2xl text-primary">
                   Dansdata
                 </span>
                 <br />
