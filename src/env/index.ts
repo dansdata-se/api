@@ -74,8 +74,6 @@ export default envsafe({
 
   // Vercel system environment variables
   // https://vercel.com/docs/concepts/projects/environment-variables/system-environment-variables
-  VERCEL_ANALYTICS_ID: str({ devDefault: ENVVAR_UNSET }),
-  VERCEL_WEB_ANALYTICS_ID: str({ devDefault: ENVVAR_UNSET }),
   VERCEL_GIT_COMMIT_REF: str({
     devDefault: ENVVAR_UNSET,
     input:
