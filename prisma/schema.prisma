@@ -75,6 +75,7 @@ enum OrganizationTag {
   organizer // A company or association that organizes events
   photographer // A company or association that captures photos at dance events
   booking_agent // A company or association that handles band and artist bookings
+  record_label // A company or association that produces and sells music
 
   @@map("organization_tag")
   @@schema("profiles")
