@@ -167,7 +167,8 @@ Dansdata is an open source project aiming to provide Swedish social dancing info
       },
       contact: {
         name: "Support",
-        email: "dansdata@googlegroups.com",
+        url: "https://dansdata.youtrack.cloud/form/caecd941-5281-47fd-a647-d3832838e922",
+        email: "support@dansdata.se",
       },
     },
     tags: [

@@ -2,6 +2,7 @@ import env from "@/env";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 const SwaggerUI = dynamic(() => import("swagger-ui-react"), {
   ssr: false,
@@ -11,6 +12,15 @@ const SwaggerUI = dynamic(() => import("swagger-ui-react"), {
 });
 
 export default function DocumentationPage() {
+  const [supportEmail, setSupportEmail] = useState<string | null>();
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setSupportEmail(
+        atob("ZXMuYXRhZHNuYWRAdHJvcHB1cw==").split("").reverse().join("")
+      );
+    }
+  }, []);
+
   return (
     <>
       <Head>
@@ -36,7 +46,7 @@ export default function DocumentationPage() {
         <main className="container grow py-8">
           <SwaggerUI url="/api/v1/dansdata.api.json" />
         </main>
-        <footer className="footer items-center p-10">
+        <footer className="footer p-10">
           <div>
             <span className="footer-title">Dansdata</span>
             <a
@@ -55,7 +65,7 @@ export default function DocumentationPage() {
             </a>
           </div>
           <div>
-            <span className="footer-title">Development</span>
+            <span className="footer-title">Contact</span>
             <a
               href="https://www.facebook.com/DansdataSE"
               target="_blank"
@@ -64,11 +74,37 @@ export default function DocumentationPage() {
               Facebook
             </a>
             <a
+              href="https://dansdata.youtrack.cloud/form/caecd941-5281-47fd-a647-d3832838e922"
+              target="_blank"
+              className="link-hover link"
+            >
+              Contact Form
+            </a>
+            {supportEmail && (
+              <a
+                href={`mailto:${supportEmail}`}
+                target="_blank"
+                className="link-hover link"
+              >
+                {supportEmail}
+              </a>
+            )}
+          </div>
+          <div>
+            <span className="footer-title">Development</span>
+            <a
               href="https://github.com/dansdata-se"
               target="_blank"
               className="link-hover link"
             >
               GitHub
+            </a>
+            <a
+              href="https://dansdata.youtrack.cloud/issues"
+              target="_blank"
+              className="link-hover link"
+            >
+              Issue Tracker
             </a>
           </div>
           <div>
